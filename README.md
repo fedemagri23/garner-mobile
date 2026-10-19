@@ -1,56 +1,72 @@
-# Welcome to your Expo app 👋
+# Garner — Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The Garner app: compare grocery prices near you, plan where to buy your list,
+and record what you paid while you shop. Expo (SDK 58), Expo Router,
+TypeScript, React Query.
 
-## Get started
+The backend is [`garner-app`](https://github.com/fedemagri23/garner-app); its
+`docs/client-guide.md` is required reading before touching the API layer.
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Running it
 
 ```bash
-npm run reset-project
+npm install
+npm start            # then press i / a, or scan the QR code with Expo Go
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+The app talks to the backend on the same computer as the Expo dev server
+(`http://<that computer's address>:3000`), which is what makes a phone on the
+same network reach it. Point it anywhere else with `EXPO_PUBLIC_API_URL`:
 
-### Other setup steps
+```bash
+EXPO_PUBLIC_API_URL=https://staging.example.com npm start
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Start the backend with `docker compose up -d --wait && pnpm run seed && pnpm
+run start:dev` in `garner-app`; the seed's shopper is `shopper@garner.test` /
+`correct-horse-battery`.
 
-## Learn more
+## Checks
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run api:check     # the generated client matches the backend contract
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+CI runs all four on every push, plus an Android bundle.
 
-## Join the community
+## The API client
 
-Join our community of developers creating universal apps.
+`src/api/schema.d.ts` is generated from the backend's `openapi.json` — never
+edit it by hand:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run api:generate  # from ../garner-app/openapi.json, else GitHub master
+```
+
+Every call is typed by path: `api.GET('/v1/products/{id}', { params: { path: { id } } })`.
+`unwrap` turns an error answer into an `ApiError` carrying the server's
+message.
+
+## Layout
+
+```
+src/
+├── app/                 routes (Expo Router): sign-in, sign-up, (app) tabs
+├── api/                 generated schema, typed client, authenticated fetch
+├── session/             token manager, keychain storage, session provider
+├── features/<area>/     queries and components per product area
+├── components/          design-system components from the mockups
+├── theme/               colours, type, spacing
+└── lib/                 small shared helpers
+```
+
+## How work is recorded
+
+- `implementation-plan/` — the phases, what each uses from the API, and
+  backend work each one needs first.
+- `journeys/bugs.md` and `journeys/considerations.md` — defects found and
+  deliberate trade-offs, appended before every push, in the same notation as
+  the backend's.
