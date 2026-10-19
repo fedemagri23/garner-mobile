@@ -1,14 +1,17 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 
+import { LocationProvider } from '@/features/location/location-provider';
 import { colors } from '@/theme/tokens';
 
 /**
  * The five sections from the mockups. Native tabs: the platform's own tab
  * bar (Liquid Glass on iOS 26, Material on Android), which also caps the
  * count at five. Each tab holds its own stack for the screens it pushes.
+ * Every tab shares one idea of where the shopper is.
  */
 export default function AppTabs() {
   return (
+    <LocationProvider>
     <NativeTabs
       tintColor={colors.accent}
       backgroundColor={colors.surface}
@@ -34,5 +37,6 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Icon sf="bell" md="notifications" />
       </NativeTabs.Trigger>
     </NativeTabs>
+    </LocationProvider>
   );
 }

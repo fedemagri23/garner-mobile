@@ -41,3 +41,27 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** The backend writes error messages in English. A screen passes Spanish wording for the statuses it knows the meaning of (409 on sign-up means the email is taken); anything unexpected shows the server's English message.
 - **Why:** Mapping statuses per screen is enough for the handful of errors each flow can produce, and needs no backend change. Showing raw server text to Spanish-speaking users everywhere is not acceptable; translating server sentences on the client would break the first time one is reworded.
 - **Revisit when:** A screen needs to tell apart two errors with the same status (validation on several fields), or a second language arrives — then the backend should send stable machine-readable error codes for the app to translate.
+
+### MCON-007 — "Near me" is the phone's position first, the saved place second
+- **Phase:** 2 · **Area:** location · **Status:** accepted
+- **What:** The app asks for location once, uses a fix up to five minutes old, and falls back to the place saved in preferences when the phone says no. With both available, the chip on Inicio switches between them; the choice lasts until the app closes and is not saved. The phone's position is never written to preferences, and the radius is the one saved there (5 km by default).
+- **Why:** Prices near where you stand are the point of the app, but a shopper planning from home needs their usual area too. Saving a position the person did not choose to save would be surprising, and a remembered choice is not worth a preference field yet.
+- **Revisit when:** Profile settings arrive (later phase) — choosing and naming the saved place, the radius, and remembering the choice belong there.
+
+### MCON-008 — Search results show no "desde" price
+- **Phase:** 2 · **Area:** search · **Status:** deferred
+- **What:** The mockup shows each result's lowest nearby price. Results show brand and package instead; prices appear on the product screen.
+- **Why:** `GET /v1/products` carries no prices, and fetching a comparison per row would be twenty requests a page.
+- **Revisit when:** The backend can answer a page of products with each one's lowest price near a point, in one request.
+
+### MCON-009 — The 30-day chart ends yesterday and averages every store
+- **Phase:** 2 · **Area:** product · **Status:** accepted
+- **What:** The chart on a product shows the backend's daily history across all stores, which is aggregated once a day. A price that fell today shows in "Cerca tuyo" and in "Bajaron cerca tuyo" but not in the chart until tomorrow, and the chart's trend can read "subió" while today's price is lower.
+- **Why:** The daily history is what the backend keeps long-term; mixing today's current prices into it would put a different kind of number on the last bar. Only stores near the shopper would need a history per store, one request each.
+- **Revisit when:** Shoppers read the chart as contradicting the drop — then add a "hoy" bar from the current prices, marked as such, or ask the backend for history limited to nearby stores.
+
+### MCON-010 — A product screen route in each tab that opens one
+- **Phase:** 2 · **Area:** navigation · **Status:** accepted
+- **What:** `(home)/product/[id]` and `search/product/[id]` both render the same `ProductScreen`, so a product opens on top of the tab it was tapped in and back returns there.
+- **Why:** Each tab has its own stack; one shared route outside the tabs would hide the tab bar and lose the tab's place.
+- **Revisit when:** A third tab needs it (lists, in phase 3) — consider Expo Router's shared groups, `(home,search,lists)`, instead of another file.

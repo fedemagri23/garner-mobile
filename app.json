@@ -33,7 +33,13 @@
           "imageWidth": 76
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Garner usa tu ubicación para mostrarte precios en los supermercados cercanos."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

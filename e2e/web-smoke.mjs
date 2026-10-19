@@ -3,7 +3,8 @@
  * backend: every checkpoint's manual check (docs/checkpoints.md), automated.
  *
  * Needs, already running:
- *   - the backend on :3000, seeded, with CORS_ORIGINS=http://localhost:8081
+ *   - the backend on :3000, freshly seeded (`pnpm run seed`), with
+ *     CORS_ORIGINS=http://localhost:8081
  *   - the app's web build on :8081 (`npm run web`)
  *   - Google Chrome (CHROME_PATH to override /usr/bin/google-chrome)
  *
@@ -26,6 +27,10 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 await page.setViewport({ width: 390, height: 844 });
+
+// The browser stands where the seed's shopper does, by the Obelisco.
+await browser.defaultBrowserContext().overridePermissions(BASE_URL, ['geolocation']);
+await page.setGeolocation({ latitude: -34.6037, longitude: -58.3816 });
 
 const errors = [];
 page.on('pageerror', (error) => errors.push(`page error: ${error.message}`));
@@ -59,6 +64,26 @@ const press = async (label) => {
     },
     { timeout: 15_000 },
     label,
+  );
+  await handle.asElement().click();
+};
+
+// Rows whose accessible name is long are found by what they show. Hidden
+// tabs stay laid out on the web, so only a row actually on top counts.
+const pressContaining = async (shown) => {
+  const handle = await page.waitForFunction(
+    (shown) => {
+      const onTop = (n) => {
+        const box = n.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+        return box.width > 0 && hit !== null && n.contains(hit);
+      };
+      return [...document.querySelectorAll('[role=button]')]
+        .filter((n) => n.innerText.includes(shown))
+        .find(onTop);
+    },
+    { timeout: 15_000 },
+    shown,
   );
   await handle.asElement().click();
 };
@@ -110,8 +135,65 @@ await step('the right password signs in and greets the shopper by name', async (
   await text('Hola, Fede');
   await page.screenshot({ path: `${SHOTS}checkpoint-1-home.png` });
 });
+
+// --- Checkpoint 2: price drops, search, a product's prices ----------------
+
+await step('Inicio shows what dropped nearby, from the phone position', async () => {
+  await text('Tu ubicación');
+  await text('Bajaron cerca tuyo');
+  await text('Leche Entera La Serenísima 1L');
+  await text('−12%');
+  await page.screenshot({ path: `${SHOTS}checkpoint-2-home.png` });
+});
+await step('the location chip switches to the saved place', async () => {
+  await press('Ubicación: Tu ubicación. Cambiar');
+  await text('Centro');
+  await press('Ubicación: Centro. Cambiar');
+  await text('Tu ubicación');
+});
+await step('a dropped product opens with its prices nearby, cheapest first', async () => {
+  await pressContaining('Leche Entera La Serenísima 1L');
+  await text('Cerca tuyo');
+  await text('Día Caballito');
+  await text('el más barato');
+  await text('+ $ 70');
+  await text('Últimos 30 días');
+  await page.screenshot({ path: `${SHOTS}checkpoint-2-product.png` });
+});
+await step('back returns to Inicio', async () => {
+  await press('Volver');
+  await text('Bajaron cerca tuyo');
+});
+await step('search finds a product as you type', async () => {
+  await press('Buscar');
+  await text('6 productos');
+  await typeInto('Buscar productos', 'arroz');
+  await text('1 producto');
+  await text('Arroz Largo Fino 1kg');
+});
+await step('a search with no match says so', async () => {
+  await typeInto('Buscar productos', 'caviar');
+  await text('No encontramos productos para “caviar”.');
+});
+await step('a category chip narrows the list, subcategories included', async () => {
+  await typeInto('Buscar productos', ' ');
+  await press('Lácteos');
+  await text('1 producto');
+  await text('Leche Entera La Serenísima 1L');
+  await press('Bebidas');
+  await text('Agua Mineral 2L');
+});
+await step('a search result opens the product', async () => {
+  await pressContaining('Agua Mineral 2L');
+  await text('Coto Centro');
+  await text('el más barato');
+  await page.screenshot({ path: `${SHOTS}checkpoint-2-search-product.png` });
+  await press('Volver');
+  await press('Todo');
+});
+
 for (const [tab, wanted] of [
-  ['Buscar', 'Buscá productos'],
+  ['Buscar', 'Bebidas'],
   ['Listas', 'Tus listas'],
   ['Compra', 'El modo compra'],
   ['Avisos', 'Las alertas de precio'],

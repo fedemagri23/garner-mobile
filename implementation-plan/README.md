@@ -29,9 +29,14 @@ Expo SDK 58 + Expo Router + TypeScript, in Spanish (es-AR).
 | `POST /v1/auth/register`, `/login`, `/refresh`, `/logout` | session |
 | `GET /v1/users/me` | home greeting |
 
-## Phase 2 — Find a price
+## Phase 2 — Find a price (checkpoint 2 ✅, checkpoint 3 next)
 
 Search, barcode lookup, a product's prices near me, price history.
+
+- **Checkpoint 2 ✅:** location with its fallback, search with category
+  chips and paging, the product screen (prices near me with confidence,
+  30-day history), and Inicio's "Bajaron cerca tuyo".
+- **Checkpoint 3:** barcode scanning and add to list.
 
 - Location: permission, current position (`expo-location`), falling back to
   the saved one from preferences.
@@ -39,7 +44,8 @@ Search, barcode lookup, a product's prices near me, price history.
 - Barcode scanning (`expo-camera`) → product, or "not in the catalog".
 - Product: prices by store near me with the confidence label per price, the
   30-day history, add to list.
-- Home: the list's savings card and price drops nearby.
+- Home: price drops nearby. (The list's savings card needs an optimization
+  run, so it moved to phase 3.)
 
 | Uses | |
 | --- | --- |
@@ -47,11 +53,11 @@ Search, barcode lookup, a product's prices near me, price history.
 | `GET /v1/products/{id}/prices` (lat/lon), `/prices/history` | comparison |
 | `GET\|PATCH /v1/users/me/preferences` | saved location |
 | `GET /v1/stores/nearby` | store picker |
+| `GET /v1/price-drops` (lat/lon) | Bajaron cerca tuyo |
 
-**Backend work first:** the Home mockup's "Bajaron cerca tuyo" has no
-endpoint. It needs `GET /v1/price-drops?latitude&longitude&radiusKm` — recent
-`DerivedPriceUpdated` falls near a location — in the price-intelligence
-module.
+**Backend work first ✅:** `GET /v1/price-drops?latitude&longitude&radiusKm`
+in the price-intelligence module (garner-app `915b86f`), for the Home
+mockup's "Bajaron cerca tuyo".
 
 ## Phase 3 — Lists and where to buy
 
@@ -61,6 +67,7 @@ module.
   alternatives (simplest, balanced, cheapest) with savings, distance and time,
   and the stops on a map (`react-native-maps`).
 - Optimization preferences.
+- Home: the list's savings card, from its latest optimization.
 
 | Uses | |
 | --- | --- |

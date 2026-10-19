@@ -1,9 +1,13 @@
+import { router } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { Screen } from '@/components/screen';
+import { SearchBox } from '@/components/search-box';
 import { Text } from '@/components/text';
 import { useMe } from '@/features/account/use-me';
+import { LocationChip } from '@/features/location/location-chip';
+import { PriceDropList } from '@/features/prices/price-drop-list';
 import { errorMessage } from '@/lib/error-message';
 import { useSession } from '@/session/session-provider';
 import { colors, radii, space } from '@/theme/tokens';
@@ -14,27 +18,34 @@ export default function HomeScreen() {
 
   return (
     <Screen>
-      <View style={styles.greeting}>
-        {me.isPending ? (
-          <ActivityIndicator color={colors.accent} />
-        ) : me.isError ? (
-          <Text tone="danger">{errorMessage(me.error)}</Text>
-        ) : (
-          <Text tone="muted">Hola, {me.data.displayName}</Text>
-        )}
-        <Text variant="title" accessibilityRole="header">
-          ¿Qué compramos hoy?
-        </Text>
+      <View style={styles.header}>
+        <View style={styles.greeting}>
+          {me.isPending ? (
+            <ActivityIndicator color={colors.accent} style={styles.spinner} />
+          ) : me.isError ? (
+            <Text tone="danger">{errorMessage(me.error)}</Text>
+          ) : (
+            <Text tone="muted">Hola, {me.data.displayName}</Text>
+          )}
+          <Text variant="title" accessibilityRole="header">
+            ¿Qué compramos hoy?
+          </Text>
+        </View>
+        <LocationChip />
       </View>
+
+      <SearchBox onPress={() => router.navigate('/search')} />
 
       <View style={styles.card}>
         <Text variant="label" tone="accent">
-          Fase 2
+          Fase 3
         </Text>
         <Text tone="muted">
-          Acá van tu lista con el ahorro estimado y los precios que bajaron cerca tuyo.
+          Acá va tu lista con el ahorro estimado y el plan de dónde comprar.
         </Text>
       </View>
+
+      <PriceDropList />
 
       <Button label="Cerrar sesión" variant="secondary" onPress={signOut} />
     </Screen>
@@ -42,7 +53,15 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  greeting: { gap: space.xs, paddingTop: space.xl },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: space.md,
+    paddingTop: space.xl,
+  },
+  greeting: { flex: 1, gap: space.xs },
+  spinner: { alignSelf: 'flex-start' },
   card: {
     padding: space.xl,
     gap: space.sm,

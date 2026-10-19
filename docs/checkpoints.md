@@ -40,6 +40,14 @@ set the address explicitly: `EXPO_PUBLIC_API_URL=http://<your-ip>:3000 npm start
 **Accounts** (from the seed, password `correct-horse-battery`):
 `shopper@garner.test` (Fede, a shopper) and `admin@garner.test`.
 
+**The demo world** sits around the Obelisco in central Buenos Aires: three
+stores within 5 km (Coto Centro, Carrefour Almagro, Día Caballito), six
+products, and the shopper's saved location, "Centro", at the Obelisco. If you
+are elsewhere, nothing is "near you" — switch to Centro (checkpoint 2, step 2).
+
+Running the backend's e2e tests (`pnpm run test:e2e`) wipes the development
+databases; run `pnpm run seed` again afterwards.
+
 **Automated walk-through** (backend and `npm run web` running, Chrome
 installed): `npm run e2e:web`.
 
@@ -81,3 +89,61 @@ in which phase.
 - The app icon and splash are Expo's defaults; artwork comes later.
 - On iOS 26 the tab bar is the system's Liquid Glass bar and ignores the
   background colour; that is the platform, not a bug.
+
+---
+
+## Checkpoint 2 — What dropped nearby, search, a product's prices
+
+_Phase 2 · 2026-10-19 · backend `86e5d5f`, app: this commit._
+
+What a person can do: see which products got cheaper this week near them,
+search the catalog by name or category, and open a product to see where it
+is cheapest nearby, how sure we are of each price, and how it moved over the
+last 30 days.
+
+Pull both repos, then in `garner-app` run `pnpm run prisma:migrate:deploy`
+(there is a new migration) and `pnpm run seed`; in `garner-mobile`,
+`npm install`.
+
+**Check by hand**
+
+1. Sign in as `shopper@garner.test`. The app asks to use your location —
+   allow it. Inicio shows a chip at the top right, **Tu ubicación**, and the
+   section **Bajaron cerca tuyo** with three products:
+   **Leche Entera La Serenísima 1L** at Día Caballito **−12%**, **Agua Mineral
+   2L** at Coto Centro **−7%**, **Aceite de Girasol 900ml** at Carrefour
+   Almagro **−6%**, each with its price and how far the store is.
+2. **Not in central Buenos Aires?** The section says _"Esta semana no bajó
+   nada cerca tuyo."_ Tap the chip: it switches to **Centro**, the saved
+   place, and the three drops appear. Tap it again to go back. (Deny the
+   location permission instead and the app starts on Centro by itself, with a
+   chip that only shows it.)
+3. Tap the milk. Its screen shows **La Serenísima · 1 L · Leche**, a
+   **Últimos 30 días** chart with its average, and **Cerca tuyo, más barato
+   primero**: Día Caballito **$ 1.320** _el más barato_, Carrefour Almagro
+   **$ 1.390** _+ $ 70_, Coto Centro **$ 1.490** _+ $ 170_, each with its
+   distance and **Visto en las últimas 24 h** in green. Tap the back arrow:
+   back on Inicio.
+4. Tap **Buscar productos** on Inicio: the Buscar tab opens with **6
+   productos** and the chips **Todo, Almacén, Bebidas, Lácteos**.
+5. Type `arroz`: after a moment, **1 producto**, Arroz Largo Fino 1kg. Type
+   `caviar`: _"No encontramos productos para “caviar”."_
+6. Clear the search and tap **Lácteos**: the milk, though it sits in the
+   subcategory Leche. Tap **Bebidas**: Agua Mineral 2L. Tap it: its prices,
+   with Día Caballito cheapest. Back, then **Todo**.
+7. Sign out and in again as a new account (Crear cuenta): with the location
+   allowed, Inicio shows the drops near you; denied, it says to allow it,
+   since a new account has no saved place.
+
+**Known limits**
+
+- Barcode scanning and "add to list" arrive in checkpoint 3; the savings
+  card on Inicio in phase 3, with lists.
+- Search results show brand and package, not the "desde" price of the
+  mockup (MCON-008).
+- The chart ends yesterday: today's drop shows in the prices, not yet in the
+  chart, whose trend can still read "subió" (MCON-009).
+- In Expo Go the location prompt is Expo Go's own; the app's Spanish text
+  ("Garner usa tu ubicación…") shows in a development build.
+- On the web, the browser asks for location instead; `npm run e2e:web` places
+  it at the Obelisco.

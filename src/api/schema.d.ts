@@ -663,6 +663,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/price-drops": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Products whose price fell this week near a point, biggest fall first */
+        get: operations["priceDropsNearby"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/price-sources": {
         parameters: {
             query?: never;
@@ -998,19 +1015,19 @@ export interface components {
             displayName?: string;
         };
         UserPreferencesResponse: {
-            latitude: Record<string, never> | null;
-            longitude: Record<string, never> | null;
-            locationLabel: Record<string, never> | null;
+            latitude: number | null;
+            longitude: number | null;
+            locationLabel: string | null;
             searchRadiusKm: number;
             /** @description Category slugs */
             interests: string[];
         };
         UpdateUserPreferencesRequest: {
             /** @example -34.6037 */
-            latitude?: Record<string, never> | null;
+            latitude?: number | null;
             /** @example -58.3816 */
-            longitude?: Record<string, never> | null;
-            locationLabel?: Record<string, never> | null;
+            longitude?: number | null;
+            locationLabel?: string | null;
             searchRadiusKm?: number;
             /** @description Category slugs, validated against the catalog */
             interests?: string[];
@@ -1027,7 +1044,7 @@ export interface components {
             name: string;
             slug: string;
             /** Format: uuid */
-            parentId: Record<string, never> | null;
+            parentId: string | null;
         };
         ProductBarcodeResponse: {
             code: string;
@@ -1037,15 +1054,15 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
-            description: Record<string, never> | null;
+            description: string | null;
             brand: components["schemas"]["BrandResponse"] | null;
             category: components["schemas"]["CategoryResponse"];
-            packageSize: Record<string, never> | null;
+            packageSize: number | null;
             /** @enum {string} */
             unit: "GRAM" | "KILOGRAM" | "MILLILITER" | "LITER" | "UNIT";
             /** @example 1 L */
-            packageLabel: Record<string, never> | null;
-            imageUrl: Record<string, never> | null;
+            packageLabel: string | null;
+            imageUrl: string | null;
             isActive: boolean;
             barcodes: components["schemas"]["ProductBarcodeResponse"][];
             /** Format: date-time */
@@ -1133,8 +1150,8 @@ export interface components {
             id: string;
             name: string;
             slug: string;
-            logoUrl: Record<string, never> | null;
-            websiteUrl: Record<string, never> | null;
+            logoUrl: string | null;
+            websiteUrl: string | null;
             isActive: boolean;
         };
         CreateSupermarketRequest: {
@@ -1161,12 +1178,12 @@ export interface components {
             name: string;
             addressLine: string;
             city: string;
-            province: Record<string, never> | null;
-            postalCode: Record<string, never> | null;
+            province: string | null;
+            postalCode: string | null;
             country: string;
             latitude: number;
             longitude: number;
-            phone: Record<string, never> | null;
+            phone: string | null;
             isActive: boolean;
             openingHours: components["schemas"]["OpeningHoursResponse"][];
         };
@@ -1183,12 +1200,12 @@ export interface components {
             name: string;
             addressLine: string;
             city: string;
-            province: Record<string, never> | null;
-            postalCode: Record<string, never> | null;
+            province: string | null;
+            postalCode: string | null;
             country: string;
             latitude: number;
             longitude: number;
-            phone: Record<string, never> | null;
+            phone: string | null;
             isActive: boolean;
             openingHours: components["schemas"]["OpeningHoursResponse"][];
             /** @description Great-circle distance from the searched point */
@@ -1252,11 +1269,11 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
-            brandName: Record<string, never> | null;
+            brandName: string | null;
             categoryName: string;
             /** @example 1 L */
-            packageLabel: Record<string, never> | null;
-            imageUrl: Record<string, never> | null;
+            packageLabel: string | null;
+            imageUrl: string | null;
         };
         StoreSummaryResponse: {
             /** Format: uuid */
@@ -1270,11 +1287,11 @@ export interface components {
             product: components["schemas"]["ProductSummaryResponse"];
             /** @example 1.5 */
             quantity: number;
-            notes: Record<string, never> | null;
+            notes: string | null;
             /** @description Minor units (cents) */
-            expectedUnitPriceCents: Record<string, never> | null;
+            expectedUnitPriceCents: number | null;
             /** @description quantity × unit price, rounded */
-            expectedLineTotalCents: Record<string, never> | null;
+            expectedLineTotalCents: number | null;
             selectedStore: components["schemas"]["StoreSummaryResponse"] | null;
             position: number;
         };
@@ -1282,7 +1299,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
-            notes: Record<string, never> | null;
+            notes: string | null;
             /** @example ARS */
             currency: string;
             /** @enum {string} */
@@ -1299,7 +1316,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
-            notes: Record<string, never> | null;
+            notes: string | null;
             /** @example ARS */
             currency: string;
             /** @enum {string} */
@@ -1316,7 +1333,7 @@ export interface components {
         };
         UpdateShoppingListRequest: {
             name?: string;
-            notes?: Record<string, never> | null;
+            notes?: string | null;
             /** @enum {string} */
             sortMode?: "MANUAL" | "NAME" | "CATEGORY" | "STORE";
         };
@@ -1354,11 +1371,11 @@ export interface components {
         };
         UpdateShoppingListItemRequest: {
             quantity?: number;
-            notes?: Record<string, never> | null;
+            notes?: string | null;
             /** @description Minor units (cents) */
-            expectedUnitPriceCents?: Record<string, never> | null;
+            expectedUnitPriceCents?: number | null;
             /** Format: uuid */
-            selectedStoreId?: Record<string, never> | null;
+            selectedStoreId?: string | null;
         };
         StartShoppingSessionRequest: {
             /**
@@ -1393,17 +1410,17 @@ export interface components {
             id: string;
             product: components["schemas"]["ProductSummaryResponse"];
             quantity: number;
-            notes: Record<string, never> | null;
-            expectedUnitPriceCents: Record<string, never> | null;
-            actualUnitPriceCents: Record<string, never> | null;
-            expectedLineTotalCents: Record<string, never> | null;
-            actualLineTotalCents: Record<string, never> | null;
+            notes: string | null;
+            expectedUnitPriceCents: number | null;
+            actualUnitPriceCents: number | null;
+            expectedLineTotalCents: number | null;
+            actualLineTotalCents: number | null;
             store: components["schemas"]["StoreSummaryResponse"] | null;
             isPurchased: boolean;
             /** Format: date-time */
-            purchasedAt: Record<string, never> | null;
+            purchasedAt: string | null;
             /** Format: uuid */
-            sourceListItemId: Record<string, never> | null;
+            sourceListItemId: string | null;
         };
         ShoppingSessionDetailResponse: {
             /** Format: uuid */
@@ -1412,7 +1429,7 @@ export interface components {
              * Format: uuid
              * @description Null once the list is deleted
              */
-            listId: Record<string, never> | null;
+            listId: string | null;
             listName: string;
             currency: string;
             /** @enum {string} */
@@ -1422,11 +1439,11 @@ export interface components {
             /** Format: date-time */
             startedAt: string;
             /** Format: date-time */
-            pausedAt: Record<string, never> | null;
+            pausedAt: string | null;
             /** Format: date-time */
-            completedAt: Record<string, never> | null;
+            completedAt: string | null;
             /** Format: date-time */
-            abandonedAt: Record<string, never> | null;
+            abandonedAt: string | null;
             items: components["schemas"]["ShoppingSessionItemResponse"][];
         };
         ShoppingSessionSummaryResponse: {
@@ -1436,7 +1453,7 @@ export interface components {
              * Format: uuid
              * @description Null once the list is deleted
              */
-            listId: Record<string, never> | null;
+            listId: string | null;
             listName: string;
             currency: string;
             /** @enum {string} */
@@ -1446,11 +1463,11 @@ export interface components {
             /** Format: date-time */
             startedAt: string;
             /** Format: date-time */
-            pausedAt: Record<string, never> | null;
+            pausedAt: string | null;
             /** Format: date-time */
-            completedAt: Record<string, never> | null;
+            completedAt: string | null;
             /** Format: date-time */
-            abandonedAt: Record<string, never> | null;
+            abandonedAt: string | null;
         };
         ShoppingSessionPageResponse: {
             data: components["schemas"]["ShoppingSessionSummaryResponse"][];
@@ -1459,7 +1476,7 @@ export interface components {
         RecordItemProgressRequest: {
             quantity?: number;
             /** @description What was paid per unit, in cents. Null clears it. */
-            actualUnitPriceCents?: Record<string, never> | null;
+            actualUnitPriceCents?: number | null;
             isPurchased?: boolean;
             /**
              * Format: date-time
@@ -1519,7 +1536,7 @@ export interface components {
              */
             status: "ACCEPTED" | "UNDER_REVIEW" | "REJECTED";
             hasPhotoEvidence: boolean;
-            note: Record<string, never> | null;
+            note: string | null;
         };
         ContributionPageResponse: {
             data: components["schemas"]["ContributionResponse"][];
@@ -1548,7 +1565,7 @@ export interface components {
             /** Format: date-time */
             lastObservedAt: string;
             /** @description Null when no location was given */
-            distanceKm: Record<string, never> | null;
+            distanceKm: number | null;
             isOpenNow: boolean;
         };
         PriceComparisonResponse: {
@@ -1558,7 +1575,7 @@ export interface components {
             /** @description Cheapest first */
             prices: components["schemas"]["StorePriceResponse"][];
             /** @description Cheapest price found, in cents */
-            lowestPriceCents: Record<string, never> | null;
+            lowestPriceCents: number | null;
         };
         DailyPricePointResponse: {
             /** @example 2026-09-22 */
@@ -1583,14 +1600,43 @@ export interface components {
             /** Format: uuid */
             productId: string;
             /** Format: uuid */
-            storeId: Record<string, never> | null;
+            storeId: string | null;
             /** @enum {string} */
             range: "30d" | "90d" | "6m" | "1y";
             /** @description Oldest first */
             points: components["schemas"]["DailyPricePointResponse"][];
             trend: components["schemas"]["PriceTrendResponse"] | null;
             /** @description Current derived price; only when a store was named */
-            currentPriceCents: Record<string, never> | null;
+            currentPriceCents: number | null;
+        };
+        PriceDropResponse: {
+            /** Format: uuid */
+            productId: string;
+            productName: string;
+            brandName: string | null;
+            imageUrl: string | null;
+            /** Format: uuid */
+            storeId: string;
+            storeName: string;
+            supermarketName: string;
+            /** @example ARS */
+            currency: string;
+            /** @description Current derived price, in cents */
+            priceCents: number;
+            /** @description The price before the drop began, in cents */
+            previousPriceCents: number;
+            /**
+             * @description Whole percent below the previous price
+             * @example 12
+             */
+            dropPercent: number;
+            /**
+             * Format: date-time
+             * @description When it last fell
+             */
+            droppedAt: string;
+            /** @description Great-circle distance from the searched point */
+            distanceKm: number;
         };
         PriceSourceResponse: {
             /** Format: uuid */
@@ -1606,9 +1652,9 @@ export interface components {
             /** @description Adapter configuration; credentials are never stored here */
             config: Record<string, never>;
             /** Format: date-time */
-            lastRunAt: Record<string, never> | null;
+            lastRunAt: string | null;
             /** Format: date-time */
-            lastSuccessfulRunAt: Record<string, never> | null;
+            lastSuccessfulRunAt: string | null;
             /** @enum {string|null} */
             lastStatus: "STARTED" | "COMPLETED" | "PARTIAL" | "FAILED" | null;
             /** @description Runs that failed outright since the last good one */
@@ -1652,7 +1698,7 @@ export interface components {
             /** Format: date-time */
             startedAt: string;
             /** Format: date-time */
-            finishedAt: Record<string, never> | null;
+            finishedAt: string | null;
             productsSeen: number;
             pricesSeen: number;
             observationsCreated: number;
@@ -1663,14 +1709,14 @@ export interface components {
             unmatchedProducts: number;
             /** @description Prices that could not be placed or failed validation */
             skippedPrices: number;
-            error: Record<string, never> | null;
+            error: string | null;
         };
         ExternalProductLinkResponse: {
             externalProductId: string;
             externalName: string;
-            externalBarcode: Record<string, never> | null;
+            externalBarcode: string | null;
             /** Format: uuid */
-            productId: Record<string, never> | null;
+            productId: string | null;
             /** @enum {string|null} */
             matchMethod: "BARCODE" | "EXTERNAL_ID" | "NORMALIZED_IDENTITY" | "MANUAL" | null;
             /** @enum {string} */
@@ -1779,7 +1825,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
-            listId: Record<string, never> | null;
+            listId: string | null;
             /** @enum {string} */
             status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
             /** @enum {string} */
@@ -1787,23 +1833,23 @@ export interface components {
             /** Format: date-time */
             requestedAt: string;
             /** Format: date-time */
-            completedAt: Record<string, never> | null;
-            error: Record<string, never> | null;
+            completedAt: string | null;
+            error: string | null;
             result: components["schemas"]["OptimizationResultResponse"] | null;
         };
         OptimizationSummaryResponse: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
-            listId: Record<string, never> | null;
+            listId: string | null;
             /** @enum {string} */
             status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
             /** @enum {string} */
             mode: "CHEAPEST" | "BEST_BALANCE" | "SIMPLEST";
             /** Format: date-time */
             requestedAt: string;
-            recommendedTotalCents: Record<string, never> | null;
-            recommendedStoreCount: Record<string, never> | null;
+            recommendedTotalCents: number | null;
+            recommendedStoreCount: number | null;
         };
         OptimizationPageResponse: {
             data: components["schemas"]["OptimizationSummaryResponse"][];
@@ -1859,13 +1905,13 @@ export interface components {
              * Format: uuid
              * @description Null watches anywhere nearby
              */
-            storeId: Record<string, never> | null;
-            thresholdCents: Record<string, never> | null;
-            dropPercent: Record<string, never> | null;
-            radiusKm: Record<string, never> | null;
+            storeId: string | null;
+            thresholdCents: number | null;
+            dropPercent: number | null;
+            radiusKm: number | null;
             isEnabled: boolean;
             /** Format: date-time */
-            lastTriggeredAt: Record<string, never> | null;
+            lastTriggeredAt: string | null;
             /** Format: date-time */
             createdAt: string;
         };
@@ -1886,17 +1932,17 @@ export interface components {
             title: string;
             body: string;
             /** Format: uuid */
-            productId: Record<string, never> | null;
+            productId: string | null;
             /** Format: uuid */
-            storeId: Record<string, never> | null;
+            storeId: string | null;
             /** Format: uuid */
-            listId: Record<string, never> | null;
+            listId: string | null;
             /** @enum {string} */
             status: "PENDING" | "SENT" | "FAILED";
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
-            readAt: Record<string, never> | null;
+            readAt: string | null;
         };
         NotificationPageResponse: {
             data: components["schemas"]["NotificationResponse"][];
@@ -1907,8 +1953,8 @@ export interface components {
         NotificationPreferencesResponse: {
             priceAlertsEnabled: boolean;
             remindersEnabled: boolean;
-            quietHoursStartUtc: Record<string, never> | null;
-            quietHoursEndUtc: Record<string, never> | null;
+            quietHoursStartUtc: number | null;
+            quietHoursEndUtc: number | null;
             /** @description The least time between two messages from one alert */
             minMinutesBetweenAlerts: number;
             /** @description Whether alerts are also emailed. Off until turned on. */
@@ -1916,9 +1962,9 @@ export interface components {
             /** @description Whether this server can send email at all */
             emailAvailable: boolean;
             /** Format: date-time */
-            emailOptedInAt: Record<string, never> | null;
+            emailOptedInAt: string | null;
             /** Format: date-time */
-            emailOptedOutAt: Record<string, never> | null;
+            emailOptedOutAt: string | null;
         };
         UpdateNotificationPreferencesRequest: {
             priceAlertsEnabled?: boolean;
@@ -1926,8 +1972,8 @@ export interface components {
             emailEnabled?: boolean;
             remindersEnabled?: boolean;
             /** @description Set with quietHoursEndUtc, or null to be reachable always */
-            quietHoursStartUtc?: Record<string, never> | null;
-            quietHoursEndUtc?: Record<string, never> | null;
+            quietHoursStartUtc?: number | null;
+            quietHoursEndUtc?: number | null;
             minMinutesBetweenAlerts?: number;
         };
     };
@@ -1994,6 +2040,7 @@ export type PriceComparisonResponse = components['schemas']['PriceComparisonResp
 export type DailyPricePointResponse = components['schemas']['DailyPricePointResponse'];
 export type PriceTrendResponse = components['schemas']['PriceTrendResponse'];
 export type PriceHistoryResponse = components['schemas']['PriceHistoryResponse'];
+export type PriceDropResponse = components['schemas']['PriceDropResponse'];
 export type PriceSourceResponse = components['schemas']['PriceSourceResponse'];
 export type AdaptersResponse = components['schemas']['AdaptersResponse'];
 export type CreatePriceSourceRequest = components['schemas']['CreatePriceSourceRequest'];
@@ -3356,6 +3403,30 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    priceDropsNearby: {
+        parameters: {
+            query: {
+                latitude: number;
+                longitude: number;
+                radiusKm?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceDropResponse"][];
+                };
             };
         };
     };

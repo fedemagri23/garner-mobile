@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 import type { ColorValue } from 'react-native';
 
+import { LocationProvider } from '@/features/location/location-provider';
 import { colors, fonts } from '@/theme/tokens';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -21,6 +22,7 @@ function tabIcon(name: IconName) {
  */
 export default function AppTabsWeb() {
   return (
+    <LocationProvider>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -36,5 +38,6 @@ export default function AppTabsWeb() {
       <Tabs.Screen name="shop" options={{ title: 'Compra', tabBarIcon: tabIcon('cart-outline') }} />
       <Tabs.Screen name="inbox" options={{ title: 'Avisos', tabBarIcon: tabIcon('notifications-outline') }} />
     </Tabs>
+    </LocationProvider>
   );
 }
