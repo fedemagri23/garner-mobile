@@ -24,7 +24,7 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Fix:** Fixed in the backend, whose contract test now fails on untyped fields; the schema here was regenerated.
 
 ### MBUG-004 — The web walk-through tapped a row on a hidden tab
-- **Phase:** 2 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** this checkpoint's commit
+- **Phase:** 2 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** ae0c923
 - **Symptom:** "A search result opens the product" timed out: tapping "Agua Mineral 2L" in Buscar never showed its prices.
 - **Cause:** On the web, an inactive tab stays laid out, only covered. The helper picked the first row with that text that had a layout box, which was the same product in Inicio's "Bajaron cerca tuyo", so the product opened on the hidden Inicio stack.
 - **Fix:** The helper only taps an element that is on top at its own centre (`elementFromPoint`), the way a finger would.

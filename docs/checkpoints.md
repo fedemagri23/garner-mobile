@@ -94,7 +94,7 @@ in which phase.
 
 ## Checkpoint 2 — What dropped nearby, search, a product's prices
 
-_Phase 2 · 2026-10-19 · backend `86e5d5f`, app: this commit._
+_Phase 2 · 2026-10-19 · backend `86e5d5f`, app `ae0c923`._
 
 What a person can do: see which products got cheaper this week near them,
 search the catalog by name or category, and open a product to see where it
