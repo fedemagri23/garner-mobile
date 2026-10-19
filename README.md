@@ -33,9 +33,12 @@ npm run lint
 npm run typecheck
 npm test
 npm run api:check     # the generated client matches the backend contract
+npm run e2e:web       # walks the checkpoints in Chrome against a running backend
 ```
 
-CI runs all four on every push, plus an Android bundle.
+CI runs the first four on every push, plus an Android bundle. `e2e:web` needs
+the backend and `npm run web` running; see `docs/checkpoints.md`, which also
+has every checkpoint's manual check.
 
 ## The API client
 

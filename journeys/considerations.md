@@ -35,3 +35,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** Strings are written in Spanish (es-AR) inline in the components.
 - **Why:** The launch market is Buenos Aires; an i18n framework before a second language exists is structure without a user.
 - **Revisit when:** A second language or market is planned — extract strings then, before the app grows further.
+
+### MCON-006 — The API's error messages are English; screens translate what they expect
+- **Phase:** 1 · **Area:** errors · **Status:** accepted
+- **What:** The backend writes error messages in English. A screen passes Spanish wording for the statuses it knows the meaning of (409 on sign-up means the email is taken); anything unexpected shows the server's English message.
+- **Why:** Mapping statuses per screen is enough for the handful of errors each flow can produce, and needs no backend change. Showing raw server text to Spanish-speaking users everywhere is not acceptable; translating server sentences on the client would break the first time one is reworded.
+- **Revisit when:** A screen needs to tell apart two errors with the same status (validation on several fields), or a second language arrives — then the backend should send stable machine-readable error codes for the app to translate.

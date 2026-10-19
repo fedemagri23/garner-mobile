@@ -24,7 +24,12 @@ export default function SignUpScreen() {
     try {
       await signUp({ displayName: displayName.trim(), email: email.trim(), password });
     } catch (failure) {
-      setError(errorMessage(failure));
+      setError(
+        errorMessage(failure, {
+          409: 'Ya existe una cuenta con ese email.',
+          400: 'Revisá los datos: un email válido y una contraseña de al menos 10 caracteres.',
+        }),
+      );
       setSubmitting(false);
     }
   };
@@ -61,6 +66,9 @@ export default function SignUpScreen() {
             textContentType="newPassword"
             onSubmitEditing={submit}
           />
+          <Text variant="caption" tone="muted">
+            Al menos 10 caracteres.
+          </Text>
           {error ? (
             <Text tone="danger" accessibilityLiveRegion="polite" accessibilityRole="alert">
               {error}

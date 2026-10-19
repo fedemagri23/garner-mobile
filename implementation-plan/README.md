@@ -1,14 +1,17 @@
 # Implementation plan
 
-The Garner mobile app, built in phases. Each phase ends usable on a phone,
-with lint, typecheck, tests and CI green, its journeys logged, and a commit.
+The Garner mobile app, built in phases. Each phase is delivered as one or
+more **usable checkpoints**: wherever work stops, the app runs against the
+real backend and can be checked by hand, following `docs/checkpoints.md`
+(automated by `npm run e2e:web`). Lint, typecheck, tests and CI are green,
+journeys logged, and the checkpoint committed.
 
 The screens follow the mockups (Garner mobile mockups canvas). The API is the
 backend's committed contract, `openapi.json` in `garner-app`; the backend's
 `docs/client-guide.md` is the rules of the road (auth, errors, money,
 offline retries).
 
-## Phase 1 — Foundation ✅
+## Phase 1 — Foundation ✅ (checkpoint 1)
 
 Expo SDK 58 + Expo Router + TypeScript, in Spanish (es-AR).
 
