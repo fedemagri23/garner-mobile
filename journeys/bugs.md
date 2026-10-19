@@ -12,7 +12,7 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Fix:** Fixed in the backend, with a test comparing the committed contract with what the app serves; the schema here was regenerated.
 
 ### MBUG-002 — On the web, the tab bar covered the top of every screen
-- **Phase:** 1 · **Area:** navigation · **Scope:** production code · **Found by:** web smoke test (screenshot) · **Fixed in:** (checkpoint 1 commit)
+- **Phase:** 1 · **Area:** navigation · **Scope:** production code · **Found by:** web smoke test (screenshot) · **Fixed in:** 2cfeee9
 - **Symptom:** In the browser the greeting "Hola, Fede" was hidden under a floating tab bar at the top, and the fifth tab, Avisos, was cut off at phone width.
 - **Cause:** Native tabs render on the web as a floating top bar; they are designed for iOS and Android.
 - **Fix:** A web-only layout (`(app)/_layout.web.tsx`) uses Expo Router's JavaScript tabs, a bottom bar like the mockups'. Native platforms keep the native tab bar.
