@@ -419,7 +419,7 @@ storage and the network state). Nothing changes in `garner-app`.
 
 ## Checkpoint 8 — Report a price
 
-_Phase 5 · 2026-10-21 · backend `ab5da96`, app: this commit._
+_Phase 5 · 2026-10-21 · backend `ab5da96`, app `2ebc026`._
 
 What a person can do: report the price on a shelf, with a photo of the label
 if they want; see every price they have reported and where it stands; and do
