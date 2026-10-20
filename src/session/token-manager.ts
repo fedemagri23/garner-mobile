@@ -24,6 +24,15 @@ export interface TokenManagerOptions {
   storage: RefreshTokenStorage;
   /** Exchanges a refresh token for a new pair; throws when the server refuses. */
   refresh: (refreshToken: string) => Promise<TokenPair>;
+  /**
+   * Whether a failed refresh means the server refused the token (the session
+   * is over) rather than the server being out of reach (the session is not).
+   * Without a connection a refresh fails too, and signing out then would
+   * throw away a good session — and every change waiting to be sent — just
+   * because the phone is in a tunnel. Defaults to treating any failure as a
+   * refusal.
+   */
+  isRefusal?: (error: unknown) => boolean;
   /** Called once when the session is lost — refused refresh, or sign-out. */
   onSignedOut?: () => void;
   now?: () => number;
@@ -36,6 +45,14 @@ export class SessionExpiredError extends Error {
   constructor() {
     super('The session has expired; sign in again.');
     this.name = 'SessionExpiredError';
+  }
+}
+
+/** The refresh could not be tried or finished; the session is intact. */
+export class SessionUnavailableError extends Error {
+  constructor() {
+    super('Could not reach the server to renew the session.');
+    this.name = 'SessionUnavailableError';
   }
 }
 
@@ -71,7 +88,10 @@ export function createTokenManager(options: TokenManagerOptions) {
         let pair: TokenPair;
         try {
           pair = await options.refresh(refreshToken);
-        } catch {
+        } catch (error) {
+          if (options.isRefusal && !options.isRefusal(error)) {
+            throw new SessionUnavailableError();
+          }
           await forget();
           options.onSignedOut?.();
           throw new SessionExpiredError();

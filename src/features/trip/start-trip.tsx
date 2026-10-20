@@ -5,6 +5,8 @@ import { Screen } from '@/components/screen';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useLists } from '@/features/lists/use-lists';
+import { useOutbox } from '@/features/outbox/outbox-provider';
+import { SyncBanner } from '@/features/outbox/sync-banner';
 import { errorMessage } from '@/lib/error-message';
 import { productCount } from '@/lib/format';
 import { colors, radii, space } from '@/theme/tokens';
@@ -15,10 +17,14 @@ import { useStartTrip } from './use-trip';
 export function StartTrip() {
   const lists = useLists();
   const start = useStartTrip();
+  // A new trip waits for the last one to reach the server: until then the
+  // server still has that one open, and would hand it back.
+  const { pending } = useOutbox();
   const withItems = (lists.data ?? []).filter((list) => list.totals.itemCount > 0);
 
   return (
     <Screen>
+      <SyncBanner />
       <View style={styles.header}>
         <Text variant="title" accessibilityRole="header">
           Compra
@@ -47,13 +53,18 @@ export function StartTrip() {
               label="Empezar"
               accessibilityLabel={`Empezar la compra de ${list.name}`}
               loading={start.isPending && start.variables?.listId === list.id}
-              disabled={start.isPending}
+              disabled={start.isPending || pending > 0}
               onPress={() => start.mutate({ listId: list.id })}
               style={styles.start}
             />
           </View>
         ))
       )}
+      {pending > 0 ? (
+        <Text variant="caption" tone="muted">
+          Estamos enviando tu compra anterior; en cuanto llegue podés empezar otra.
+        </Text>
+      ) : null}
       {start.isError ? <Text tone="danger">{errorMessage(start.error)}</Text> : null}
     </Screen>
   );

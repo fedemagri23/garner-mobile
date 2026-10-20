@@ -370,3 +370,47 @@ Pull both repos; nothing new to install. Run `pnpm run seed` in
   trip in progress (MCON-023).
 - A trip started from Compra has no stores, so its prices are not shared
   (MCON-024).
+
+---
+
+## Checkpoint 7 — Shopping without a connection
+
+_Phase 4 · 2026-10-21 · backend `0076b98`, app: this commit._
+
+What a person can do: keep shopping when the signal drops. Ticks, prices
+paid, pausing and finishing are kept on the phone and sent, in order, when
+the connection returns; the screen says what is still waiting.
+
+Pull `garner-mobile` and run `npm install` (two small packages are new: local
+storage and the network state). Nothing changes in `garner-app`.
+
+**Check by hand** (this needs the phone — it cannot be tried at a desk)
+
+1. Sign in as `shopper@garner.test`, **Compra** → **Empezar** on **Compra
+   semanal**. With a signal, tick a product: no banner, nothing waiting.
+2. Turn on **airplane mode** (or walk into a lift). A dark banner appears:
+   **Sin conexión · lo que marques se envía al volver**.
+3. Tick **Pan Lactal**, then type a price for the highlighted product and tap
+   **Listo**. Both work at once; the banner says **2 cambios esperan para
+   enviarse**, and each changed line says **por enviar** in orange.
+4. **Close the app completely** (swipe it away), still offline, and open it
+   again: you are still signed in, on the same trip, with your two changes
+   still waiting. (Before, this opened Ingresar.)
+5. Turn airplane mode off. Within a few seconds the banner says **Enviando…**
+   and then **Todo enviado**, and the orange **por enviar** goes away. The
+   server now has them: open the trip on another device, or check it at the
+   desk with `GET /v1/shopping-sessions`.
+6. Back offline, **Terminar la compra** → **Terminar**: the summary appears at
+   once, with **Tu compra se envía cuando vuelva la conexión**. Turn the
+   signal on: the note goes away, and Compra shows the lists again.
+7. While changes are still waiting, **Empezar** is off: _"Estamos enviando tu
+   compra anterior"_.
+
+**Known limits**
+
+- **Empezar** needs a connection (MCON-026); a trip finished offline does not
+  show its summary again if the app is restarted before it is sent.
+- Signing out erases changes not yet sent (MCON-027).
+- "Sin conexión" is the phone's word plus the last request's (MCON-028).
+- Not yet tried on a real phone: only in the browser, with Chrome's offline
+  mode, and with unit tests for the queue, the storage and the session.

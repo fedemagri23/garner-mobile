@@ -133,10 +133,11 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **Revisit when:** The backend keeps that limit per currency, or as a percentage of the list's total.
 
 ### MCON-022 — Shopping needs a connection until checkpoint 7
-- **Phase:** 4 · **Area:** trip · **Status:** deferred
+- **Phase:** 4 · **Area:** trip · **Status:** resolved
 - **What:** Every tick, price and status change goes straight to the backend. The screen changes at once and puts a line back if the request fails, but nothing is kept for later: without a connection, ticks fail.
 - **Why:** The plan splits phase 4 in two: the trip itself first, then the persisted outbox that replays changes in order when the connection returns (the spec's §27).
 - **Revisit when:** Checkpoint 7, next.
+- **Resolved:** by checkpoint 7 — see MCON-025.
 
 ### MCON-023 — A trip is fixed when it starts
 - **Phase:** 4 · **Area:** trip · **Status:** accepted
@@ -149,3 +150,27 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** Starting from Compra uses the list as it is, where items usually have no store; prices typed there are kept on the trip but cannot become price reports, since a price needs a store. The summary says so. Starting from a plan gives every line its store, and its prices are shared on "Terminar".
 - **Why:** The backend turns a paid price into a report only with its store (garner-app contributions); asking for the store on each tick would slow the trip down.
 - **Revisit when:** Shoppers often buy without a plan — then let Compra start a trip at one chosen store (the backend's `storeId`), so those prices count too.
+
+### MCON-025 — Changes on a trip are queued on the phone, in order, and replayed
+- **Phase:** 4 · **Area:** offline · **Status:** accepted
+- **What:** Every tick, price and trip status change (pause, resume, finish, abandon) is added to a queue and written to the phone before anything is sent, then sent in order. It is retried every 5 seconds while anything waits, when the phone reports a network, and when the app returns to the foreground. Changes to one line merge into one; the server's answer replaces the phone's copy once the queue is empty. The last trip the server described is also kept on the phone, so a trip opens without a connection. The screen always shows the server's trip with the waiting changes on top, and says what waits ("Por enviar" on lines, a banner on top).
+- **Why:** Each change is an absolute value, so sending one twice, or again after a lost answer, lands the same state; that is what makes blind retries safe, and what the backend's idempotent updates were built for. The queue is plain data in AsyncStorage (a few small JSON entries), enough for one trip.
+- **Revisit when:** A queue outgrows storage (price reports from phase 5 add to it), or retries need backing off: today every wait is 5 seconds, however long the connection is gone.
+
+### MCON-026 — Starting a trip needs a connection, and a new one waits for the last
+- **Phase:** 4 · **Area:** offline · **Status:** accepted
+- **What:** A trip begins with the server's copy of the list, so Empezar needs a connection. While changes from the previous trip are still waiting to be sent, Empezar is off, since the server would still have that trip open and hand it back. A trip finished offline shows its summary at once and disappears from Compra; after a restart before it reaches the server the summary is not shown again.
+- **Why:** Starting offline would need the list on the phone and a way to merge a trip made from a possibly stale copy; most people start a trip with a signal, in the street or at home.
+- **Revisit when:** People start trips inside shops with no signal — then keep the lists on the phone and start the trip locally with its own id.
+
+### MCON-027 — Signing out throws away what has not been sent
+- **Phase:** 4 · **Area:** offline · **Status:** deferred
+- **What:** "Cerrar sesión" erases the queue and the remembered trip along with the session, so unsent changes are lost. Nothing warns about it yet.
+- **Why:** The next person to sign in on the phone must not inherit someone else's trip, and sending a signed-out user's changes is not possible.
+- **Revisit when:** Sign-out becomes easy to reach by accident (profile and settings, a later phase) — ask first when changes are waiting.
+
+### MCON-028 — "Offline" is the phone's word plus the last request's
+- **Phase:** 4 · **Area:** offline · **Status:** accepted
+- **What:** The banner says "Sin conexión" when the phone reports no network, or when the last request failed to reach the server. A phone with a weak signal that connects but times out looks online until a request fails; and a server that is down looks like a bad connection.
+- **Why:** There is no honest way to know the server is reachable without asking it, and every send is that question.
+- **Revisit when:** People are told they are offline when only the server is down — then tell the two apart with a request to the health endpoint.

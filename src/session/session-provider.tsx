@@ -10,11 +10,12 @@ import {
 } from 'react';
 
 import { createAuthFetch } from '@/api/auth-fetch';
-import { createApi, unwrap, type Api } from '@/api/client';
+import { clearOutboxStorage } from '@/features/outbox/storage';
+import { ApiError, createApi, unwrap, type Api } from '@/api/client';
 import { apiBaseUrl } from '@/config';
 
 import { refreshTokenStorage } from './refresh-token-storage';
-import { createTokenManager } from './token-manager';
+import { createTokenManager, SessionUnavailableError } from './token-manager';
 
 export type SessionStatus = 'restoring' | 'signedOut' | 'signedIn';
 
@@ -41,6 +42,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       storage: refreshTokenStorage(),
       refresh: (refreshToken) =>
         unwrap(publicApi.POST('/v1/auth/refresh', { body: { refreshToken } })),
+      // Only the server saying no ends the session; no connection, a busy
+      // server or a rate limit do not.
+      isRefusal: (error) =>
+        error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 429,
       onSignedOut: () => setStatus('signedOut'),
     });
     return { api: createApi(baseUrl, createAuthFetch(tokens)), publicApi, tokens };
@@ -59,8 +64,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       try {
         await tokens.accessToken();
         if (!cancelled) setStatus('signedIn');
-      } catch {
-        if (!cancelled) setStatus('signedOut');
+      } catch (error) {
+        // Opened without a connection: the session is still there, so open
+        // the app on it; requests renew it when they can.
+        if (!cancelled) setStatus(error instanceof SessionUnavailableError ? 'signedIn' : 'signedOut');
       }
     })();
 
@@ -94,6 +101,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       await publicApi.POST('/v1/auth/logout', { body: { refreshToken } }).catch(() => undefined);
     }
     await tokens.signOut();
+    // The next account must not inherit this one's trip or unsent changes.
+    await clearOutboxStorage();
     queryClient.clear();
   }, [publicApi, tokens, queryClient]);
 

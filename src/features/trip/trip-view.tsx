@@ -5,14 +5,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { Sheet } from '@/components/sheet';
+import { pendingItemIds } from '@/features/outbox/changes';
+import { useOutbox } from '@/features/outbox/outbox-provider';
+import { SyncBanner } from '@/features/outbox/sync-banner';
 import { Text } from '@/components/text';
-import { errorMessage } from '@/lib/error-message';
 import { formatPrice } from '@/lib/format';
 import { parsePrice, priceInput } from '@/lib/parse-price';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
 import { firstOpenStop, spentAt, stopsOf, type Stop, type Trip, type TripItem } from './stops';
-import { useRecordItem, useTripStatus } from './use-trip';
+import { useTripActions } from './use-trip';
 
 /**
  * Shopping, one stop at a time: the next thing to pick up with the price on
@@ -24,8 +26,9 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
   const [focusId, setFocusId] = useState<string | null>(null);
   const [options, setOptions] = useState(false);
   const [finishing, setFinishing] = useState(false);
-  const record = useRecordItem(trip);
-  const status = useTripStatus(trip.id);
+  const actions = useTripActions(trip);
+  const { queue } = useOutbox();
+  const waiting = pendingItemIds(queue, trip.id);
 
   const stop = stops[Math.min(stopIndex, stops.length - 1)];
   const open = stop.items.filter((item) => !item.isPurchased);
@@ -40,12 +43,10 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
   };
 
   const toggle = (item: TripItem) =>
-    record.mutate({
-      itemId: item.id,
-      progress: item.isPurchased
-        ? { isPurchased: false }
-        : { isPurchased: true, purchasedAt: new Date().toISOString() },
-    });
+    actions.record(
+      item.id,
+      item.isPurchased ? { isPurchased: false } : { isPurchased: true, purchasedAt: new Date().toISOString() },
+    );
 
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
@@ -53,14 +54,15 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
         contentContainerStyle={styles.content}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled">
+        <SyncBanner />
+
         {trip.status === 'PAUSED' ? (
           <View style={styles.paused} accessibilityRole="alert">
             <Text style={styles.pausedText}>Compra en pausa</Text>
             <Button
               label="Seguir"
               variant="secondary"
-              loading={status.isPending}
-              onPress={() => status.mutate('resume')}
+              onPress={() => actions.status('resume')}
               style={styles.pausedButton}
             />
           </View>
@@ -98,15 +100,11 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
             key={focus.id}
             item={focus}
             currency={trip.currency}
-            busy={record.isPending}
             onDone={(cents) =>
-              record.mutate({
-                itemId: focus.id,
-                progress: {
-                  isPurchased: true,
-                  actualUnitPriceCents: cents,
-                  purchasedAt: new Date().toISOString(),
-                },
+              actions.record(focus.id, {
+                isPurchased: true,
+                actualUnitPriceCents: cents,
+                purchasedAt: new Date().toISOString(),
               })
             }
           />
@@ -116,9 +114,6 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
             <Text variant="bodyStrong">Todo listo en esta parada.</Text>
           </View>
         )}
-        {record.isError ? (
-          <Text tone="danger">{errorMessage(record.error, { 409: 'Esta compra ya terminó.' })}</Text>
-        ) : null}
 
         <View style={styles.rows}>
           {stop.items.map((item, index) => (
@@ -127,6 +122,7 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
               item={item}
               currency={trip.currency}
               focused={item.id === focus?.id}
+              waiting={waiting.has(item.id)}
               last={index === stop.items.length - 1}
               onToggle={() => toggle(item)}
               onFocus={() => setFocusId(item.id)}
@@ -152,12 +148,14 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
           setOptions(false);
           setFinishing(true);
         }}
+        actions={actions}
       />
       <FinishSheet
         trip={trip}
         visible={finishing}
         onClose={() => setFinishing(false)}
         onCompleted={onCompleted}
+        actions={actions}
       />
     </SafeAreaView>
   );
@@ -167,12 +165,10 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
 function FocusCard({
   item,
   currency,
-  busy,
   onDone,
 }: {
   item: TripItem;
   currency: string;
-  busy: boolean;
   onDone: (cents: number | null) => void;
 }) {
   const [text, setText] = useState(item.expectedUnitPriceCents ? priceInput(item.expectedUnitPriceCents) : '');
@@ -212,7 +208,7 @@ function FocusCard({
         </View>
         <Button
           label="Listo"
-          disabled={invalid || busy}
+          disabled={invalid}
           onPress={() => onDone(cents)}
           style={styles.doneButton}
         />
@@ -230,6 +226,7 @@ function Row({
   item,
   currency,
   focused,
+  waiting,
   last,
   onToggle,
   onFocus,
@@ -237,6 +234,8 @@ function Row({
   item: TripItem;
   currency: string;
   focused: boolean;
+  /** Changed here, not yet on the server. */
+  waiting: boolean;
   last: boolean;
   onToggle: () => void;
   onFocus: () => void;
@@ -250,6 +249,7 @@ function Row({
       ? `Esperado ${formatPrice(item.expectedUnitPriceCents, currency)} c/u`
       : 'Sin precio esperado';
   const total = item.isPurchased ? (item.actualLineTotalCents ?? item.expectedLineTotalCents) : null;
+  const waitingNote = waiting ? ' · por enviar' : '';
 
   return (
     <View style={[styles.row, !last && styles.divider, focused && styles.rowFocused]}>
@@ -269,13 +269,14 @@ function Row({
       </Pressable>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${name}. ${note}`}
+        accessibilityLabel={`${name}. ${note}${waitingNote}`}
         disabled={item.isPurchased}
         onPress={onFocus}
         style={styles.rowText}>
         <Text style={[styles.rowName, item.isPurchased && styles.rowNameDone]}>{name}</Text>
-        <Text variant="caption" tone="muted">
+        <Text variant="caption" tone={waiting ? 'signal' : 'muted'}>
           {note}
+          {waitingNote}
         </Text>
       </Pressable>
       {total !== null ? <Text style={styles.rowPrice}>{formatPrice(total, currency)}</Text> : null}
@@ -320,28 +321,30 @@ function StopFooter({
   );
 }
 
+type Actions = ReturnType<typeof useTripActions>;
+
 function OptionsSheet({
   trip,
   visible,
   onClose,
   onFinish,
+  actions,
 }: {
   trip: Trip;
   visible: boolean;
   onClose: () => void;
   onFinish: () => void;
+  actions: Actions;
 }) {
-  const status = useTripStatus(trip.id);
   const [abandoning, setAbandoning] = useState(false);
 
   const close = () => {
     setAbandoning(false);
-    status.reset();
     onClose();
   };
 
-  const run = async (action: 'pause' | 'resume' | 'abandon') => {
-    await status.mutateAsync(action);
+  const run = (action: 'pause' | 'resume' | 'abandon') => {
+    actions.status(action);
     close();
   };
 
@@ -353,36 +356,20 @@ function OptionsSheet({
             ¿Abandonar la compra? Lo que marcaste no se guarda como compra ni se comparte. Tu lista
             queda como está.
           </Text>
-          <Button
-            label="Sí, abandonar"
-            loading={status.isPending}
-            onPress={() => run('abandon').catch(() => undefined)}
-            style={styles.danger}
-          />
+          <Button label="Sí, abandonar" onPress={() => run('abandon')} style={styles.danger} />
           <Button label="Cancelar" variant="secondary" onPress={() => setAbandoning(false)} />
         </View>
       ) : (
         <View style={styles.sheetActions}>
           <Button label="Terminar la compra" onPress={onFinish} />
           {trip.status === 'PAUSED' ? (
-            <Button
-              label="Seguir la compra"
-              variant="secondary"
-              loading={status.isPending}
-              onPress={() => run('resume').catch(() => undefined)}
-            />
+            <Button label="Seguir la compra" variant="secondary" onPress={() => run('resume')} />
           ) : (
-            <Button
-              label="Pausar"
-              variant="secondary"
-              loading={status.isPending}
-              onPress={() => run('pause').catch(() => undefined)}
-            />
+            <Button label="Pausar" variant="secondary" onPress={() => run('pause')} />
           )}
           <Button label="Abandonar" variant="secondary" onPress={() => setAbandoning(true)} />
         </View>
       )}
-      {status.isError ? <Text tone="danger">{errorMessage(status.error)}</Text> : null}
     </Sheet>
   );
 }
@@ -392,37 +379,33 @@ function FinishSheet({
   visible,
   onClose,
   onCompleted,
+  actions,
 }: {
   trip: Trip;
   visible: boolean;
   onClose: () => void;
   onCompleted: (trip: Trip) => void;
+  actions: Actions;
 }) {
-  const status = useTripStatus(trip.id);
   const { itemCount, purchasedItemCount } = trip.totals;
   const left = itemCount - purchasedItemCount;
 
-  const close = () => {
-    status.reset();
+  const finish = () => {
+    // Done on the phone at once; the server hears of it when it can.
+    const completed = actions.status('complete');
     onClose();
-  };
-
-  const finish = async () => {
-    const completed = await status.mutateAsync('complete');
-    close();
     onCompleted(completed);
   };
 
   return (
-    <Sheet title="Terminar la compra" visible={visible} onClose={close}>
+    <Sheet title="Terminar la compra" visible={visible} onClose={onClose}>
       <Text>
         {left === 0
           ? `Compraste los ${itemCount} productos.`
           : `Compraste ${purchasedItemCount} de ${itemCount} productos. Tu lista no cambia: lo que falta sigue ahí para la próxima.`}
       </Text>
-      <Button label="Terminar" loading={status.isPending} onPress={() => finish().catch(() => undefined)} />
-      <Button label="Seguir comprando" variant="secondary" onPress={close} />
-      {status.isError ? <Text tone="danger">{errorMessage(status.error)}</Text> : null}
+      <Button label="Terminar" onPress={finish} />
+      <Button label="Seguir comprando" variant="secondary" onPress={onClose} />
     </Sheet>
   );
 }

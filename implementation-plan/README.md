@@ -85,14 +85,16 @@ mockup's "Bajaron cerca tuyo".
 | `POST /v1/shopping-lists/{id}/optimize`, `GET /v1/optimizations/{id}` | where to buy |
 | `GET\|PATCH /v1/optimization-preferences` | limits |
 
-## Phase 4 — Shopping mode, offline (checkpoint 6 ✅, checkpoint 7 next)
+## Phase 4 — Shopping mode, offline ✅ (checkpoints 6 and 7)
 
 - **Checkpoint 6 ✅:** the trip — start from a list or from a plan (each
   line at the plan's store and price, garner-app `4fed85a`), one stop at a
   time, tick items off with the price paid, pause, finish with a summary, or
   abandon. Online only.
-- **Checkpoint 7:** offline — the persisted outbox, replay on reconnect,
-  sync state on screen, and price reports with their own client id.
+- **Checkpoint 7 ✅:** offline — the persisted outbox, replay in order on
+  reconnect, sync state on screen, a session that survives losing the
+  signal, and a trip that opens without one. Price reports with their own
+  client id belong to phase 5, where the app first reports prices by hand.
 
 The spec's hardest requirement (§27): a trip survives a lost connection.
 

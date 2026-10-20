@@ -36,6 +36,23 @@ const STEPHANSPLATZ = { latitude: 48.2085, longitude: 16.3721 };
 
 await browser.defaultBrowserContext().overridePermissions(BASE_URL, ['geolocation']);
 
+const API_URL = process.env.E2E_API_URL ?? 'http://localhost:3000';
+
+/** What the server itself says, to check that what the app showed is what it kept. */
+async function serverTrips(status) {
+  const login = await fetch(`${API_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: 'shopper@garner.test', password: 'correct-horse-battery' }),
+  });
+  const { accessToken } = await login.json();
+  const headers = { authorization: `Bearer ${accessToken}` };
+  const list = await (await fetch(`${API_URL}/v1/shopping-sessions?status=${status}`, { headers })).json();
+  return Promise.all(
+    list.data.map(async (trip) => (await fetch(`${API_URL}/v1/shopping-sessions/${trip.id}`, { headers })).json()),
+  );
+}
+
 const errors = [];
 
 /** A phone-sized tab standing at `position`, with its errors collected. */
@@ -47,7 +64,8 @@ async function openPage(position) {
   tab.on('console', (message) => {
     // The checks provoke refusals on purpose (wrong password, taken email,
     // short password); the browser logs each 4xx. Anything else is a failure.
-    const expectedRefusal = /status of 4\d\d/.test(message.text());
+    // The offline steps cut the connection on purpose; Chrome logs each blocked request.
+    const expectedRefusal = /status of 4\d\d|ERR_INTERNET_DISCONNECTED/.test(message.text());
     if (message.type() === 'error' && !expectedRefusal) {
       errors.push(message.text());
     }
@@ -69,9 +87,11 @@ const gone = (unwanted) =>
 // while a modal is open (or still closing, when it traps focus), only if it
 // is inside that modal.
 const settledOnTop = (n) => {
+  // The first line's box: text that wraps has a bounding box whose centre can
+  // be empty space, which no finger would be aimed at.
   const modals = [...document.querySelectorAll('[aria-modal="true"]')];
   if (modals.length > 0 && !modals.some((modal) => modal.contains(n))) return false;
-  const box = n.getBoundingClientRect();
+  const box = n.getClientRects()[0] ?? n.getBoundingClientRect();
   // Below the fold: scroll to it, as a person would, and look again.
   if (box.width > 0 && (box.bottom > window.innerHeight || box.top < 0)) {
     n.scrollIntoView({ block: 'center' });
@@ -474,6 +494,54 @@ await step('a trip can be abandoned after asking', async () => {
   await shown('Ahorrás');
   await press('Volver');
   await press('Volver');
+});
+
+// --- Checkpoint 7: shopping without a connection --------------------------
+
+await step('offline: ticks and prices wait on the phone, and say so', async () => {
+  await press('Compra');
+  await press('Empezar la compra de Compra semanal');
+  await shown('0 / 4');
+  await page.setOfflineMode(true);
+  await press('Marcar Pan Lactal 500g');
+  await shown('1 / 4');
+  await text('Sin conexión');
+  await shown('1 cambio espera para enviarse');
+  await typeInto('Precio pagado por unidad', '1.350');
+  await press('Listo');
+  await shown('2 / 4');
+  await shown('Pagado $ 1.350 c/u · por enviar');
+  await shown('2 cambios esperan para enviarse');
+  await page.screenshot({ path: `${SHOTS}checkpoint-7-offline.png` });
+});
+await step('back online, what waited is sent, and the server has it', async () => {
+  await page.setOfflineMode(false);
+  await shown('Todo enviado');
+  await gone('esperan para enviarse');
+  const [trip] = await serverTrips('ACTIVE');
+  const bought = trip.items.filter((item) => item.isPurchased);
+  if (bought.length !== 2 || !bought.some((item) => item.actualUnitPriceCents === 135000)) {
+    throw new Error(`server has ${bought.length} bought lines, prices ${bought.map((i) => i.actualUnitPriceCents)}`);
+  }
+  await page.screenshot({ path: `${SHOTS}checkpoint-7-synced.png` });
+});
+await step('a trip can be finished offline, and is sent when the connection returns', async () => {
+  await page.setOfflineMode(true);
+  await press('Terminar la compra');
+  await press('Terminar');
+  await shown('Compra terminada');
+  // Pan at its expected 1.200 (ticked, no price typed) plus the milk at 2.700.
+  await shown('$ 3.900');
+  await text('Tu compra se envía cuando vuelva la conexión');
+  await page.screenshot({ path: `${SHOTS}checkpoint-7-finished-offline.png` });
+  await page.setOfflineMode(false);
+  await gone('Tu compra se envía cuando vuelva la conexión');
+  const done = await serverTrips('COMPLETED');
+  if (!done.some((trip) => trip.totals.purchasedItemCount === 2)) {
+    throw new Error('the server never completed the trip');
+  }
+  if ((await serverTrips('ACTIVE')).length > 0) throw new Error('a trip is still open on the server');
+  await press('Listo');
 });
 
 for (const [tab, wanted] of [

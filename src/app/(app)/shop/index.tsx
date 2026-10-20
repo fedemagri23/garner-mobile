@@ -31,7 +31,9 @@ export default function ShopScreen() {
       </Screen>
     );
   }
-  if (!current.data) {
+  // A trip finished or abandoned on the phone is over, even if the server has
+  // not been told yet.
+  if (!current.data || current.data.status === 'COMPLETED' || current.data.status === 'ABANDONED') {
     return <StartTrip />;
   }
   return <TripView key={current.data.id} trip={current.data} onCompleted={setFinished} />;

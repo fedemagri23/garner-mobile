@@ -1,6 +1,6 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
-import { LocationProvider } from '@/features/location/location-provider';
+import { AppProviders } from '@/components/app-providers';
 import { colors } from '@/theme/tokens';
 
 /**
@@ -11,7 +11,7 @@ import { colors } from '@/theme/tokens';
  */
 export default function AppTabs() {
   return (
-    <LocationProvider>
+    <AppProviders>
     <NativeTabs
       tintColor={colors.accent}
       backgroundColor={colors.surface}
@@ -37,6 +37,6 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Icon sf="bell" md="notifications" />
       </NativeTabs.Trigger>
     </NativeTabs>
-    </LocationProvider>
+    </AppProviders>
   );
 }

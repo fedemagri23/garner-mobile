@@ -1,152 +1,98 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 
-import { unwrap } from '@/api/client';
+import { ApiError, unwrap } from '@/api/client';
 import type { components } from '@/api/types';
+import { applyChanges, type Progress, type StatusAction } from '@/features/outbox/changes';
+import { useOutbox } from '@/features/outbox/outbox-provider';
+import { loadTrip, saveTrip } from '@/features/outbox/storage';
 import { useSession } from '@/session/session-provider';
 
 import type { Trip } from './stops';
+import { currentTripKey, useRememberTrip } from './trip-cache';
 
 type Mode = components['schemas']['OptimizationResultResponse']['recommended'];
-type Progress = components['schemas']['RecordItemProgressRequest'];
-
-const currentKey = ['trip', 'current'] as const;
-const tripKey = (id: string) => ['trip', id] as const;
 
 /**
- * The trip in progress, if any: active first, then a paused one. A shopper
- * has at most one of each per list; the newest wins.
+ * The trip in progress, if any — as the shopper should see it: what the
+ * server last said, with every change still waiting to be sent applied on
+ * top. Active first, then a paused one.
+ *
+ * Without a connection the server cannot be asked, so the copy remembered on
+ * the phone stands in: a trip opens offline.
  */
 export function useCurrentTrip() {
   const { api } = useSession();
+  const { queue } = useOutbox();
 
   return useQuery({
-    queryKey: currentKey,
+    queryKey: currentTripKey,
+    // Offline is the case this exists for: do not wait for a connection.
+    networkMode: 'always',
     queryFn: async (): Promise<Trip | null> => {
-      for (const status of ['ACTIVE', 'PAUSED'] as const) {
-        const page = await unwrap(
-          api.GET('/v1/shopping-sessions', { params: { query: { status, pageSize: 1 } } }),
-        );
-        const summary = page.data[0];
-        if (summary) {
-          return unwrap(
-            api.GET('/v1/shopping-sessions/{id}', { params: { path: { id: summary.id } } }),
+      try {
+        for (const status of ['ACTIVE', 'PAUSED'] as const) {
+          const page = await unwrap(
+            api.GET('/v1/shopping-sessions', { params: { query: { status, pageSize: 1 } } }),
           );
+          const summary = page.data[0];
+          if (summary) {
+            const trip = await unwrap(
+              api.GET('/v1/shopping-sessions/{id}', { params: { path: { id: summary.id } } }),
+            );
+            await saveTrip(trip);
+            return trip;
+          }
         }
+        await saveTrip(null);
+        return null;
+      } catch (error) {
+        // The server answered with an error: that is an error. Anything else
+        // is no connection, and the remembered trip is the best there is.
+        if (error instanceof ApiError) {
+          throw error;
+        }
+        return loadTrip();
       }
-      return null;
     },
+    select: (trip) => (trip ? applyChanges(trip, queue) : null),
   });
-}
-
-/** Keeps the current trip and its own entry in step with what the server answered. */
-function useStoreTrip() {
-  const queryClient = useQueryClient();
-
-  return (trip: Trip) => {
-    queryClient.setQueryData(tripKey(trip.id), trip);
-    queryClient.setQueryData(
-      currentKey,
-      trip.status === 'ACTIVE' || trip.status === 'PAUSED' ? trip : null,
-    );
-  };
 }
 
 /**
  * Starts a trip from a list — following a plan when one is given. Starting
  * again while one is in progress returns that one, so a retried tap cannot
- * make two.
+ * make two. Needs the server: a trip begins with its copy of the list.
  */
 export function useStartTrip() {
   const { api } = useSession();
-  const store = useStoreTrip();
+  const remember = useRememberTrip();
 
   return useMutation({
     mutationFn: (input: { listId: string; optimizationId?: string; mode?: Mode }) =>
       unwrap(api.POST('/v1/shopping-sessions', { body: { id: randomUUID(), ...input } })),
-    onSuccess: store,
+    onSuccess: remember,
   });
 }
 
 /**
- * Marks a line bought (with what was paid) or not. The screen changes at
- * once; the server's answer then replaces the guess, or a failure puts the
- * line back.
+ * What a shopper does on a trip. Each is on the queue and on the phone the
+ * moment it is called, and shows on screen at once; whether the server has
+ * it yet is the outbox's business.
  */
-export function useRecordItem(trip: Trip) {
-  const { api } = useSession();
-  const queryClient = useQueryClient();
-  const store = useStoreTrip();
+export function useTripActions(trip: Trip) {
+  const outbox = useOutbox();
 
-  return useMutation({
-    mutationFn: ({ itemId, progress }: { itemId: string; progress: Progress }) =>
-      unwrap(
-        api.PATCH('/v1/shopping-sessions/{id}/items/{itemId}', {
-          params: { path: { id: trip.id, itemId } },
-          body: progress,
-        }),
-      ),
-    onMutate: ({ itemId, progress }) => {
-      const before = queryClient.getQueryData<Trip | null>(currentKey);
-      if (before) {
-        queryClient.setQueryData<Trip>(currentKey, {
-          ...before,
-          items: before.items.map((item) => {
-            if (item.id !== itemId) {
-              return item;
-            }
-            // Undefined leaves the price as it was; null clears it.
-            const price =
-              progress.actualUnitPriceCents === undefined
-                ? item.actualUnitPriceCents
-                : progress.actualUnitPriceCents;
-            return {
-              ...item,
-              isPurchased: progress.isPurchased ?? item.isPurchased,
-              actualUnitPriceCents: price,
-              actualLineTotalCents: price === null ? null : Math.round(price * item.quantity),
-            };
-          }),
-        });
-      }
-      return { before };
+  return {
+    record(itemId: string, progress: Progress) {
+      outbox.add({ kind: 'item', id: randomUUID(), tripId: trip.id, itemId, progress });
     },
-    onError: (_error, _input, context) => {
-      if (context?.before) {
-        queryClient.setQueryData(currentKey, context.before);
-      }
-    },
-    onSuccess: store,
-  });
-}
 
-/** Pause, resume, finish or give up. Each is safe to retry on the server. */
-export function useTripStatus(tripId: string) {
-  const { api } = useSession();
-  const store = useStoreTrip();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (action: 'pause' | 'resume' | 'complete' | 'abandon') => {
-      const params = { params: { path: { id: tripId } } };
-      switch (action) {
-        case 'pause':
-          return unwrap(api.POST('/v1/shopping-sessions/{id}/pause', params));
-        case 'resume':
-          return unwrap(api.POST('/v1/shopping-sessions/{id}/resume', params));
-        case 'complete':
-          return unwrap(api.POST('/v1/shopping-sessions/{id}/complete', params));
-        case 'abandon':
-          return unwrap(api.POST('/v1/shopping-sessions/{id}/abandon', params));
-      }
+    /** Returns the trip as it is once this change is made. */
+    status(action: StatusAction): Trip {
+      const change = { kind: 'status' as const, id: randomUUID(), tripId: trip.id, action, at: new Date().toISOString() };
+      outbox.add(change);
+      return applyChanges(trip, [change]);
     },
-    onSuccess: (trip) => {
-      store(trip);
-      // A finished trip's prices become contributions; the price screens
-      // will want fresh data next time.
-      if (trip.status === 'COMPLETED') {
-        return queryClient.invalidateQueries({ queryKey: ['prices'] });
-      }
-    },
-  });
+  };
 }

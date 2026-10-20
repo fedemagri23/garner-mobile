@@ -2,6 +2,7 @@ import {
   createTokenManager,
   REFRESH_AHEAD_MS,
   SessionExpiredError,
+  SessionUnavailableError,
   type RefreshTokenStorage,
   type TokenPair,
 } from '../token-manager';
@@ -85,6 +86,44 @@ describe('token manager', () => {
     await expect(manager.accessToken()).rejects.toBeInstanceOf(SessionExpiredError);
     expect(storage.value).toBeNull();
     expect(onSignedOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the session when the refresh fails for lack of a connection', async () => {
+    // Offline, a refresh fails like a refusal does. Signing out then would
+    // drop a good session — and every change waiting to be sent — for a tunnel.
+    const storage = memoryStorage('refresh-1');
+    const onSignedOut = jest.fn();
+    const manager = createTokenManager({
+      storage,
+      refresh: async () => {
+        throw new TypeError('Network request failed');
+      },
+      isRefusal: (error) => !(error instanceof TypeError),
+      onSignedOut,
+    });
+
+    await expect(manager.accessToken()).rejects.toBeInstanceOf(SessionUnavailableError);
+    expect(storage.value).toBe('refresh-1');
+    expect(onSignedOut).not.toHaveBeenCalled();
+  });
+
+  it('refreshes once the connection is back, with the token it kept', async () => {
+    let online = false;
+    const refresh = jest.fn(async () => {
+      if (!online) throw new TypeError('Network request failed');
+      return pair(2);
+    });
+    const manager = createTokenManager({
+      storage: memoryStorage('refresh-1'),
+      refresh,
+      isRefusal: (error) => !(error instanceof TypeError),
+    });
+
+    await expect(manager.accessToken()).rejects.toBeInstanceOf(SessionUnavailableError);
+    online = true;
+
+    expect(await manager.accessToken()).toBe('access-2');
+    expect(refresh).toHaveBeenLastCalledWith('refresh-1');
   });
 
   it('has nothing to restore without a stored refresh token', async () => {

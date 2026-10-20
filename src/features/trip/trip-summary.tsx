@@ -4,6 +4,8 @@ import { StyleSheet, View } from 'react-native';
 import { Button } from '@/components/button';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
+import { SyncBanner } from '@/features/outbox/sync-banner';
+import { useOutbox } from '@/features/outbox/outbox-provider';
 import { formatPrice, productCount } from '@/lib/format';
 import { colors, fonts, radii, space } from '@/theme/tokens';
 
@@ -11,6 +13,7 @@ import type { Trip } from './stops';
 
 /** After "Terminar": what was spent against what was expected, and what was shared. */
 export function TripSummary({ trip, onDone }: { trip: Trip; onDone: () => void }) {
+  const { pending } = useOutbox();
   const { actualTotalCents, expectedTotalCents, purchasedItemCount } = trip.totals;
   const purchased = trip.items.filter((item) => item.isPurchased);
   // The server turns a paid price into a report only where the line has a store.
@@ -22,6 +25,7 @@ export function TripSummary({ trip, onDone }: { trip: Trip; onDone: () => void }
 
   return (
     <Screen>
+      <SyncBanner />
       <View style={styles.hero}>
         <Ionicons name="checkmark-circle" size={48} color={colors.accent} />
         <Text variant="title" accessibilityRole="header">
@@ -48,6 +52,11 @@ export function TripSummary({ trip, onDone }: { trip: Trip; onDone: () => void }
             ? `Los ${shared} precios que anotaste ya cuentan para los demás: así todos sabemos dónde conviene.`
             : 'No anotaste precios en un súper conocido, así que esta vez no se comparte ninguno.'}
       </Text>
+      {pending > 0 ? (
+        <Text variant="caption" tone="muted">
+          Tu compra se envía cuando vuelva la conexión; no hace falta que hagas nada.
+        </Text>
+      ) : null}
       <Button label="Listo" onPress={onDone} />
     </Screen>
   );
