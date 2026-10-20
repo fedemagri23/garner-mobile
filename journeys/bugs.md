@@ -107,3 +107,9 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Symptom:** On "Informar precio" the content was cut off at both edges, as if the page had scrolled sideways; the price field ran from 64 to 443 px on a 390 px screen.
 - **Cause:** A text field in a row with `flex: 1` will not shrink below its own default width unless it says it may (`minWidth: 0`); with the currency symbol beside it, it did not fit.
 - **Fix:** The price field, the trip's price field, the list's "Agregar producto" field and the search field all set `minWidth: 0`. The walk-through fails if any text field is wider than the screen.
+
+### MBUG-018 — CI was red from checkpoint 7 on: AsyncStorage does not exist under Jest
+- **Phase:** 4 · **Area:** tooling · **Scope:** test · **Found by:** CI, noticed one checkpoint late · **Fixed in:** f29d857
+- **Symptom:** `session-provider-test` failed in CI with "NativeModule: AsyncStorage is null"; every push since checkpoint 7 had a red CI run.
+- **Cause:** Signing out clears the outbox's storage, so the session provider now imports it, and AsyncStorage is a native module. The suite that tests the storage mocked it itself, and a cached local Jest run passed the session test anyway. I then read the newest run of the wrong commit as green.
+- **Fix:** A `jest.setup.ts` mocks AsyncStorage for every suite. From now on `npx jest --ci --no-cache` before pushing, and the CI run is read for the commit pushed, not the newest.
