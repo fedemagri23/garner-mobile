@@ -216,3 +216,15 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** The backend has a "shopping reminders" category and a preference for it, but nothing creates reminders yet, so the app does not offer a switch for it.
 - **Why:** A control for something that never happens would mislead.
 - **Revisit when:** The backend sends its first reminder (e.g. "you have a list and a store nearby") — add the switch then.
+
+### MCON-036 — The push switch is honest about where it cannot work
+- **Phase:** 6 (checkpoint 10) · **Area:** notifications · **Status:** accepted
+- **What:** The "Avisos en el teléfono" card is disabled with a reason on the web and in Expo Go on Android; on a simulator, or without an EAS project id, turning it on says why it cannot. Expo Go on iPhone is allowed to try.
+- **Why:** A switch that looks on but can never deliver is worse than one that says it is not available.
+- **Revisit when:** A development build exists: set the EAS project id and drop the "no-project" case.
+
+### MCON-037 — Push has not been run on a phone
+- **Phase:** 6 (checkpoint 10) · **Area:** notifications · **Status:** open
+- **What:** The app side (permission, token, registration, tap to open) is typechecked, unit-tested for the routing, and exported for both platforms, but never ran against Expo's service or a real device. The backend side is tested against a stand-in (CON-050).
+- **Why:** It needs a development build, which needs EAS and, on iPhone, a paid Apple developer account.
+- **Revisit when:** The first development build is made; try the steps in docs/checkpoints.md, checkpoint 10.

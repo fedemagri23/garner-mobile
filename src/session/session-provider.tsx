@@ -11,6 +11,7 @@ import {
 
 import { createAuthFetch } from '@/api/auth-fetch';
 import { clearOutboxStorage } from '@/features/outbox/storage';
+import { forgetPhone } from '@/features/push/forget-phone';
 import { ApiError, createApi, unwrap, type Api } from '@/api/client';
 import { apiBaseUrl } from '@/config';
 
@@ -95,6 +96,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    // While the session still works: this phone must stop getting this account's avisos.
+    await forgetPhone(api);
     const refreshToken = await tokens.storedRefreshToken();
     // Revoking is best effort: offline, the device still forgets the session.
     if (refreshToken) {
@@ -104,7 +107,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     // The next account must not inherit this one's trip or unsent changes.
     await clearOutboxStorage();
     queryClient.clear();
-  }, [publicApi, tokens, queryClient]);
+  }, [api, publicApi, tokens, queryClient]);
 
   const value = useMemo(
     () => ({ status, api, signIn, signUp, signOut }),

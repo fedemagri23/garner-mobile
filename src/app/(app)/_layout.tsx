@@ -1,6 +1,7 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
 import { useUnreadCount } from '@/features/alerts/use-alerts';
+import { useNotificationTaps } from '@/features/push/use-notification-taps';
 import { colors } from '@/theme/tokens';
 
 /**
@@ -10,6 +11,7 @@ import { colors } from '@/theme/tokens';
  */
 export default function AppTabs() {
   const unread = useUnreadCount().data ?? 0;
+  useNotificationTaps();
 
   return (
     <NativeTabs

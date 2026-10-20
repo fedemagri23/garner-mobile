@@ -515,3 +515,39 @@ and four messages). Nothing new to install in `garner-mobile`.
   (MCON-033).
 - Quiet hours drift an hour after daylight saving changes (MCON-034).
 - Email shows as unavailable unless the server is set up to send it.
+
+## Checkpoint 10 — Avisos on the phone, with the app closed
+
+**What works:** Avisos → Preferencias has **Avisos en el teléfono**. Turning it
+on asks the system for permission, registers this phone with the backend, and
+price alerts then arrive as notifications (in Spanish, with the price) even
+with the app closed. Tapping one opens the product. **Enviar una prueba**
+sends a test message. Signing out forgets the phone.
+
+**Needs a real build.** Expo's push needs a development build or an installed
+app, not Expo Go on Android (Expo docs, SDK 53+). Expo Go on iPhone is left to
+try; if it cannot, the switch shows "No pudimos activarlos" or "Esta versión de
+la app todavía no está registrada…". It has not been run on a phone (MCON-037).
+
+**Check in Expo Go / web (what can be seen there)**
+
+1. Avisos → Preferencias: the card **Avisos en el teléfono** is there. On the
+   web (and Expo Go on Android) it says it is not available here, and the
+   switch is off and disabled.
+2. On iPhone in Expo Go: flip it. Either the system asks permission and the
+   card then offers **Enviar una prueba**, or it says why it cannot. Both are
+   expected outcomes.
+
+**Check with a development build (iPhone needs a paid Apple developer account)**
+
+1. Flip the switch, allow notifications, tap **Enviar una prueba**: a
+   notification "Garner — Si ves esto, los avisos funcionan en este teléfono."
+2. Close the app. Report a lower price for the milk from another session (or
+   the backend's API): a notification "Leche … bajó a …" arrives; tap it, the
+   product opens.
+
+**Known limits**
+
+- The last hop (Expo to Apple/Google to the phone) is untested here; the
+  backend is tested against a stand-in for Expo's service.
+- One account's phone is moved to whoever registers it next.

@@ -127,7 +127,7 @@ contribution (garner-app `ab5da96`, CON-047).
 | `POST /v1/price-evidence` (multipart `photo`), `POST /v1/price-observations` | reporting |
 | `GET /v1/price-observations/mine` | history |
 
-## Phase 6 — Alerts and notifications (checkpoint 9 ✅, checkpoint 10 next)
+## Phase 6 — Alerts and notifications (checkpoints 9 and 10 ✅ (10 untested on a phone, MCON-037))
 
 - **Checkpoint 9 ✅:** alerts from a product ("Avisame si baja": below a
   price, a percentage, cheaper nearby), Mis alertas (pause, delete), the

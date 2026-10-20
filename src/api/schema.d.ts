@@ -995,6 +995,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register this phone for push notifications
+         * @description Idempotent: registering the same token again refreshes it. A token another account had moves to this one.
+         */
+        post: operations["devicesRegister"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send a test push to my registered phones */
+        post: operations["devicesTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Stop sending push notifications to this phone */
+        delete: operations["devicesUnregister"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2047,6 +2101,29 @@ export interface components {
             quietHoursEndUtc?: number | null;
             minMinutesBetweenAlerts?: number;
         };
+        RegisterDeviceRequest: {
+            /**
+             * @description The Expo push token of this phone
+             * @example ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
+             */
+            token: string;
+            /** @enum {string} */
+            platform: "ios" | "android";
+        };
+        DeviceResponse: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            platform: "ios" | "android";
+            /** Format: date-time */
+            registeredAt: string;
+        };
+        TestPushResponse: {
+            /** @description Phones registered for this account */
+            devices: number;
+            /** @description Of them, how many the push service accepted the message for */
+            delivered: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -2141,6 +2218,9 @@ export type NotificationResponse = components['schemas']['NotificationResponse']
 export type NotificationPageResponse = components['schemas']['NotificationPageResponse'];
 export type NotificationPreferencesResponse = components['schemas']['NotificationPreferencesResponse'];
 export type UpdateNotificationPreferencesRequest = components['schemas']['UpdateNotificationPreferencesRequest'];
+export type RegisterDeviceRequest = components['schemas']['RegisterDeviceRequest'];
+export type DeviceResponse = components['schemas']['DeviceResponse'];
+export type TestPushResponse = components['schemas']['TestPushResponse'];
 export type $defs = Record<string, never>;
 export interface operations {
     metricsScrape: {
@@ -4139,6 +4219,74 @@ export interface operations {
         responses: {
             /** @description Always the same answer, so the link cannot probe for accounts */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    devicesRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDeviceRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceResponse"];
+                };
+            };
+        };
+    };
+    devicesTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestPushResponse"];
+                };
+            };
+            /** @description The push service could not be reached */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    devicesUnregister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };

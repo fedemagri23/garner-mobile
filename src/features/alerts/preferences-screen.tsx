@@ -10,6 +10,8 @@ import { Text } from '@/components/text';
 import { errorMessage } from '@/lib/error-message';
 import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
+import { PushCard } from '@/features/push/push-card';
+
 import { localToUtcHour, utcToLocalHour } from './messages';
 import { usePreferences, useSavePreferences, type Preferences } from './use-alerts';
 
@@ -64,6 +66,8 @@ function Form({ preferences }: { preferences: Preferences }) {
           onChange={(priceAlertsEnabled) => save.mutate({ priceAlertsEnabled })}
         />
       </Card>
+
+      <PushCard />
 
       <Card>
         <Option
