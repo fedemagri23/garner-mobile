@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BottomBar } from '@/components/bottom-bar';
 import { Button } from '@/components/button';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
@@ -56,20 +55,31 @@ export function ListScreen() {
           />
         )}
         contentContainerStyle={styles.content}
-        // The total below sits above the tab bar, so this list never reaches it.
-        contentInsetAdjustmentBehavior="never"
+        contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={styles.header}>
             <View style={styles.topBar}>
               <BackButton />
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Más opciones"
+              <View style={styles.actions}>
+                {data.items.length > 0 ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Dónde comprar"
+                    onPress={() => router.push(`/lists/${data.id}/plan`)}
+                    style={({ pressed }) => [styles.pill, pressed && styles.pressed]}>
+                    <Ionicons name="location-outline" size={16} color={colors.ink} />
+                    <Text variant="label">Dónde comprar</Text>
+                  </Pressable>
+                ) : null}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Más opciones"
                 onPress={() => setOptions(true)}
                 style={({ pressed }) => [styles.round, pressed && styles.pressed]}>
-                <Ionicons name="ellipsis-horizontal" size={20} color={colors.ink} />
-              </Pressable>
+                  <Ionicons name="ellipsis-horizontal" size={20} color={colors.ink} />
+                </Pressable>
+              </View>
             </View>
             <View style={styles.titles}>
               <Text tone="muted" variant="caption">
@@ -85,8 +95,11 @@ export function ListScreen() {
         ListEmptyComponent={
           <StateMessage message="La lista está vacía. Buscá un producto arriba para agregarlo." />
         }
+        // Part of the scrolling content, not fixed to the bottom: on iOS the
+        // tab bar floats over the screen, and only scrolling content is
+        // inset to clear it (MBUG-011).
+        ListFooterComponent={<Totals list={data} />}
       />
-      <Totals list={data} />
       <ListOptionsSheet list={data} visible={options} onClose={() => setOptions(false)} />
     </SafeAreaView>
   );
@@ -247,7 +260,7 @@ function Totals({ list }: { list: ListDetail }) {
   }
 
   return (
-    <BottomBar style={styles.footer}>
+    <View style={styles.footer}>
       <View style={styles.totalRow}>
         <Text tone="muted">Total estimado</Text>
         <Text style={styles.total}>{formatPrice(expectedTotalCents, list.currency)}</Text>
@@ -263,7 +276,7 @@ function Totals({ list }: { list: ListDetail }) {
         onPress={() => router.push(`/lists/${list.id}/plan`)}
         style={styles.planButton}
       />
-    </BottomBar>
+    </View>
   );
 }
 
@@ -342,7 +355,27 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontVariant: ['tabular-nums'],
   },
-  footer: { paddingHorizontal: space.xl, paddingVertical: space.lg, gap: space.xs },
+  footer: {
+    marginTop: space.lg,
+    padding: space.lg,
+    gap: space.xs,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radii.lg,
+  },
+  actions: { flexDirection: 'row', gap: space.sm },
+  pill: {
+    height: MIN_TOUCH,
+    paddingHorizontal: space.md,
+    borderRadius: MIN_TOUCH / 2,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   planButton: { marginTop: space.sm },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   total: { fontFamily: fonts.display, fontSize: 22, fontVariant: ['tabular-nums'] },

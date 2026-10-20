@@ -14,8 +14,10 @@
  * e2e/screenshots/ (git-ignored).
  *
  * The lists it creates it deletes again, so the shopper keeps the seed's.
- * Wait a minute between runs: two back to back exceed the API's per-client
- * rate limit, and the app (rightly) answers "Demasiados intentos".
+ * The walk-through makes more requests a minute than the API allows one
+ * client by default (120), and the app (rightly) answers "Demasiados
+ * intentos". Run the backend for it with a higher limit, without touching
+ * .env:  RATE_LIMIT_MAX=1000 pnpm run start:dev
  */
 import { mkdirSync } from 'node:fs';
 import puppeteer from 'puppeteer-core';

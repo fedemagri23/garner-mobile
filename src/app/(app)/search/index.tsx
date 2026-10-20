@@ -89,6 +89,7 @@ export default function SearchScreen() {
           }
         }}
         onEndReachedThreshold={0.5}
+        contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         contentContainerStyle={styles.list}

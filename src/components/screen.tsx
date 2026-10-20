@@ -18,6 +18,9 @@ export function Screen({ children, scroll = true, edges = ['top'], contentStyle 
     <SafeAreaView edges={edges} style={styles.root}>
       {scroll ? (
         <ScrollView
+          // On iOS the tab bar floats over the screen; this insets the end
+          // of the content to clear it (MBUG-011).
+          contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={[styles.content, contentStyle]}
           keyboardShouldPersistTaps="handled">
           {children}

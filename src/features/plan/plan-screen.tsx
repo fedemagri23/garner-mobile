@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BottomBar } from '@/components/bottom-bar';
 import { Button } from '@/components/button';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
@@ -122,23 +121,25 @@ export function PlanScreen() {
         {optimization.data ? <StopsMap origin={optimization.data.origin} stops={stops} /> : null}
         <TopBar title={list.data?.name} />
       </View>
+      {/* The actions scroll with the plan rather than sitting fixed at the
+          bottom: on iOS only scrolling content clears the floating tab bar
+          (MBUG-011). */}
       <ScrollView
         style={styles.sheet}
         contentContainerStyle={styles.sheetContent}
-        // The buttons below sit above the tab bar, so this never reaches it.
-        contentInsetAdjustmentBehavior="never">
+        contentInsetAdjustmentBehavior="automatic">
         {body}
+        <View style={styles.footer}>
+          <Button label="Preferencias" variant="secondary" onPress={() => setEditing(true)} style={styles.footerButton} />
+          <Button
+            label="Recalcular"
+            variant="secondary"
+            disabled={location.status !== 'ready' || request.isPending}
+            onPress={() => again()}
+            style={styles.footerButton}
+          />
+        </View>
       </ScrollView>
-      <BottomBar style={styles.footer}>
-        <Button label="Preferencias" variant="secondary" onPress={() => setEditing(true)} style={styles.footerButton} />
-        <Button
-          label="Recalcular"
-          variant="secondary"
-          disabled={location.status !== 'ready' || request.isPending}
-          onPress={() => again()}
-          style={styles.footerButton}
-        />
-      </BottomBar>
       <PreferencesSheet visible={editing} onClose={() => setEditing(false)} onSaved={again} />
     </View>
   );
@@ -340,6 +341,6 @@ const styles = StyleSheet.create({
   },
   total: { fontFamily: fonts.display, fontSize: 20, fontVariant: ['tabular-nums'] },
   notes: { lineHeight: 19 },
-  footer: { flexDirection: 'row', gap: space.sm, paddingHorizontal: space.xl, paddingVertical: space.md },
+  footer: { flexDirection: 'row', gap: space.sm },
   footerButton: { flex: 1 },
 });

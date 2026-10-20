@@ -24,6 +24,7 @@ export default function ListsScreen() {
         keyExtractor={(list) => list.id}
         renderItem={({ item }) => <ListRow list={item} />}
         contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
         ListHeaderComponent={
           <View style={styles.header}>
             <Text variant="title" accessibilityRole="header">
