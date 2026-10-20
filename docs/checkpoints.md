@@ -467,7 +467,7 @@ usual account's history stays clean — your reports are real data.
 
 ## Checkpoint 9 — Alerts and messages
 
-_Phase 6 · 2026-10-21 · backend `9b83f41`, app: this commit._
+_Phase 6 · 2026-10-21 · backend `9b83f41`, app `f27f085`._
 
 What a person can do: ask to be told when a product gets cheaper, read what
 their alerts found, and choose how and when to be reached.
