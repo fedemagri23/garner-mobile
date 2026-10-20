@@ -60,7 +60,7 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Fix:** The button carries an explicit accessible label. The walk-through also scrolls a target below the fold into view before tapping it — the card made "Cerrar sesión" fall off the first screen.
 
 ### MBUG-010 — On iPhone, the tab bar covered a list's total and its plan button
-- **Phase:** 3 · **Area:** layout · **Scope:** production code · **Found by:** the developer, on an iPhone · **Fixed in:** this commit
+- **Phase:** 3 · **Area:** layout · **Scope:** production code · **Found by:** the developer, on an iPhone · **Fixed in:** e92a0c3
 - **Symptom:** In a list, "Total estimado" and "¿Dónde conviene comprar?" sat under the bottom tab bar and could not be seen or tapped; the plan screen's Preferencias and Recalcular were at the same risk.
 - **Cause:** On iOS the native tab bar floats over the screen, and only a screen's first scroll view is inset for it automatically. Bars fixed at the bottom of a screen were laid out to the screen's edge, behind the tab bar. The web build, whose tab bar takes its own space, and the automated walk-through could not show it.
 - **Fix:** A `BottomBar` component pads fixed bottom bars by the tab bar's height as the system reports it for that screen (`SafeAreaView` from `react-native-screens/experimental`, as Expo's native tabs guide recommends; zero on Android, a plain view on the web). The list and plan use it, and their scroll views no longer add a tab-bar inset they do not touch.
