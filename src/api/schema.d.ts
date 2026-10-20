@@ -578,7 +578,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/price-observations": {
+    "/v1/shopping-lists/{id}/optimize": {
         parameters: {
             query?: never;
             header?: never;
@@ -587,23 +587,23 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Report a price seen at a store */
-        post: operations["contributionsReport"];
+        /** Work out where to buy this list */
+        post: operations["optimizationOptimize"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/price-observations/mine": {
+    "/v1/optimizations": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List the prices I have contributed */
-        get: operations["contributionsMine"];
+        /** My optimizations, newest first */
+        get: operations["optimizationList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -612,21 +612,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/price-evidence": {
+    "/v1/optimizations/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** One optimization, with its plans once computed */
+        get: operations["optimizationGet"];
         put?: never;
-        /** Upload a photo to attach to a price report */
-        post: operations["contributionsUploadEvidence"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/v1/optimization-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My standing optimization preferences */
+        get: operations["optimizationMyPreferences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change how far I will go to save money */
+        patch: operations["optimizationUpdatePreferences"];
         trace?: never;
     };
     "/v1/products/{id}/prices": {
@@ -674,6 +692,57 @@ export interface paths {
         get: operations["priceDropsNearby"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/price-observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Report a price seen at a store */
+        post: operations["contributionsReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/price-observations/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the prices I have contributed */
+        get: operations["contributionsMine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/price-evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload a photo to attach to a price report */
+        post: operations["contributionsUploadEvidence"];
         delete?: never;
         options?: never;
         head?: never;
@@ -818,75 +887,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/v1/shopping-lists/{id}/optimize": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Work out where to buy this list */
-        post: operations["optimizationOptimize"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/optimizations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** My optimizations, newest first */
-        get: operations["optimizationList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/optimizations/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** One optimization, with its plans once computed */
-        get: operations["optimizationGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/optimization-preferences": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** My standing optimization preferences */
-        get: operations["optimizationMyPreferences"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Change how far I will go to save money */
-        patch: operations["optimizationUpdatePreferences"];
         trace?: never;
     };
     "/v1/price-alerts": {
@@ -1400,6 +1400,16 @@ export interface components {
              * @description The store being shopped; applies to every line of the trip
              */
             storeId?: string;
+            /**
+             * Format: uuid
+             * @description A finished optimization of this list: each line goes to its plan's store, at its price, in route order. Not with storeId.
+             */
+            optimizationId?: string;
+            /**
+             * @description Which of the plan's alternatives; its recommendation when omitted
+             * @enum {string}
+             */
+            mode?: "CHEAPEST" | "BEST_BALANCE" | "SIMPLEST";
         };
         SessionTotalsResponse: {
             /** @description Every line at its expected price (cents) */
@@ -1493,270 +1503,6 @@ export interface components {
              * @description When the shopper marked the item, from the device clock. Lets an offline client report the real moment rather than the sync time.
              */
             purchasedAt?: string;
-        };
-        PriceEvidenceRequest: {
-            /** @description Key returned by POST /v1/price-evidence for a photo you uploaded */
-            photoKey?: string;
-            note?: string;
-        };
-        ReportPriceRequest: {
-            /**
-             * Format: uuid
-             * @description Optional client-generated id. Retrying with the same id returns the report already stored.
-             */
-            id?: string;
-            /** Format: uuid */
-            productId: string;
-            /** Format: uuid */
-            storeId: string;
-            /**
-             * @description Price of one unit, in minor units (cents)
-             * @example 125
-             */
-            priceCents: number;
-            /** @example ARS */
-            currency: string;
-            /**
-             * Format: date-time
-             * @description When the price was seen; defaults to now. At most 7 days old.
-             */
-            observedAt?: string;
-            evidence?: components["schemas"]["PriceEvidenceRequest"];
-        };
-        ContributionResponse: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            productId: string;
-            /** Format: uuid */
-            storeId: string;
-            /** @description Price of one unit, in minor units (cents) */
-            priceCents: number;
-            /** @example ARS */
-            currency: string;
-            /** Format: date-time */
-            observedAt: string;
-            /** Format: date-time */
-            receivedAt: string;
-            /** @enum {string} */
-            sourceType: "USER_REPORTED" | "USER_WITH_EVIDENCE" | "PURCHASE_CONFIRMED" | "EXTERNAL_API";
-            /**
-             * @description UNDER_REVIEW prices are kept but do not affect shown prices until confirmed
-             * @enum {string}
-             */
-            status: "ACCEPTED" | "UNDER_REVIEW" | "REJECTED";
-            hasPhotoEvidence: boolean;
-            note: string | null;
-        };
-        ContributionPageResponse: {
-            data: components["schemas"]["ContributionResponse"][];
-            meta: components["schemas"]["PaginationMeta"];
-        };
-        EvidenceUploadResponse: {
-            /** @description Pass as evidence.photoKey when reporting a price */
-            photoKey: string;
-        };
-        StorePriceResponse: {
-            /** Format: uuid */
-            storeId: string;
-            storeName: string;
-            supermarketName: string;
-            /** @description Derived current price, in minor units (cents) */
-            priceCents: number;
-            /** @example ARS */
-            currency: string;
-            /**
-             * @description How far the price can be relied on
-             * @enum {string}
-             */
-            confidence: "VERY_RECENT" | "RECENTLY_VERIFIED" | "LIKELY_CURRENT" | "POSSIBLY_OUTDATED";
-            /** @description Observations behind the price */
-            observationCount: number;
-            /** Format: date-time */
-            lastObservedAt: string;
-            /** @description Null when no location was given */
-            distanceKm: number | null;
-            isOpenNow: boolean;
-        };
-        PriceComparisonResponse: {
-            /** Format: uuid */
-            productId: string;
-            productName: string;
-            /** @description Cheapest first */
-            prices: components["schemas"]["StorePriceResponse"][];
-            /** @description Cheapest price found, in cents */
-            lowestPriceCents: number | null;
-        };
-        DailyPricePointResponse: {
-            /** @example 2026-09-22 */
-            date: string;
-            averageCents: number;
-            minPriceCents: number;
-            maxPriceCents: number;
-            observationCount: number;
-            /** @description The day moved sharply against the one before it */
-            isAnomalous: boolean;
-        };
-        PriceTrendResponse: {
-            averageCents: number;
-            lowestCents: number;
-            highestCents: number;
-            /** @description Percent change across the range */
-            changePercent: number;
-            /** @enum {string} */
-            direction: "up" | "down" | "stable";
-        };
-        PriceHistoryResponse: {
-            /** Format: uuid */
-            productId: string;
-            /** Format: uuid */
-            storeId: string | null;
-            /** @enum {string} */
-            range: "30d" | "90d" | "6m" | "1y";
-            /**
-             * @description What every amount is in; null when there are no points
-             * @example ARS
-             */
-            currency: string | null;
-            /** @description Oldest first */
-            points: components["schemas"]["DailyPricePointResponse"][];
-            trend: components["schemas"]["PriceTrendResponse"] | null;
-            /** @description Current derived price; only when a store was named */
-            currentPriceCents: number | null;
-        };
-        PriceDropResponse: {
-            /** Format: uuid */
-            productId: string;
-            productName: string;
-            brandName: string | null;
-            imageUrl: string | null;
-            /** Format: uuid */
-            storeId: string;
-            storeName: string;
-            supermarketName: string;
-            /** @example ARS */
-            currency: string;
-            /** @description Current derived price, in cents */
-            priceCents: number;
-            /** @description The price before the drop began, in cents */
-            previousPriceCents: number;
-            /**
-             * @description Whole percent below the previous price
-             * @example 12
-             */
-            dropPercent: number;
-            /**
-             * Format: date-time
-             * @description When it last fell
-             */
-            droppedAt: string;
-            /** @description Great-circle distance from the searched point */
-            distanceKm: number;
-        };
-        PriceSourceResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            slug: string;
-            /** Format: uuid */
-            supermarketId: string;
-            /** @example json-http */
-            adapterKey: string;
-            isEnabled: boolean;
-            scheduleHourUtc: number;
-            /** @description Adapter configuration; credentials are never stored here */
-            config: Record<string, never>;
-            /** Format: date-time */
-            lastRunAt: string | null;
-            /** Format: date-time */
-            lastSuccessfulRunAt: string | null;
-            /** @enum {string|null} */
-            lastStatus: "STARTED" | "COMPLETED" | "PARTIAL" | "FAILED" | null;
-            /** @description Runs that failed outright since the last good one */
-            consecutiveFailures: number;
-        };
-        AdaptersResponse: {
-            /** @description Adapter keys this deployment can run */
-            adapters: string[];
-        };
-        CreatePriceSourceRequest: {
-            /** @example Coto API */
-            name: string;
-            /**
-             * Format: uuid
-             * @description The supermarket this source prices
-             */
-            supermarketId: string;
-            /** @example json-http */
-            adapterKey: string;
-            /** @default 8 */
-            scheduleHourUtc?: number;
-            /** @description Adapter configuration. Never put credentials here. */
-            config?: Record<string, never>;
-        };
-        UpdatePriceSourceRequest: {
-            name?: string;
-            isEnabled?: boolean;
-            scheduleHourUtc?: number;
-            config?: Record<string, never>;
-        };
-        ImportRunResponse: {
-            /** Format: uuid */
-            id: string;
-            /**
-             * @description The daily slot this run served
-             * @example 2026-09-24
-             */
-            runKey: string;
-            /** @enum {string} */
-            status: "STARTED" | "COMPLETED" | "PARTIAL" | "FAILED";
-            /** Format: date-time */
-            startedAt: string;
-            /** Format: date-time */
-            finishedAt: string | null;
-            productsSeen: number;
-            pricesSeen: number;
-            observationsCreated: number;
-            /** @description Unchanged prices that confirmed an earlier observation instead of adding one */
-            observationsConfirmed: number;
-            matchedProducts: number;
-            /** @description Products awaiting a person’s decision */
-            unmatchedProducts: number;
-            /** @description Prices that could not be placed or failed validation */
-            skippedPrices: number;
-            error: string | null;
-        };
-        ExternalProductLinkResponse: {
-            externalProductId: string;
-            externalName: string;
-            externalBarcode: string | null;
-            /** Format: uuid */
-            productId: string | null;
-            /** @enum {string|null} */
-            matchMethod: "BARCODE" | "EXTERNAL_ID" | "NORMALIZED_IDENTITY" | "MANUAL" | null;
-            /** @enum {string} */
-            status: "MATCHED" | "UNMATCHED" | "IGNORED";
-            /** Format: date-time */
-            lastSeenAt: string;
-        };
-        ExternalProductLinkPageResponse: {
-            data: components["schemas"]["ExternalProductLinkResponse"][];
-            meta: components["schemas"]["PaginationMeta"];
-        };
-        ResolveLinkRequest: {
-            /**
-             * Format: uuid
-             * @description The canonical product this is. Omit with ignore: true.
-             */
-            productId?: string;
-            /** @description Mark as having no canonical counterpart */
-            ignore?: boolean;
-        };
-        LinkStoreRequest: {
-            /** @description What the source calls the branch */
-            externalStoreId: string;
-            /** Format: uuid */
-            storeId: string;
         };
         OptimizeListRequest: {
             /**
@@ -1904,6 +1650,270 @@ export interface components {
             mode?: "CHEAPEST" | "BEST_BALANCE" | "SIMPLEST";
             preferredSupermarketIds?: string[];
             excludedSupermarketIds?: string[];
+        };
+        StorePriceResponse: {
+            /** Format: uuid */
+            storeId: string;
+            storeName: string;
+            supermarketName: string;
+            /** @description Derived current price, in minor units (cents) */
+            priceCents: number;
+            /** @example ARS */
+            currency: string;
+            /**
+             * @description How far the price can be relied on
+             * @enum {string}
+             */
+            confidence: "VERY_RECENT" | "RECENTLY_VERIFIED" | "LIKELY_CURRENT" | "POSSIBLY_OUTDATED";
+            /** @description Observations behind the price */
+            observationCount: number;
+            /** Format: date-time */
+            lastObservedAt: string;
+            /** @description Null when no location was given */
+            distanceKm: number | null;
+            isOpenNow: boolean;
+        };
+        PriceComparisonResponse: {
+            /** Format: uuid */
+            productId: string;
+            productName: string;
+            /** @description Cheapest first */
+            prices: components["schemas"]["StorePriceResponse"][];
+            /** @description Cheapest price found, in cents */
+            lowestPriceCents: number | null;
+        };
+        DailyPricePointResponse: {
+            /** @example 2026-09-22 */
+            date: string;
+            averageCents: number;
+            minPriceCents: number;
+            maxPriceCents: number;
+            observationCount: number;
+            /** @description The day moved sharply against the one before it */
+            isAnomalous: boolean;
+        };
+        PriceTrendResponse: {
+            averageCents: number;
+            lowestCents: number;
+            highestCents: number;
+            /** @description Percent change across the range */
+            changePercent: number;
+            /** @enum {string} */
+            direction: "up" | "down" | "stable";
+        };
+        PriceHistoryResponse: {
+            /** Format: uuid */
+            productId: string;
+            /** Format: uuid */
+            storeId: string | null;
+            /** @enum {string} */
+            range: "30d" | "90d" | "6m" | "1y";
+            /**
+             * @description What every amount is in; null when there are no points
+             * @example ARS
+             */
+            currency: string | null;
+            /** @description Oldest first */
+            points: components["schemas"]["DailyPricePointResponse"][];
+            trend: components["schemas"]["PriceTrendResponse"] | null;
+            /** @description Current derived price; only when a store was named */
+            currentPriceCents: number | null;
+        };
+        PriceDropResponse: {
+            /** Format: uuid */
+            productId: string;
+            productName: string;
+            brandName: string | null;
+            imageUrl: string | null;
+            /** Format: uuid */
+            storeId: string;
+            storeName: string;
+            supermarketName: string;
+            /** @example ARS */
+            currency: string;
+            /** @description Current derived price, in cents */
+            priceCents: number;
+            /** @description The price before the drop began, in cents */
+            previousPriceCents: number;
+            /**
+             * @description Whole percent below the previous price
+             * @example 12
+             */
+            dropPercent: number;
+            /**
+             * Format: date-time
+             * @description When it last fell
+             */
+            droppedAt: string;
+            /** @description Great-circle distance from the searched point */
+            distanceKm: number;
+        };
+        PriceEvidenceRequest: {
+            /** @description Key returned by POST /v1/price-evidence for a photo you uploaded */
+            photoKey?: string;
+            note?: string;
+        };
+        ReportPriceRequest: {
+            /**
+             * Format: uuid
+             * @description Optional client-generated id. Retrying with the same id returns the report already stored.
+             */
+            id?: string;
+            /** Format: uuid */
+            productId: string;
+            /** Format: uuid */
+            storeId: string;
+            /**
+             * @description Price of one unit, in minor units (cents)
+             * @example 125
+             */
+            priceCents: number;
+            /** @example ARS */
+            currency: string;
+            /**
+             * Format: date-time
+             * @description When the price was seen; defaults to now. At most 7 days old.
+             */
+            observedAt?: string;
+            evidence?: components["schemas"]["PriceEvidenceRequest"];
+        };
+        ContributionResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            productId: string;
+            /** Format: uuid */
+            storeId: string;
+            /** @description Price of one unit, in minor units (cents) */
+            priceCents: number;
+            /** @example ARS */
+            currency: string;
+            /** Format: date-time */
+            observedAt: string;
+            /** Format: date-time */
+            receivedAt: string;
+            /** @enum {string} */
+            sourceType: "USER_REPORTED" | "USER_WITH_EVIDENCE" | "PURCHASE_CONFIRMED" | "EXTERNAL_API";
+            /**
+             * @description UNDER_REVIEW prices are kept but do not affect shown prices until confirmed
+             * @enum {string}
+             */
+            status: "ACCEPTED" | "UNDER_REVIEW" | "REJECTED";
+            hasPhotoEvidence: boolean;
+            note: string | null;
+        };
+        ContributionPageResponse: {
+            data: components["schemas"]["ContributionResponse"][];
+            meta: components["schemas"]["PaginationMeta"];
+        };
+        EvidenceUploadResponse: {
+            /** @description Pass as evidence.photoKey when reporting a price */
+            photoKey: string;
+        };
+        PriceSourceResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            /** Format: uuid */
+            supermarketId: string;
+            /** @example json-http */
+            adapterKey: string;
+            isEnabled: boolean;
+            scheduleHourUtc: number;
+            /** @description Adapter configuration; credentials are never stored here */
+            config: Record<string, never>;
+            /** Format: date-time */
+            lastRunAt: string | null;
+            /** Format: date-time */
+            lastSuccessfulRunAt: string | null;
+            /** @enum {string|null} */
+            lastStatus: "STARTED" | "COMPLETED" | "PARTIAL" | "FAILED" | null;
+            /** @description Runs that failed outright since the last good one */
+            consecutiveFailures: number;
+        };
+        AdaptersResponse: {
+            /** @description Adapter keys this deployment can run */
+            adapters: string[];
+        };
+        CreatePriceSourceRequest: {
+            /** @example Coto API */
+            name: string;
+            /**
+             * Format: uuid
+             * @description The supermarket this source prices
+             */
+            supermarketId: string;
+            /** @example json-http */
+            adapterKey: string;
+            /** @default 8 */
+            scheduleHourUtc?: number;
+            /** @description Adapter configuration. Never put credentials here. */
+            config?: Record<string, never>;
+        };
+        UpdatePriceSourceRequest: {
+            name?: string;
+            isEnabled?: boolean;
+            scheduleHourUtc?: number;
+            config?: Record<string, never>;
+        };
+        ImportRunResponse: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description The daily slot this run served
+             * @example 2026-09-24
+             */
+            runKey: string;
+            /** @enum {string} */
+            status: "STARTED" | "COMPLETED" | "PARTIAL" | "FAILED";
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            finishedAt: string | null;
+            productsSeen: number;
+            pricesSeen: number;
+            observationsCreated: number;
+            /** @description Unchanged prices that confirmed an earlier observation instead of adding one */
+            observationsConfirmed: number;
+            matchedProducts: number;
+            /** @description Products awaiting a person’s decision */
+            unmatchedProducts: number;
+            /** @description Prices that could not be placed or failed validation */
+            skippedPrices: number;
+            error: string | null;
+        };
+        ExternalProductLinkResponse: {
+            externalProductId: string;
+            externalName: string;
+            externalBarcode: string | null;
+            /** Format: uuid */
+            productId: string | null;
+            /** @enum {string|null} */
+            matchMethod: "BARCODE" | "EXTERNAL_ID" | "NORMALIZED_IDENTITY" | "MANUAL" | null;
+            /** @enum {string} */
+            status: "MATCHED" | "UNMATCHED" | "IGNORED";
+            /** Format: date-time */
+            lastSeenAt: string;
+        };
+        ExternalProductLinkPageResponse: {
+            data: components["schemas"]["ExternalProductLinkResponse"][];
+            meta: components["schemas"]["PaginationMeta"];
+        };
+        ResolveLinkRequest: {
+            /**
+             * Format: uuid
+             * @description The canonical product this is. Omit with ignore: true.
+             */
+            productId?: string;
+            /** @description Mark as having no canonical counterpart */
+            ignore?: boolean;
+        };
+        LinkStoreRequest: {
+            /** @description What the source calls the branch */
+            externalStoreId: string;
+            /** Format: uuid */
+            storeId: string;
         };
         CreatePriceAlertRequest: {
             /** Format: uuid */
@@ -2060,26 +2070,6 @@ export type ShoppingSessionDetailResponse = components['schemas']['ShoppingSessi
 export type ShoppingSessionSummaryResponse = components['schemas']['ShoppingSessionSummaryResponse'];
 export type ShoppingSessionPageResponse = components['schemas']['ShoppingSessionPageResponse'];
 export type RecordItemProgressRequest = components['schemas']['RecordItemProgressRequest'];
-export type PriceEvidenceRequest = components['schemas']['PriceEvidenceRequest'];
-export type ReportPriceRequest = components['schemas']['ReportPriceRequest'];
-export type ContributionResponse = components['schemas']['ContributionResponse'];
-export type ContributionPageResponse = components['schemas']['ContributionPageResponse'];
-export type EvidenceUploadResponse = components['schemas']['EvidenceUploadResponse'];
-export type StorePriceResponse = components['schemas']['StorePriceResponse'];
-export type PriceComparisonResponse = components['schemas']['PriceComparisonResponse'];
-export type DailyPricePointResponse = components['schemas']['DailyPricePointResponse'];
-export type PriceTrendResponse = components['schemas']['PriceTrendResponse'];
-export type PriceHistoryResponse = components['schemas']['PriceHistoryResponse'];
-export type PriceDropResponse = components['schemas']['PriceDropResponse'];
-export type PriceSourceResponse = components['schemas']['PriceSourceResponse'];
-export type AdaptersResponse = components['schemas']['AdaptersResponse'];
-export type CreatePriceSourceRequest = components['schemas']['CreatePriceSourceRequest'];
-export type UpdatePriceSourceRequest = components['schemas']['UpdatePriceSourceRequest'];
-export type ImportRunResponse = components['schemas']['ImportRunResponse'];
-export type ExternalProductLinkResponse = components['schemas']['ExternalProductLinkResponse'];
-export type ExternalProductLinkPageResponse = components['schemas']['ExternalProductLinkPageResponse'];
-export type ResolveLinkRequest = components['schemas']['ResolveLinkRequest'];
-export type LinkStoreRequest = components['schemas']['LinkStoreRequest'];
 export type OptimizeListRequest = components['schemas']['OptimizeListRequest'];
 export type OriginResponse = components['schemas']['OriginResponse'];
 export type PlanAssignmentResponse = components['schemas']['PlanAssignmentResponse'];
@@ -2092,6 +2082,26 @@ export type OptimizationSummaryResponse = components['schemas']['OptimizationSum
 export type OptimizationPageResponse = components['schemas']['OptimizationPageResponse'];
 export type OptimizationPreferencesResponse = components['schemas']['OptimizationPreferencesResponse'];
 export type UpdateOptimizationPreferencesRequest = components['schemas']['UpdateOptimizationPreferencesRequest'];
+export type StorePriceResponse = components['schemas']['StorePriceResponse'];
+export type PriceComparisonResponse = components['schemas']['PriceComparisonResponse'];
+export type DailyPricePointResponse = components['schemas']['DailyPricePointResponse'];
+export type PriceTrendResponse = components['schemas']['PriceTrendResponse'];
+export type PriceHistoryResponse = components['schemas']['PriceHistoryResponse'];
+export type PriceDropResponse = components['schemas']['PriceDropResponse'];
+export type PriceEvidenceRequest = components['schemas']['PriceEvidenceRequest'];
+export type ReportPriceRequest = components['schemas']['ReportPriceRequest'];
+export type ContributionResponse = components['schemas']['ContributionResponse'];
+export type ContributionPageResponse = components['schemas']['ContributionPageResponse'];
+export type EvidenceUploadResponse = components['schemas']['EvidenceUploadResponse'];
+export type PriceSourceResponse = components['schemas']['PriceSourceResponse'];
+export type AdaptersResponse = components['schemas']['AdaptersResponse'];
+export type CreatePriceSourceRequest = components['schemas']['CreatePriceSourceRequest'];
+export type UpdatePriceSourceRequest = components['schemas']['UpdatePriceSourceRequest'];
+export type ImportRunResponse = components['schemas']['ImportRunResponse'];
+export type ExternalProductLinkResponse = components['schemas']['ExternalProductLinkResponse'];
+export type ExternalProductLinkPageResponse = components['schemas']['ExternalProductLinkPageResponse'];
+export type ResolveLinkRequest = components['schemas']['ResolveLinkRequest'];
+export type LinkStoreRequest = components['schemas']['LinkStoreRequest'];
 export type CreatePriceAlertRequest = components['schemas']['CreatePriceAlertRequest'];
 export type PriceAlertResponse = components['schemas']['PriceAlertResponse'];
 export type PriceAlertPageResponse = components['schemas']['PriceAlertPageResponse'];
@@ -3272,6 +3282,224 @@ export interface operations {
             };
         };
     };
+    optimizationOptimize: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OptimizeListRequest"];
+            };
+        };
+        responses: {
+            /** @description 202 while it is computed; 200 when a recent answer is reused */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptimizationResponse"];
+                };
+            };
+            /** @description The list is empty */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    optimizationList: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                listId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptimizationPageResponse"];
+                };
+            };
+        };
+    };
+    optimizationGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptimizationResponse"];
+                };
+            };
+            /** @description Optimization not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    optimizationMyPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptimizationPreferencesResponse"];
+                };
+            };
+        };
+    };
+    optimizationUpdatePreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOptimizationPreferencesRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptimizationPreferencesResponse"];
+                };
+            };
+        };
+    };
+    productPricesCompare: {
+        parameters: {
+            query?: {
+                /** @description With longitude, limits to nearby stores */
+                latitude?: number;
+                longitude?: number;
+                radiusKm?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceComparisonResponse"];
+                };
+            };
+            /** @description Product not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    productPricesHistory: {
+        parameters: {
+            query?: {
+                range?: "30d" | "90d" | "6m" | "1y";
+                /** @description One store; omitted, the history covers every store */
+                storeId?: string;
+                /** @description ISO 4217. Omitted, the currency with the most observations in the range */
+                currency?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceHistoryResponse"];
+                };
+            };
+            /** @description Product not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    priceDropsNearby: {
+        parameters: {
+            query: {
+                latitude: number;
+                longitude: number;
+                radiusKm?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceDropResponse"][];
+                };
+            };
+        };
+    };
     contributionsReport: {
         parameters: {
             query?: never;
@@ -3368,98 +3596,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    productPricesCompare: {
-        parameters: {
-            query?: {
-                /** @description With longitude, limits to nearby stores */
-                latitude?: number;
-                longitude?: number;
-                radiusKm?: number;
-                limit?: number;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PriceComparisonResponse"];
-                };
-            };
-            /** @description Product not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    productPricesHistory: {
-        parameters: {
-            query?: {
-                range?: "30d" | "90d" | "6m" | "1y";
-                /** @description One store; omitted, the history covers every store */
-                storeId?: string;
-                /** @description ISO 4217. Omitted, the currency with the most observations in the range */
-                currency?: string;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PriceHistoryResponse"];
-                };
-            };
-            /** @description Product not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    priceDropsNearby: {
-        parameters: {
-            query: {
-                latitude: number;
-                longitude: number;
-                radiusKm?: number;
-                limit?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PriceDropResponse"][];
-                };
             };
         };
     };
@@ -3740,132 +3876,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    optimizationOptimize: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OptimizeListRequest"];
-            };
-        };
-        responses: {
-            /** @description 202 while it is computed; 200 when a recent answer is reused */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OptimizationResponse"];
-                };
-            };
-            /** @description The list is empty */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    optimizationList: {
-        parameters: {
-            query?: {
-                page?: number;
-                pageSize?: number;
-                listId?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OptimizationPageResponse"];
-                };
-            };
-        };
-    };
-    optimizationGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OptimizationResponse"];
-                };
-            };
-            /** @description Optimization not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    optimizationMyPreferences: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OptimizationPreferencesResponse"];
-                };
-            };
-        };
-    };
-    optimizationUpdatePreferences: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateOptimizationPreferencesRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OptimizationPreferencesResponse"];
-                };
             };
         };
     };

@@ -8,6 +8,7 @@ import { Button } from '@/components/button';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useList } from '@/features/lists/use-lists';
+import { useStartTrip } from '@/features/trip/use-trip';
 import { useShopperLocation } from '@/features/location/location-provider';
 import { errorMessage } from '@/lib/error-message';
 import { formatPrice, productCount } from '@/lib/format';
@@ -34,6 +35,7 @@ export function PlanScreen() {
   const optimization = useOptimization(request.data?.id);
   const [mode, setMode] = useState<Mode | null>(null);
   const [editing, setEditing] = useState(false);
+  const start = useStartTrip();
 
   // Ask as soon as there is somewhere to ask from, and again after a reset.
   useEffect(() => {
@@ -129,6 +131,20 @@ export function PlanScreen() {
         contentContainerStyle={styles.sheetContent}
         contentInsetAdjustmentBehavior="automatic">
         {body}
+        {plan && optimization.data ? (
+          <Button
+            label="Empezar la compra"
+            accessibilityLabel={`Empezar la compra: ${MODES.find((entry) => entry.mode === shown)?.label ?? ''}`}
+            loading={start.isPending}
+            onPress={() =>
+              start
+                .mutateAsync({ listId: id, optimizationId: optimization.data!.id, mode: shown ?? undefined })
+                .then(() => router.navigate('/shop'))
+                .catch(() => undefined)
+            }
+          />
+        ) : null}
+        {start.isError ? <Text tone="danger">{errorMessage(start.error)}</Text> : null}
         <View style={styles.footer}>
           <Button label="Preferencias" variant="secondary" onPress={() => setEditing(true)} style={styles.footerButton} />
           <Button

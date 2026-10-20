@@ -104,7 +104,7 @@ const tappable = (selector, match, arg) =>
 
 const press = async (label) => {
   const target = await tappable(
-    '[role=button],[role=tab],[role=switch],a,button',
+    '[role=button],[role=tab],[role=switch],[role=checkbox],a,button',
     (n, label) =>
       n.getAttribute('aria-label') === label ||
       n.innerText.trim() === label ||
@@ -116,7 +116,11 @@ const press = async (label) => {
 
 /** Text a person can actually see: in a leaf element that is on top. */
 const shown = (wanted) =>
-  tappable('div,span', (n, wanted) => n.children.length === 0 && n.innerText.trim() === wanted, wanted);
+  tappable(
+    'div,span,h1,h2,h3,h4,h5,h6',
+    (n, wanted) => n.children.length === 0 && n.innerText.trim() === wanted,
+    wanted,
+  );
 
 // Rows whose accessible name is long are found by what they show.
 const pressContaining = async (shown) => {
@@ -385,10 +389,90 @@ await step('Inicio shows the list\'s savings from its plan', async () => {
   await press('Volver');
 });
 
+// --- Checkpoint 6: shopping ------------------------------------------------
+// Only the trip without stores is finished: finishing one with stores turns
+// its prices into reports, which would move the demo prices.
+
+await step('Compra starts a trip from a list', async () => {
+  await press('Compra');
+  await shown('Compra');
+  await press('Empezar la compra de Compra semanal');
+  await shown('0 / 4');
+  await shown('Esperado $ 1.400 c/u');
+  await page.screenshot({ path: `${SHOTS}checkpoint-6-trip.png` });
+});
+await step('the price paid is typed, and the item ticked off', async () => {
+  await typeInto('Precio pagado por unidad', '1.350');
+  await press('Listo');
+  await shown('1 / 4');
+  await shown('Pagado $ 1.350 c/u');
+  await shown('$ 2.700');
+});
+await step('an item can be ticked and unticked from the list', async () => {
+  await press('Marcar Pan Lactal 500g');
+  await shown('2 / 4');
+  await press('Desmarcar Pan Lactal 500g');
+  await shown('1 / 4');
+});
+await step('a trip can be paused and continued', async () => {
+  await press('Opciones de la compra');
+  await press('Pausar');
+  await shown('Compra en pausa');
+  await press('Seguir');
+  await gone('Compra en pausa');
+});
+await step('finishing shows what was spent', async () => {
+  await press('Terminar la compra');
+  await shown('Compraste 1 de 4 productos. Tu lista no cambia: lo que falta sigue ahí para la próxima.');
+  await press('Terminar');
+  await shown('Compra terminada');
+  await shown('$ 2.700');
+  await page.screenshot({ path: `${SHOTS}checkpoint-6-summary.png` });
+  await press('Listo');
+  await shown('Compra');
+});
+await step('a trip can follow a plan stop by stop, at the plan\'s stores and prices', async () => {
+  // With 40 minutes to spare, the cheapest plan buys the rice at Coto and the
+  // rest at Carrefour: two stops.
+  await press('Listas');
+  await pressContaining('Compra semanal');
+  await press('¿Dónde conviene comprar?');
+  await press('Preferencias');
+  for (let i = 0; i < 4; i++) await press('Más: Tiempo extra');
+  await press('Guardar y calcular');
+  await shown('Ahorrás');
+  await press('Más barato');
+  await press('Empezar la compra: Más barato');
+  await shown('Parada 1 de 2');
+  await shown('Coto Centro');
+  await shown('Arroz Largo Fino 1kg');
+  await page.screenshot({ path: `${SHOTS}checkpoint-6-plan-trip.png` });
+  await press('Siguiente parada');
+  await shown('Parada 2 de 2');
+  await shown('Carrefour Almagro');
+  await shown('0 / 3');
+  await press('Anterior');
+  await shown('Parada 1 de 2');
+});
+await step('a trip can be abandoned after asking', async () => {
+  await press('Opciones de la compra');
+  await press('Abandonar');
+  await press('Sí, abandonar');
+  await text('Marcá lo que vas poniendo');
+  // Put the shopper's preference back.
+  await press('Listas');
+  await press('Preferencias');
+  for (let i = 0; i < 4; i++) await press('Menos: Tiempo extra');
+  await press('Guardar y calcular');
+  await shown('Ahorrás');
+  await press('Volver');
+  await press('Volver');
+});
+
 for (const [tab, wanted] of [
   ['Buscar', 'Bebidas'],
   ['Listas', 'Tus listas'],
-  ['Compra', 'El modo compra'],
+  ['Compra', 'Marcá lo que vas poniendo'],
   ['Avisos', 'Las alertas de precio'],
 ]) {
   await step(`the ${tab} tab opens`, async () => {

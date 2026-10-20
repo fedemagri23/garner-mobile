@@ -316,3 +316,57 @@ Viena", a euro list), and `npm install` in `garner-mobile` (the map is new).
 - On the web the map is a schematic without streets (MCON-020).
 - Inicio shows the last plan; it does not recalculate on its own
   (MCON-019).
+
+---
+
+## Checkpoint 6 — Shopping
+
+_Phase 4 · 2026-10-20 · backend `4fed85a`, app: this commit._
+
+What a person can do: start a trip from a list, or from a plan so each
+product is waiting at the store the plan chose; go one stop at a time, tick
+products off with the price on the shelf; pause and continue; finish and see
+what they spent; or abandon the trip.
+
+Pull both repos; nothing new to install. Run `pnpm run seed` in
+`garner-app` for clean demo lists.
+
+**Check by hand**
+
+1. Sign in as `shopper@garner.test` and tap **Compra**: your lists with
+   products, each with **Empezar**. Tap it on **Compra semanal**.
+2. The trip shows **0 / 4**, a bar, and a highlighted card for the first
+   product: **Leche Entera La Serenísima 1L × 2 · Esperado $ 1.400 c/u**, with
+   the price field filled with 1.400. Type `1.350` and tap **Listo**: **1 /
+   4**, the row says "Pagado $ 1.350 c/u" and **$ 2.700**, and the card moves
+   to the next product.
+3. Tap the circle of another product to tick it without a price; tap it
+   again to untick it. Tap a product's name to make it the highlighted one.
+4. **···** → **Pausar**: "Compra en pausa" with **Seguir**. Close the app
+   and reopen it: Compra is still on the same trip.
+5. **Terminar la compra** (at the end of the stop): it says how many you
+   bought, and that your list does not change. **Terminar**: **Compra
+   terminada**, what you spent, how far from what you expected, and that no
+   price is shared — this trip had no stores. **Listo**.
+6. Listas → Compra semanal → **¿Dónde conviene comprar?** → **Preferencias**
+   → raise **Tiempo extra** to 40 min → **Guardar y calcular** → **Más
+   barato**: the rice at **Coto Centro**, the rest at **Carrefour Almagro**.
+   **Empezar la compra**: Compra opens on **Parada 1 de 2 · Coto Centro**
+   with the rice at Coto's price; **Siguiente parada** goes to Carrefour
+   (0 / 3), **Anterior** back. Put Tiempo extra back to 20 min afterwards.
+   In Vienna, **Compra en Viena** → Más barato → Empezar la compra: one stop,
+   Hofer Landstraße, in euros.
+7. Finish a plan trip after typing a price: the summary says your price
+   now counts for others — it becomes a price report for that store.
+   (This changes the demo's prices; `pnpm run seed` puts them back.)
+8. **···** → **Abandonar** → it asks first → **Sí, abandonar**: back to the
+   lists.
+
+**Known limits**
+
+- Without a connection, ticks and prices fail for now; checkpoint 7 makes
+  the trip work offline (MCON-022).
+- A trip is fixed when it starts; starting the same list again returns the
+  trip in progress (MCON-023).
+- A trip started from Compra has no stores, so its prices are not shared
+  (MCON-024).

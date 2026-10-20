@@ -131,3 +131,21 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** Preferences in the app cover what to show first, the most stores, extra distance and extra time. The fourth limit, the least an extra stop must save, keeps its default (400 cents) and has no control.
 - **Why:** The backend stores it as one amount in cents for every list, whatever its currency: 400 is $ 4 for a peso list and € 4 for a euro list, which no single control can present honestly.
 - **Revisit when:** The backend keeps that limit per currency, or as a percentage of the list's total.
+
+### MCON-022 — Shopping needs a connection until checkpoint 7
+- **Phase:** 4 · **Area:** trip · **Status:** deferred
+- **What:** Every tick, price and status change goes straight to the backend. The screen changes at once and puts a line back if the request fails, but nothing is kept for later: without a connection, ticks fail.
+- **Why:** The plan splits phase 4 in two: the trip itself first, then the persisted outbox that replays changes in order when the connection returns (the spec's §27).
+- **Revisit when:** Checkpoint 7, next.
+
+### MCON-023 — A trip is fixed when it starts
+- **Phase:** 4 · **Area:** trip · **Status:** accepted
+- **What:** A trip copies the list (and, from a plan, the plan's stores and prices) when it starts. Starting again while one is in progress for that list returns the one in progress, even if a different plan was chosen. Lines cannot move to another store mid-trip, and the price typed is per unit.
+- **Why:** The backend keeps a trip as the record of what was planned when the shopper walked in, and refuses to start two at once so a retried tap cannot create a second trip.
+- **Revisit when:** Shoppers need to change stores mid-trip, or restart a trip with another plan — that needs a store field on line updates (garner-app CON-046).
+
+### MCON-024 — A trip without stores shares no prices
+- **Phase:** 4 · **Area:** trip · **Status:** accepted
+- **What:** Starting from Compra uses the list as it is, where items usually have no store; prices typed there are kept on the trip but cannot become price reports, since a price needs a store. The summary says so. Starting from a plan gives every line its store, and its prices are shared on "Terminar".
+- **Why:** The backend turns a paid price into a report only with its store (garner-app contributions); asking for the store on each tick would slow the trip down.
+- **Revisit when:** Shoppers often buy without a plan — then let Compra start a trip at one chosen store (the backend's `storeId`), so those prices count too.
