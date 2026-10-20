@@ -67,7 +67,7 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Superseded by:** MBUG-011 — this fix did not work on the phone and made things worse.
 
 ### MBUG-011 — The first fix for the tab bar left a half-screen box and the list still covered
-- **Phase:** 3 · **Area:** layout · **Scope:** production code · **Found by:** the developer, on an iPhone · **Fixed in:** this commit
+- **Phase:** 3 · **Area:** layout · **Scope:** production code · **Found by:** the developer, on an iPhone · **Fixed in:** aa68542
 - **Symptom:** After MBUG-010's fix, the plan screen's box holding Preferencias and Recalcular grew from the bottom to about the middle of the screen, and a list's total and plan button were still under the tab bar.
 - **Cause:** The `SafeAreaView` from `react-native-screens/experimental` is `flex: 1` by default, so it split the screen with the scroll view above it. And the same fix turned off the scroll views' automatic content insets — the one mechanism that does clear the floating tab bar on iOS.
 - **Fix:** Nothing is fixed to the bottom of a screen inside the tabs any more. A list's total and "¿Dónde conviene comprar?" end its scrolling content (with "Dónde comprar" also at the top, next to ···), and the plan's buttons end the plan. Every scroll view inside the tabs asks for automatic content insets explicitly (`contentInsetAdjustmentBehavior="automatic"`), so iOS insets the end of the content for the tab bar whether or not it is a screen's first scroll view. `BottomBar` is gone.
