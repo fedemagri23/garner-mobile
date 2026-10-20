@@ -85,19 +85,19 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Fix:** A covered target is scrolled to the middle and looked at again; `shown()` compares `textContent`, the text as written; the expectation includes the quantity.
 
 ### MBUG-014 — Losing the connection signed the shopper out
-- **Phase:** 4 · **Area:** session · **Scope:** production code · **Found by:** reviewing the session code before building offline · **Fixed in:** this checkpoint's commit
+- **Phase:** 4 · **Area:** session · **Scope:** production code · **Found by:** reviewing the session code before building offline · **Fixed in:** e0fd995
 - **Symptom:** Not seen yet, because nothing ran offline for long — but any refresh of the access token that failed for lack of connection would have deleted the saved session and sent the shopper to Ingresar. The access token lasts 15 minutes, so 15 minutes in a basement supermarket would have ended the session, and opening the app without signal would have shown the sign-in screen.
 - **Cause:** The token manager treated every failed refresh as the server refusing the token. A network error and "your token is revoked" are very different answers.
 - **Fix:** Only a 4xx from the server (not a rate limit) ends the session; a refresh that could not be tried keeps the stored token and fails with `SessionUnavailableError`, and the app opens signed in on a launch without a connection. Tested with the manager offline, then back online.
 
 ### MBUG-015 — The banner's key words were dark on a dark background
-- **Phase:** 4 · **Area:** accessibility · **Scope:** production code · **Found by:** web smoke test (screenshot) · **Fixed in:** this checkpoint's commit
+- **Phase:** 4 · **Area:** accessibility · **Scope:** production code · **Found by:** web smoke test (screenshot) · **Fixed in:** e0fd995
 - **Symptom:** In "Sin conexión · 2 cambios esperan para enviarse" the bold part could barely be read.
 - **Cause:** Nested `Text` takes the app's default ink colour, not its parent's.
 - **Fix:** The bold part sets its colour itself.
 
 ### MBUG-016 — The walk-through aimed at the middle of wrapped text
-- **Phase:** 4 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** this checkpoint's commit
+- **Phase:** 4 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** e0fd995
 - **Symptom:** "1 cambio espera para enviarse" was on screen but `shown()` waited until it timed out; Chrome's blocked-request logs for the offline steps also counted as page errors.
 - **Cause:** The banner's text wraps over two lines, so the centre of its bounding box is empty space and the "is it on top" test (`elementFromPoint`) hit the container instead. Chrome logs `ERR_INTERNET_DISCONNECTED` for every request the offline mode refuses.
 - **Fix:** The helper hit-tests the first line's box; the offline logs are expected.

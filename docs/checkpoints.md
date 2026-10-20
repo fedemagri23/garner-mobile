@@ -375,7 +375,7 @@ Pull both repos; nothing new to install. Run `pnpm run seed` in
 
 ## Checkpoint 7 — Shopping without a connection
 
-_Phase 4 · 2026-10-21 · backend `0076b98`, app: this commit._
+_Phase 4 · 2026-10-21 · backend `0076b98`, app `e0fd995`._
 
 What a person can do: keep shopping when the signal drops. Ticks, prices
 paid, pausing and finishing are kept on the phone and sent, in order, when
