@@ -829,26 +829,39 @@ await step('English: the whole app changes, prices are written the English way, 
   await reachLanguages('Avisos', 'Preferencias de avisos');
   await shown('Idioma');
   await press('English');
+  await text('Preferences');
+  await press('Home');
   await text('Hi, Fede');
   await text('What are we buying today?');
   await text('€0.69');
   await page.screenshot({ path: `${SHOTS}language-en-home.png` });
+  // The web build keeps no session across a reload, so the sign-in screen is
+  // the proof: it is still in English, which was only remembered.
   await page.reload({ waitUntil: 'networkidle0' });
+  await text('Pay less for the same shop.');
+  await typeInto('Email', 'shopper@garner.test');
+  await typeInto('Password', 'correct-horse-battery');
+  await press('Sign in');
   await text('Hi, Fede');
 });
 await step('German: dates, plurals and prices follow', async () => {
   await reachLanguages('Alerts', 'Alert preferences');
   await shown('Language');
   await press('Deutsch');
+  await text('Einstellungen');
+  await press('Start');
   await text('Hallo, Fede');
   await text('Was kaufen wir heute?');
   await text('0,69\u00a0€');
   await page.screenshot({ path: `${SHOTS}language-de-home.png` });
 });
 await step('Español comes back, and a signed-out phone can pick a language too', async () => {
-  await reachLanguages('Hinweise', 'Einstellungen für Hinweise');
+  // The Hinweise tab remembers it was on its preferences screen.
+  await press('Hinweise');
   await shown('Sprache');
   await press('Español');
+  await text('Preferencias');
+  await press('Inicio');
   await text('Hola, Fede');
   await press('Cerrar sesión');
   await text('Pagá menos por la misma compra.');

@@ -231,9 +231,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 
 ### MCON-038 — Languages come from typed catalogs; changing language restarts the screens
 - **Phase:** 7 (checkpoint 11) · **Area:** i18n · **Status:** accepted
-- **What:** Spanish, English and German live in `src/i18n/catalog/<language>/<area>.ts`, read with `t('area.key')` through `i18next`. Keys are type-checked against the Spanish catalog (a typo or a missing translation fails `tsc`), and a test checks the languages have the same phrases and the same `{{placeholders}}`. The language is the shopper's pick, else the phone's, else Spanish. Changing it remounts everything below the provider, so a screen cannot stay half in the old language; the shopper lands on Inicio.
+- **What:** Spanish, English and German live in `src/i18n/catalog/<language>/<area>.ts`, read with `t('area.key')` through `i18next`. Keys are type-checked against the Spanish catalog (a typo or a missing translation fails `tsc`), and a test checks the languages have the same phrases and the same `{{placeholders}}`. The language is the shopper's pick, else the phone's, else Spanish. Changing it remounts everything below the provider, so a screen cannot stay half in the old language. On the web the shopper stays on the same screen; on a phone the navigation may restart at Inicio (not yet checked on a device).
 - **Why:** Text is written from plain functions as well as components (alert messages, errors, plan wording), so a hook per component would miss some. A remount is blunt but cannot leave stale text. The session and cache sit above the provider and survive it.
-- **Revisit when:** Returning to Preferencias after a change matters (restore the route), or a screen holds state worth keeping across a change.
+- **Revisit when:** A phone check shows the shopper is thrown back to Inicio and that matters, or a screen holds state worth keeping across a change.
 
 ### MCON-039 — Dates and money are written by the app, not by `Intl`
 - **Phase:** 7 (checkpoint 11) · **Area:** i18n · **Status:** accepted

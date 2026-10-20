@@ -574,6 +574,6 @@ Avisos → Preferencias → Idioma. The choice is remembered.
 
 **Known limits**
 
-- After changing language you land on Inicio (MCON-038).
+- After changing language the screens restart; on a phone you may land on Inicio rather than staying in Preferencias (MCON-038).
 - Push notifications are in Spanish, emails in English, product names are not
   translated (MCON-040, checkpoint 14).
