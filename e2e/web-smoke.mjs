@@ -78,7 +78,13 @@ const settledOnTop = (n) => {
     return false;
   }
   const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
-  if (!(box.width > 0 && hit !== null && n.contains(hit))) return false;
+  if (!(box.width > 0 && hit !== null && n.contains(hit))) {
+    // Covered — by a header over scrolled content, say: scroll it to the
+    // middle, as a person would, and look again. (Hidden screens scroll too,
+    // harmlessly; they never come out on top.)
+    if (box.width > 0) n.scrollIntoView({ block: 'center' });
+    return false;
+  }
   const where = `${box.x},${box.y},${box.width}`;
   const settled = n.dataset.e2eWhere === where;
   n.dataset.e2eWhere = where;
@@ -118,7 +124,8 @@ const press = async (label) => {
 const shown = (wanted) =>
   tappable(
     'div,span,h1,h2,h3,h4,h5,h6',
-    (n, wanted) => n.children.length === 0 && n.innerText.trim() === wanted,
+    // textContent, not innerText: the text as written, before CSS uppercases it.
+    (n, wanted) => n.children.length === 0 && n.textContent.trim() === wanted,
     wanted,
   );
 
@@ -445,7 +452,7 @@ await step('a trip can follow a plan stop by stop, at the plan\'s stores and pri
   await press('Empezar la compra: Más barato');
   await shown('Parada 1 de 2');
   await shown('Coto Centro');
-  await shown('Arroz Largo Fino 1kg');
+  await shown('Arroz Largo Fino 1kg × 2');
   await page.screenshot({ path: `${SHOTS}checkpoint-6-plan-trip.png` });
   await press('Siguiente parada');
   await shown('Parada 2 de 2');

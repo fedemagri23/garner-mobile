@@ -73,7 +73,13 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Fix:** Nothing is fixed to the bottom of a screen inside the tabs any more. A list's total and "¿Dónde conviene comprar?" end its scrolling content (with "Dónde comprar" also at the top, next to ···), and the plan's buttons end the plan. Every scroll view inside the tabs asks for automatic content insets explicitly (`contentInsetAdjustmentBehavior="automatic"`), so iOS insets the end of the content for the tab bar whether or not it is a screen's first scroll view. `BottomBar` is gone.
 
 ### MBUG-012 — The walk-through could not see headings or tick checkboxes
-- **Phase:** 4 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** this checkpoint's commit
+- **Phase:** 4 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** 9f97a54
 - **Symptom:** "Compra terminada" was on screen but `shown()` never found it, and `press()` could not tick an item's circle.
 - **Cause:** React Native Web renders `accessibilityRole="header"` text as `h1`–`h6`, and `shown()` only looked in `div` and `span`; `press()` did not include `role="checkbox"`.
 - **Fix:** Both look for those elements too.
+
+### MBUG-013 — The two-stop trip step could not reach the tabs or read the stop
+- **Phase:** 4 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** this commit
+- **Symptom:** "A trip can follow a plan stop by stop" timed out, although the plan and the two-stop trip were right on screen.
+- **Cause:** Three test assumptions. The plan's tabs had scrolled under the map, and the helper only scrolled targets that were off screen, not ones covered on screen. "Parada 1 de 2" is uppercased by CSS, and `innerText` returns the uppercased text. And the step expected the rice's name without the "× 2" the screen rightly shows.
+- **Fix:** A covered target is scrolled to the middle and looked at again; `shown()` compares `textContent`, the text as written; the expectation includes the quantity.
