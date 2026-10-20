@@ -30,13 +30,13 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Fix:** The helper only taps an element that is on top at its own centre (`elementFromPoint`), the way a finger would.
 
 ### MBUG-005 — The generated client demanded request fields the server defaults
-- **Phase:** 2 · **Area:** api · **Scope:** production code · **Found by:** typecheck · **Fixed in:** this checkpoint's commit
+- **Phase:** 2 · **Area:** api · **Scope:** production code · **Found by:** typecheck · **Fixed in:** d5d67c3
 - **Symptom:** Creating a list failed to compile without `sortMode`, though the backend declares it optional with a default of `MANUAL`; the same held for a store's `timeZone` and three other request fields.
 - **Cause:** openapi-typescript 7 treats any schema property with a `default` as required (`defaultNonNullable`, on by default), which is right for responses and wrong for requests.
 - **Fix:** `npm run api:generate` passes `--default-non-nullable=false`. Only five request fields changed, all optional on the server.
 
 ### MBUG-006 — Back from a scanned product jumped to another tab
-- **Phase:** 2 · **Area:** navigation · **Scope:** production code · **Found by:** web smoke test · **Fixed in:** this checkpoint's commit
+- **Phase:** 2 · **Area:** navigation · **Scope:** production code · **Found by:** web smoke test · **Fixed in:** d5d67c3
 - **Symptom:** After scanning a code from Inicio, the product opened in Buscar, and its back arrow went to Inicio while Buscar kept showing the product.
 - **Cause:** The scanner opens the product directly, so Buscar's stack held only that screen. `router.canGoBack()` looks at every navigator, found the tabs' history, and went back a tab. A first attempt replaced the scanner with the product, which mounted a second copy of the tabs on the root stack.
 - **Fix:** The scanner closes, then navigates to the product in Buscar. The product's back arrow pops its own stack when there is a screen beneath, and otherwise opens its tab's first screen.

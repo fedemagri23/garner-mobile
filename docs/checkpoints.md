@@ -166,7 +166,7 @@ Pull both repos, then in `garner-app` run `pnpm run prisma:migrate:deploy`
 
 ## Checkpoint 3 — Scan a barcode, add to a list
 
-_Phase 2 · 2026-10-20 · backend `4d857fb`, app: this commit._
+_Phase 2 · 2026-10-20 · backend `4d857fb`, app `d5d67c3`._
 
 What a person can do: point the camera at a product's barcode and land on its
 prices, or type the code; and add a product to a list from its screen.
