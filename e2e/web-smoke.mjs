@@ -561,11 +561,92 @@ await step('a trip can be finished offline, and is sent when the connection retu
   await press('Listo');
 });
 
+// --- Checkpoint 9: alerts and messages -------------------------------------
+// The seed gave the shopper 3 alerts and 4 messages (3 unread). What these
+// steps change they put back.
+
+await step('Avisos shows the messages in Spanish, with how many are unread', async () => {
+  await press('Avisos');
+  await shown('3 sin leer');
+  await shown('Leche Entera La Serenísima 1L bajó a $ 1.320');
+  await shown('Agua Mineral 2L: −7%');
+  await shown('Aceite de Girasol 900ml más barato cerca');
+  // Vienna's message is written in euros, whatever the shopper's own place.
+  await shown('Hofer Landstraße lo tiene a € 1,15, antes € 1,29.');
+  await page.screenshot({ path: `${SHOTS}checkpoint-9-inbox.png` });
+});
+await step('opening a message shows its product and marks it read', async () => {
+  await pressContaining('Agua Mineral 2L: −7%');
+  await shown('Cerca tuyo');
+  await press('Volver');
+  await shown('2 sin leer');
+});
+await step('Mis alertas lists what is watched, and one can be paused and resumed', async () => {
+  await press('Mis alertas, 3');
+  await shown('Cuando baje de $ 1.400 · cerca tuyo (5 km)');
+  await shown('Cuando baje 5% o más · Coto Centro');
+  await shown('Cuando un súper cerca tuyo sea el más barato (5 km)');
+  await press('Pausar la alerta de Leche Entera La Serenísima 1L');
+  await shown('En pausa');
+  await press('Activar la alerta de Leche Entera La Serenísima 1L');
+  await gone('En pausa');
+  await page.screenshot({ path: `${SHOTS}checkpoint-9-alerts.png` });
+});
+await step('an alert is made from a product, near the shopper, in their currency', async () => {
+  await press('Volver');
+  await press('Buscar');
+  await pressContaining('Leche Entera La Serenísima 1L');
+  await press('Avisame si baja');
+  await press('Baja de un precio');
+  await typeInto('Precio límite', '1.300');
+  await press('Crear alerta');
+  await shown('Listo: te avisamos en Avisos.');
+  await press('Ver mis alertas');
+  await shown('Cuando baje de $ 1.300 · cerca tuyo (5 km)');
+  await page.screenshot({ path: `${SHOTS}checkpoint-9-new-alert.png` });
+});
+await step('an alert can be deleted after asking', async () => {
+  // The newest is first in the list.
+  await press('Borrar la alerta de Leche Entera La Serenísima 1L');
+  await shown('¿Borrar esta alerta?');
+  await press('Sí, borrar');
+  await gone('Cuando baje de $ 1.300 · cerca tuyo (5 km)');
+  await press('Volver');
+});
+await step('preferences: quiet hours can be set and are put back', async () => {
+  await press('Preferencias de avisos');
+  await shown('Avisos de precio');
+  await press('No molestar de noche');
+  await shown('Desde');
+  await shown('22:00');
+  await press('Más: Desde');
+  await shown('23:00');
+  await page.screenshot({ path: `${SHOTS}checkpoint-9-preferences.png` });
+  const prefs = async () => {
+    const login = await fetch(`${API_URL}/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: 'shopper@garner.test', password: 'correct-horse-battery' }),
+    });
+    const { accessToken } = await login.json();
+    return (await fetch(`${API_URL}/v1/notification-preferences`, { headers: { authorization: `Bearer ${accessToken}` } })).json();
+  };
+  const saved = await prefs();
+  if (saved.quietHoursStartUtc === null) throw new Error('quiet hours were not saved');
+  await press('No molestar de noche');
+  await gone('Desde');
+  if ((await prefs()).quietHoursStartUtc !== null) throw new Error('quiet hours were not cleared');
+  await press('Volver');
+  // The alert was made from a product in Buscar: leave that tab at its start.
+  await press('Buscar');
+  await press('Volver');
+});
+
 for (const [tab, wanted] of [
   ['Buscar', 'Bebidas'],
   ['Listas', 'Tus listas'],
   ['Compra', 'Marcá lo que vas poniendo'],
-  ['Avisos', 'Las alertas de precio'],
+  ['Avisos', 'Mis alertas'],
 ]) {
   await step(`the ${tab} tab opens`, async () => {
     await press(tab);

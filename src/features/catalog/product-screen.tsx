@@ -8,6 +8,7 @@ import { ProductTile } from '@/components/product-tile';
 import { Screen } from '@/components/screen';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
+import { NewAlertSheet } from '@/features/alerts/new-alert-sheet';
 import { AddToListSheet } from '@/features/lists/add-to-list-sheet';
 import { useShopperLocation } from '@/features/location/location-provider';
 import { usePriceHistory, useProductPrices, type StorePrice } from '@/features/prices/use-prices';
@@ -31,9 +32,10 @@ export function ProductScreen() {
   const product = useProduct(id);
   const prices = useProductPrices(id);
   const [adding, setAdding] = useState(false);
+  const [watching, setWatching] = useState(false);
   const navigation = useNavigation();
   const segments = useSegments() as string[];
-  const tabRoot = segments.includes('search') ? '/search' : segments.includes('lists') ? '/lists' : '/';
+  const tabRoot = segments.includes('search') ? '/search' : segments.includes('lists') ? '/lists' : segments.includes('inbox') ? '/inbox' : '/';
 
   // Back means the screen beneath this one in the tab. A product opened by
   // the scanner has none, and the router's own back would fall through to
@@ -68,6 +70,16 @@ export function ProductScreen() {
         ) : null}
       </View>
       {product.data ? (
+        <NewAlertSheet
+          productId={id}
+          productName={product.data.name}
+          currency={prices.data?.prices[0]?.currency ?? null}
+          cheapestCents={prices.data?.prices[0]?.priceCents ?? null}
+          visible={watching}
+          onClose={() => setWatching(false)}
+        />
+      ) : null}
+      {product.data ? (
         <AddToListSheet
           productId={id}
           productName={product.data.name}
@@ -101,11 +113,15 @@ export function ProductScreen() {
           </View>
           <PriceHistoryCard productId={id} />
           <StorePrices productId={id} />
-          <Button
-            label="Informar precio"
-            variant="secondary"
-            onPress={() => router.push({ pathname: '/report-price', params: { productId: id } })}
-          />
+          <View style={styles.actions}>
+            <Button
+              label="Informar precio"
+              variant="secondary"
+              onPress={() => router.push({ pathname: '/report-price', params: { productId: id } })}
+              style={styles.action}
+            />
+            <Button label="Avisame si baja" onPress={() => setWatching(true)} style={styles.action} />
+          </View>
         </>
       )}
     </Screen>
@@ -309,6 +325,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pressed: { backgroundColor: colors.surfaceMuted },
+  actions: { flexDirection: 'row', gap: space.sm },
+  action: { flex: 1, paddingHorizontal: space.sm },
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   addButton: {
     height: MIN_TOUCH,

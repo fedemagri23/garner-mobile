@@ -192,3 +192,27 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** "Mis aportes" says ACCEPTED as "Ya cuenta", UNDER_REVIEW as "En revisión · no cambia los precios hasta que otros lo confirmen", and REJECTED as "No se aceptó · parecía muy distinto de lo habitual". A brand-new account's first prices usually start in review; nothing in the app lets the shopper appeal or edit one.
 - **Why:** The backend decides trust from who reported, how far the price is from the usual one and whether there is a photo (garner-app pricing). The app's job is to say what happened without alarm.
 - **Revisit when:** People ask why their price "did not count" — then say why (too far from usual, a new account) and offer to add a photo.
+
+### MCON-032 — An alert is made near where the shopper is when they make it
+- **Phase:** 6 · **Area:** alerts · **Status:** accepted
+- **What:** "Avisame si baja" creates the alert in the currency of the prices near the shopper, with their current position (the phone's, else the saved place) and their usual radius as its place. The alert keeps that place: it does not follow the shopper to another city, and the three kinds are "baja de un precio", "baja un porcentaje" (5, 10, 15, 20%) and "más barato cerca". The threshold is a price per unit.
+- **Why:** The backend compares figures in one currency and judges "near" from a point it stores. A place that moved with the phone would need the backend to track where the shopper is, which it deliberately does not.
+- **Revisit when:** Shoppers travel: let an alert be moved to "where I am now", or make a Vienna alert from Vienna by being there — which already works, since alerts are per place.
+
+### MCON-033 — Messages arrive when the app asks, until push
+- **Phase:** 6 · **Area:** notifications · **Status:** deferred
+- **What:** The inbox loads when Avisos opens and on pull-to-refresh; the badge on the tab asks again every minute while the app is open. Nothing arrives while the app is closed, and nothing here is kept for offline: opening Avisos without a connection says so rather than showing the last messages.
+- **Why:** This checkpoint is the in-app half of phase 6. Push needs a device-token store and an Expo push channel in the backend first (checkpoint 10).
+- **Revisit when:** Checkpoint 10 lands push; and consider keeping the last page of messages on the phone for offline reading.
+
+### MCON-034 — Quiet hours are converted with today's offset from UTC
+- **Phase:** 6 · **Area:** notifications · **Status:** accepted
+- **What:** The backend keeps quiet hours as UTC hours; the shopper picks them in the phone's local time, and the app converts with the offset the phone has now. After the clocks change (daylight saving) the same stored hours are an hour off, until the shopper saves them again; and a zone with a half-hour offset (India) rounds to the hour.
+- **Why:** The backend has no time zone for a user (garner-app: only stores have one). Adding one is a user-settings feature, not part of alerts.
+- **Revisit when:** A shopper's quiet hours drift after a clock change — then keep the user's time zone on their preferences and convert on the server.
+
+### MCON-035 — No toggle for shopping reminders
+- **Phase:** 6 · **Area:** notifications · **Status:** accepted
+- **What:** The backend has a "shopping reminders" category and a preference for it, but nothing creates reminders yet, so the app does not offer a switch for it.
+- **Why:** A control for something that never happens would mislead.
+- **Revisit when:** The backend sends its first reminder (e.g. "you have a list and a store nearby") — add the switch then.

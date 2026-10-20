@@ -127,7 +127,16 @@ contribution (garner-app `ab5da96`, CON-047).
 | `POST /v1/price-evidence` (multipart `photo`), `POST /v1/price-observations` | reporting |
 | `GET /v1/price-observations/mine` | history |
 
-## Phase 6 — Alerts and notifications
+## Phase 6 — Alerts and notifications (checkpoint 9 ✅, checkpoint 10 next)
+
+- **Checkpoint 9 ✅:** alerts from a product ("Avisame si baja": below a
+  price, a percentage, cheaper nearby), Mis alertas (pause, delete), the
+  Avisos inbox with unread state and a badge on the tab, preferences
+  (alerts, email, quiet hours, spacing), messages written in Spanish from
+  the facts the backend now keeps (garner-app `f979809`, `9cc800d`).
+- **Checkpoint 10:** push — a device-token store and an Expo push channel in
+  the backend, then registering the phone and showing a message that arrives
+  while the app is closed.
 
 - Create, pause and delete price alerts from a product.
 - Inbox with unread state; notification preferences, quiet hours, email

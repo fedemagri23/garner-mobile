@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 import type { ColorValue } from 'react-native';
 
+import { useUnreadCount } from '@/features/alerts/use-alerts';
 import { colors, fonts } from '@/theme/tokens';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -20,6 +21,8 @@ function tabIcon(name: IconName) {
  * for development and quick manual checks — the product is the native app.
  */
 export default function AppTabsWeb() {
+  const unread = useUnreadCount().data ?? 0;
+
   return (
     <Tabs
       screenOptions={{
@@ -34,7 +37,14 @@ export default function AppTabsWeb() {
       <Tabs.Screen name="search" options={{ title: 'Buscar', tabBarIcon: tabIcon('search-outline') }} />
       <Tabs.Screen name="lists" options={{ title: 'Listas', tabBarIcon: tabIcon('list-outline') }} />
       <Tabs.Screen name="shop" options={{ title: 'Compra', tabBarIcon: tabIcon('cart-outline') }} />
-      <Tabs.Screen name="inbox" options={{ title: 'Avisos', tabBarIcon: tabIcon('notifications-outline') }} />
+      <Tabs.Screen
+        name="inbox"
+        options={{
+          title: 'Avisos',
+          tabBarIcon: tabIcon('notifications-outline'),
+          tabBarBadge: unread > 0 ? (unread > 9 ? '9+' : unread) : undefined,
+        }}
+      />
     </Tabs>
   );
 }

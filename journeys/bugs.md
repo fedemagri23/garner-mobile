@@ -113,3 +113,9 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Symptom:** `session-provider-test` failed in CI with "NativeModule: AsyncStorage is null"; every push since checkpoint 7 had a red CI run.
 - **Cause:** Signing out clears the outbox's storage, so the session provider now imports it, and AsyncStorage is a native module. The suite that tests the storage mocked it itself, and a cached local Jest run passed the session test anyway. I then read the newest run of the wrong commit as green.
 - **Fix:** A `jest.setup.ts` mocks AsyncStorage for every suite. From now on `npx jest --ci --no-cache` before pushing, and the CI run is read for the commit pushed, not the newest.
+
+### MBUG-019 — The server's alert messages were English with a bare number
+- **Phase:** 6 · **Area:** notifications · **Scope:** production code (backend) · **Found by:** reading the notification code before building the inbox · **Fixed in:** garner-app 9cc800d, f979809
+- **Symptom:** A price alert would have read "Leche Entera is now 13.20" — English, and without a currency symbol, so € 1,15 and $ 1.150 were both just a number.
+- **Cause:** The backend writes `title` and `body` itself, with a plain two-decimal price (garner-app CON-048); the app has no way to translate a sentence it did not write.
+- **Fix:** The backend now stores why an alert fired and the price and currency beside the text, and returns the product and store names; the app writes the message from those (`composeMessage`) and uses the server's words only for a message that carries no facts. Alerts also gained a currency and a place (garner-app BUG-022), found on the way: a peso alert would have fired on euro prices.

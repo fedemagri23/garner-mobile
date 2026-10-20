@@ -1,11 +1,3 @@
-import { ComingSoon } from '@/components/coming-soon';
+import InboxScreen from '@/features/alerts/inbox-screen';
 
-export default function InboxScreen() {
-  return (
-    <ComingSoon
-      title="Avisos"
-      phase={6}
-      description="Las alertas de precio que configures y los avisos que te mandemos."
-    />
-  );
-}
+export default InboxScreen;

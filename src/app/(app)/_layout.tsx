@@ -1,5 +1,6 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
+import { useUnreadCount } from '@/features/alerts/use-alerts';
 import { colors } from '@/theme/tokens';
 
 /**
@@ -8,6 +9,8 @@ import { colors } from '@/theme/tokens';
  * count at five. Each tab holds its own stack for the screens it pushes.
  */
 export default function AppTabs() {
+  const unread = useUnreadCount().data ?? 0;
+
   return (
     <NativeTabs
       tintColor={colors.accent}
@@ -31,6 +34,7 @@ export default function AppTabs() {
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="inbox">
         <NativeTabs.Trigger.Label>Avisos</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Badge hidden={unread === 0}>{unread > 9 ? '9+' : String(unread)}</NativeTabs.Trigger.Badge>
         <NativeTabs.Trigger.Icon sf="bell" md="notifications" />
       </NativeTabs.Trigger>
     </NativeTabs>

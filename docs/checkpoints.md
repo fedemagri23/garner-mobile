@@ -462,3 +462,56 @@ usual account's history stays clean — your reports are real data.
 - Not yet tried on a real phone: the camera, the photo's trip through the
   documents folder and the upload from a phone file were tested only in the
   browser, with a file picked from disk.
+
+---
+
+## Checkpoint 9 — Alerts and messages
+
+_Phase 6 · 2026-10-21 · backend `9b83f41`, app: this commit._
+
+What a person can do: ask to be told when a product gets cheaper, read what
+their alerts found, and choose how and when to be reached.
+
+Pull both repos. In `garner-app`: `pnpm run prisma:migrate:deploy` (two new
+migrations) and `pnpm run seed` (it gives `shopper@garner.test` three alerts
+and four messages). Nothing new to install in `garner-mobile`.
+
+**Check by hand**
+
+1. Sign in as `shopper@garner.test`. The **Avisos** tab has a red badge:
+   **3**. Open it: **3 sin leer**, **Mis alertas (3)**, and messages in
+   Spanish, newest first, under **Hoy** and **Esta semana**: **Leche Entera
+   La Serenísima 1L bajó a $ 1.320**, **Agua Mineral 2L: −7%**, the milk at
+   Hofer **−10% … € 1,15, antes € 1,29**, and **Aceite de Girasol 900ml más
+   barato cerca**. Unread ones have a green dot.
+2. Tap the water message: its product opens. Go back: **2 sin leer**, the dot
+   is gone and the badge says 2.
+3. **Mis alertas (3)**: each says what it watches — _Cuando baje de $ 1.400 ·
+   cerca tuyo (5 km)_, _Cuando baje 5% o más · Coto Centro_, _Cuando un súper
+   cerca tuyo sea el más barato (5 km)_. Flip a switch: **En pausa**; flip it
+   back.
+4. Search **Leche Entera**, open it, tap **Avisame si baja**. Pick **Baja de
+   un precio**, type `1.300`, **Crear alerta**: _Listo: te avisamos en Avisos_.
+   **Ver mis alertas** shows it first. **Borrar** → it asks → **Sí, borrar**.
+   (The other two kinds: **Baja un porcentaje** with 5, 10, 15 or 20%, and
+   **Más barato cerca**.)
+5. In Avisos, the slider icon at the top: **Preferencias**. Turn on **No
+   molestar de noche**: **Desde 22:00 Hasta 07:00**, adjustable, in your
+   phone's time. Turn it off again. **Entre dos avisos de una alerta** is how
+   long an alert waits before speaking again.
+6. **In Vienna** (location on Tu ubicación): make an alert on any product: it
+   is in euros, and only hears about the stores within your radius there. An
+   alert made in Buenos Aires never speaks of Vienna's prices.
+7. To see a message arrive for real: with the backend running, make an alert
+   from a product (say, the milk, "Baja un porcentaje", 5%), then report a
+   lower price from the product's **Informar precio**. Messages show up in
+   Avisos after the server recomputes the price — a few seconds — when you
+   pull down to refresh.
+
+**Known limits**
+
+- Messages arrive when the app asks (opening Avisos, pulling down, the badge
+  every minute); nothing arrives with the app closed until push, next
+  (MCON-033).
+- Quiet hours drift an hour after daylight saving changes (MCON-034).
+- Email shows as unavailable unless the server is set up to send it.

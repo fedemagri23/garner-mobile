@@ -1936,12 +1936,21 @@ export interface components {
             latitude?: number;
             longitude?: number;
             radiusKm?: number;
+            /**
+             * @description What thresholdCents is in. Prices in another currency never match; omitted, any does
+             * @example ARS
+             */
+            currency?: string;
         };
         PriceAlertResponse: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
             productId: string;
+            productName: string;
+            /** @description Null when the alert watches anywhere nearby */
+            storeName: string | null;
+            supermarketName: string | null;
             /** @enum {string} */
             type: "BELOW_THRESHOLD" | "PRICE_DROP" | "CHEAPER_NEARBY";
             /**
@@ -1952,6 +1961,11 @@ export interface components {
             thresholdCents: number | null;
             dropPercent: number | null;
             radiusKm: number | null;
+            /**
+             * @description What thresholdCents is in; null on alerts made before it was recorded
+             * @example ARS
+             */
+            currency: string | null;
             isEnabled: boolean;
             /** Format: date-time */
             lastTriggeredAt: string | null;
@@ -1980,6 +1994,20 @@ export interface components {
             storeId: string | null;
             /** Format: uuid */
             listId: string | null;
+            productName: string | null;
+            storeName: string | null;
+            supermarketName: string | null;
+            /**
+             * @description For a price alert, why it fired — so a client can say it in its own language
+             * @enum {string|null}
+             */
+            reason: "BELOW_THRESHOLD" | "PRICE_DROP" | "CHEAPER_NEARBY" | null;
+            /** @description The price that fired it, in minor units */
+            priceCents: number | null;
+            /** @description The price before it, in minor units */
+            previousPriceCents: number | null;
+            /** @example ARS */
+            currency: string | null;
             /** @enum {string} */
             status: "PENDING" | "SENT" | "FAILED";
             /** Format: date-time */
