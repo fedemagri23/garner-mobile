@@ -5,10 +5,6 @@ import type { Trip } from '@/features/trip/stops';
 import type { Change } from '../changes';
 import { clearOutboxStorage, loadQueue, loadTrip, saveQueue, saveTrip } from '../storage';
 
-jest.mock('@react-native-async-storage/async-storage', () =>
-  jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
-);
-
 const change: Change = { kind: 'item', id: 'c1', tripId: 't1', itemId: 'i1', progress: { isPurchased: true } };
 
 beforeEach(() => AsyncStorage.clear());
