@@ -113,3 +113,21 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** With `npm run web` running, Metro sometimes keeps serving a screen's previous code after the file changed (screens load lazily on the web). Restarting with `npx expo start --web --clear` fixes it.
 - **Why:** A development-server quirk, not app behaviour; it cost two debugging detours before being recognised.
 - **Revisit when:** A newer SDK fixes lazy route invalidation — until then, restart with `--clear` before trusting what the web build shows, and before `npm run e2e:web`.
+
+### MCON-019 — A plan is asked for on each visit, and Inicio shows the last one
+- **Phase:** 3 · **Area:** plan · **Status:** accepted
+- **What:** Opening "¿Dónde conviene comprar?" requests an optimization from where the shopper is, and polls it every second until it is done. Inicio's card shows the latest finished plan of the most recently changed list that has items, with when it was calculated ("Calculado hoy"); it does not calculate one by itself.
+- **Why:** The backend answers the same question from its answer of the last 15 minutes, so asking on every visit is cheap and keeps prices current. Calculating from Inicio on every launch would spend the worker's time on lists nobody is about to shop.
+- **Revisit when:** The card's "Calculado" date is often old — then refresh it in the background when Inicio opens and the last plan is more than a day old.
+
+### MCON-020 — The web build draws the trip without a map
+- **Phase:** 3 · **Area:** plan · **Status:** accepted
+- **What:** On the phone, the stops are on a real map (`react-native-maps`: Apple Maps on iOS, Google Maps on Android, included in Expo Go). On the web, where that library does not run, the same positions are drawn to scale on a plain background, without streets.
+- **Why:** The web build is for development and the automated walk-through; a web map library would be a second map implementation to maintain.
+- **Revisit when:** The app ships to Google Play — Android store builds need a Google Maps API key (Expo's "Deploy app with Google Maps" steps); Expo Go does not.
+
+### MCON-021 — "Minimum saving per extra stop" is not editable in the app
+- **Phase:** 3 · **Area:** plan · **Status:** deferred
+- **What:** Preferences in the app cover what to show first, the most stores, extra distance and extra time. The fourth limit, the least an extra stop must save, keeps its default (400 cents) and has no control.
+- **Why:** The backend stores it as one amount in cents for every list, whatever its currency: 400 is $ 4 for a peso list and € 4 for a euro list, which no single control can present honestly.
+- **Revisit when:** The backend keeps that limit per currency, or as a percentage of the list's total.

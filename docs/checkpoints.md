@@ -268,3 +268,51 @@ Nothing new to install; pull both repos and run `pnpm run seed` in
   checkpoint 5.
 - No drag to reorder, and quantities go one by one (MCON-017).
 - Inicio's savings card is still a placeholder until checkpoint 5.
+
+---
+
+## Checkpoint 5 — Where to buy
+
+_Phase 3 · 2026-10-20 · backend `27a44c3`, app: this commit._
+
+What a person can do: ask where to buy a list and see three ways to do it —
+one store, a balance, or the cheapest within their limits — with what each
+saves, the extra distance and time, and the stops on a map; change those
+limits; and see the savings on Inicio.
+
+Pull both repos, run `pnpm run seed` in `garner-app` (it adds "Compra en
+Viena", a euro list), and `npm install` in `garner-mobile` (the map is new).
+
+**Check by hand**
+
+1. Sign in as `shopper@garner.test`. On Inicio, the green card says
+   **COMPRA SEMANAL · 4 PRODUCTOS** and offers **Calcular el plan** (or, if
+   a plan exists, its savings and **Ver el plan**).
+2. **Near the Obelisco** (or with the chip on Centro): Listas → Compra
+   semanal → **¿Dónde conviene comprar?** "Comparando precios…" for a
+   moment, then the map with you (blue) and the numbered stops, and the
+   tabs **Más simple · Equilibrado · Más barato** on Equilibrado.
+3. Each tab shows **Ahorrás**, **Recorrido** and **Tiempo aprox.**, the stops
+   with what you spend at each, and the **Total**. **Más barato** is
+   Carrefour Almagro, and the note says there is a cheaper plan "pero te
+   hace caminar o manejar más de lo que elegiste" — that one is Día, past
+   your 5 km. Tap a stop: its address and what to buy there, with prices.
+4. **Preferencias** → raise **Recorrido extra** to 10 km → **Guardar y
+   calcular**: now Más barato goes to Día Caballito ($ 8.140, +7,6 km,
+   +18 min), and the "cheaper plan" note is gone. Put it back to 5 km after.
+5. Back on Inicio: the card shows **$ … de ahorro**, "Calculado hoy", and
+   where you split the shop; **Ver el plan** opens it.
+6. **In Vienna** (chip on Tu ubicación): Listas → **Compra en Viena** →
+   ¿Dónde conviene comprar?: the Vienna stores on the map, in euros;
+   **Más barato** is Hofer Landstraße.
+7. Open **Compra semanal** from Vienna, or **Compra en Viena** near the
+   Obelisco: _"Ningún súper cerca tuyo tiene precios en pesos/euros para
+   esta lista."_ — a list is only priced in its own currency.
+
+**Known limits**
+
+- "Empezar la compra" (shopping mode) is phase 4.
+- The least an extra stop must save is not editable (MCON-021).
+- On the web the map is a schematic without streets (MCON-020).
+- Inicio shows the last plan; it does not recalculate on its own
+  (MCON-019).

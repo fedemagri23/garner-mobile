@@ -1781,6 +1781,10 @@ export interface components {
             preferredSupermarketIds?: string[];
             excludedSupermarketIds?: string[];
         };
+        OriginResponse: {
+            latitude: number;
+            longitude: number;
+        };
         PlanAssignmentResponse: {
             /** Format: uuid */
             productId: string;
@@ -1797,6 +1801,10 @@ export interface components {
             storeId: string;
             storeName: string;
             supermarketName: string;
+            /** @description Null if the store was deleted */
+            addressLine: string | null;
+            latitude: number | null;
+            longitude: number | null;
             items: components["schemas"]["PlanAssignmentResponse"][];
             /** @description Expected spending at this store */
             subtotalCents: number;
@@ -1835,6 +1843,11 @@ export interface components {
             unavailableProducts: string[];
             consideredStoreCount: number;
             consideredCombinationCount: number;
+            /**
+             * @description What every amount is in: the list's currency. Null on old results
+             * @example ARS
+             */
+            currency: string | null;
         };
         OptimizationResponse: {
             /** Format: uuid */
@@ -1850,6 +1863,8 @@ export interface components {
             /** Format: date-time */
             completedAt: string | null;
             error: string | null;
+            /** @description Where the trip starts and ends: the point the plans were computed from */
+            origin: components["schemas"]["OriginResponse"];
             result: components["schemas"]["OptimizationResultResponse"] | null;
         };
         OptimizationSummaryResponse: {
@@ -2066,6 +2081,7 @@ export type ExternalProductLinkPageResponse = components['schemas']['ExternalPro
 export type ResolveLinkRequest = components['schemas']['ResolveLinkRequest'];
 export type LinkStoreRequest = components['schemas']['LinkStoreRequest'];
 export type OptimizeListRequest = components['schemas']['OptimizeListRequest'];
+export type OriginResponse = components['schemas']['OriginResponse'];
 export type PlanAssignmentResponse = components['schemas']['PlanAssignmentResponse'];
 export type PlanStoreResponse = components['schemas']['PlanStoreResponse'];
 export type PlanResponse = components['schemas']['PlanResponse'];

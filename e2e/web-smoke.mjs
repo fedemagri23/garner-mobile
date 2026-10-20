@@ -70,6 +70,11 @@ const settledOnTop = (n) => {
   const modals = [...document.querySelectorAll('[aria-modal="true"]')];
   if (modals.length > 0 && !modals.some((modal) => modal.contains(n))) return false;
   const box = n.getBoundingClientRect();
+  // Below the fold: scroll to it, as a person would, and look again.
+  if (box.width > 0 && (box.bottom > window.innerHeight || box.top < 0)) {
+    n.scrollIntoView({ block: 'center' });
+    return false;
+  }
   const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
   if (!(box.width > 0 && hit !== null && n.contains(hit))) return false;
   const where = `${box.x},${box.y},${box.width}`;
@@ -326,6 +331,58 @@ await step('a new list is created in the local currency', async () => {
   await gone('Asado del sábado');
 });
 
+// --- Checkpoint 5: where to buy -------------------------------------------
+
+await step('a list asks where to buy it, and gets the three alternatives', async () => {
+  await press('Listas');
+  await pressContaining('Compra semanal');
+  await press('¿Dónde conviene comprar?');
+  await shown('Ahorrás');
+  await shown('Equilibrado');
+  await shown('Total');
+  await page.screenshot({ path: `${SHOTS}checkpoint-5-plan.png` });
+});
+await step('each alternative shows its stops, and a stop what to buy there', async () => {
+  // Día is cheapest but past the default 5 km of extra travel, so the
+  // cheapest plan within limits is Carrefour, and the note says why.
+  await press('Más barato');
+  await shown('Carrefour Almagro');
+  await pressContaining('Carrefour Almagro');
+  await shown('Av. Rivadavia 3900');
+  await text('más de lo que elegiste');
+  await press('Más simple');
+  await shown('Recorrido');
+});
+await step('preferences change the plan, and are put back', async () => {
+  await press('Preferencias');
+  await shown('Súper como máximo');
+  await press('Más: Súper como máximo');
+  await press('Guardar y calcular');
+  await shown('Ahorrás');
+  await press('Preferencias');
+  await press('Menos: Súper como máximo');
+  await press('Guardar y calcular');
+  await shown('Ahorrás');
+});
+await step('a euro list near the Obelisco finds nothing to buy in euros', async () => {
+  await press('Volver');
+  await press('Volver');
+  await pressContaining('Compra en Viena');
+  await press('¿Dónde conviene comprar?');
+  await shown('Ningún súper cerca tuyo tiene precios en euros para esta lista.');
+  await press('Volver');
+  await press('Volver');
+});
+await step('Inicio shows the list\'s savings from its plan', async () => {
+  await press('Inicio');
+  await shown('de ahorro');
+  await shown('Ver el plan');
+  await page.screenshot({ path: `${SHOTS}checkpoint-5-home.png` });
+  await press('Ver el plan');
+  await shown('Ahorrás');
+  await press('Volver');
+});
+
 for (const [tab, wanted] of [
   ['Buscar', 'Bebidas'],
   ['Listas', 'Tus listas'],
@@ -415,6 +472,15 @@ await step('a new list in Vienna is in euros', async () => {
   await press('Eliminar la lista');
   await press('Sí, eliminar');
   await gone('Einkauf');
+});
+await step('in Vienna, the euro list is planned at the Vienna stores', async () => {
+  await pressContaining('Compra en Viena');
+  await press('¿Dónde conviene comprar?');
+  await shown('Ahorrás');
+  await press('Más barato');
+  await pressContaining('Hofer Landstraße');
+  await shown('Landstraßer Hauptstraße 70');
+  await page.screenshot({ path: `${SHOTS}vienna-plan.png` });
 });
 
 await browser.close();

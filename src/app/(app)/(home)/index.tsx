@@ -8,10 +8,11 @@ import { SearchBox } from '@/components/search-box';
 import { Text } from '@/components/text';
 import { useMe } from '@/features/account/use-me';
 import { LocationChip } from '@/features/location/location-chip';
+import { SavingsCard } from '@/features/plan/savings-card';
 import { PriceDropList } from '@/features/prices/price-drop-list';
 import { errorMessage } from '@/lib/error-message';
 import { useSession } from '@/session/session-provider';
-import { colors, radii, space } from '@/theme/tokens';
+import { colors, space } from '@/theme/tokens';
 
 export default function HomeScreen() {
   const me = useMe();
@@ -42,14 +43,7 @@ export default function HomeScreen() {
         <ScanButton />
       </View>
 
-      <View style={styles.card}>
-        <Text variant="label" tone="accent">
-          Fase 3
-        </Text>
-        <Text tone="muted">
-          Acá va tu lista con el ahorro estimado y el plan de dónde comprar.
-        </Text>
-      </View>
+      <SavingsCard />
 
       <PriceDropList />
 
@@ -70,12 +64,4 @@ const styles = StyleSheet.create({
   searchRow: { flexDirection: 'row', gap: space.sm + 2 },
   search: { flex: 1 },
   spinner: { alignSelf: 'flex-start' },
-  card: {
-    padding: space.xl,
-    gap: space.sm,
-    borderRadius: radii.lg,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.line,
-  },
 });

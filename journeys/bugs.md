@@ -52,3 +52,9 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Symptom:** "A new list is created in the local currency" timed out: after "Crear lista", the new list's "Agregar producto" field stayed empty although the test had typed into it. Other steps failed now and then when a tap landed on a row of a sheet still sliding in.
 - **Cause:** React Native's Modal on the web keeps a focus trap until it unmounts, so keystrokes went back to the closing sheet's field; and taps were aimed at elements still moving. The "€ 1,15" and "$ 890" checks also matched prices on hidden screens of other tabs, so they proved nothing.
 - **Fix:** One helper decides what a finger could tap — on top at its centre, no longer moving, and inside the open modal if there is one — and `press`, `typeInto` and the new `shown` (visible text only) all use it. The walk-through deletes the lists it creates.
+
+### MBUG-009 — The savings card's button read its icon aloud
+- **Phase:** 3 · **Area:** accessibility · **Scope:** production code · **Found by:** web smoke test · **Fixed in:** this checkpoint's commit
+- **Symptom:** The walk-through could not find "Ver el plan" on Inicio; a screen reader would have announced the button with the chevron icon's glyph after its text.
+- **Cause:** The button's name came from its contents, which include the icon font's private-use character.
+- **Fix:** The button carries an explicit accessible label. The walk-through also scrolls a target below the fold into view before tapping it — the card made "Cerrar sesión" fall off the first screen.

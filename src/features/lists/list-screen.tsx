@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/button';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useProductSearch, type Product } from '@/features/catalog/use-catalog';
@@ -254,6 +255,11 @@ function Totals({ list }: { list: ListDetail }) {
           ? ` ${unpricedItemCount === 1 ? '1 producto no tiene' : `${unpricedItemCount} productos no tienen`} precio todavía.`
           : ''}
       </Text>
+      <Button
+        label="¿Dónde conviene comprar?"
+        onPress={() => router.push(`/lists/${list.id}/plan`)}
+        style={styles.planButton}
+      />
     </View>
   );
 }
@@ -341,6 +347,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.line,
   },
+  planButton: { marginTop: space.sm },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   total: { fontFamily: fonts.display, fontSize: 22, fontVariant: ['tabular-nums'] },
 });

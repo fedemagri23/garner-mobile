@@ -61,14 +61,15 @@ Search, barcode lookup, a product's prices near me, price history.
 in the price-intelligence module (garner-app `915b86f`), for the Home
 mockup's "Bajaron cerca tuyo".
 
-## Phase 3 — Lists and where to buy (checkpoint 4 ✅, checkpoint 5 next)
+## Phase 3 — Lists and where to buy ✅ (checkpoints 4 and 5)
 
 - **Checkpoint 4 ✅:** the Listas tab — create (in the local currency),
   rename, duplicate, delete; add products from the list; quantities;
   estimated total.
-- **Checkpoint 5:** where to buy — request, poll, the three alternatives,
+- **Checkpoint 5 ✅:** where to buy — request, poll, the three alternatives,
   the stops on a map; optimization preferences; Inicio's savings card; and
-  optimization only over stores in the list's currency (garner-app CON-044).
+  optimization only over stores in the list's currency (garner-app
+  `c4a79ad`, CON-044 resolved).
 
 - Lists: create, rename, delete, duplicate; add, remove, reorder items;
   quantities; estimated total.
