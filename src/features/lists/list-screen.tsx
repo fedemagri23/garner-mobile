@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BottomBar } from '@/components/bottom-bar';
 import { Button } from '@/components/button';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
@@ -55,6 +56,8 @@ export function ListScreen() {
           />
         )}
         contentContainerStyle={styles.content}
+        // The total below sits above the tab bar, so this list never reaches it.
+        contentInsetAdjustmentBehavior="never"
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={styles.header}>
@@ -244,7 +247,7 @@ function Totals({ list }: { list: ListDetail }) {
   }
 
   return (
-    <View style={styles.footer}>
+    <BottomBar style={styles.footer}>
       <View style={styles.totalRow}>
         <Text tone="muted">Total estimado</Text>
         <Text style={styles.total}>{formatPrice(expectedTotalCents, list.currency)}</Text>
@@ -260,7 +263,7 @@ function Totals({ list }: { list: ListDetail }) {
         onPress={() => router.push(`/lists/${list.id}/plan`)}
         style={styles.planButton}
       />
-    </View>
+    </BottomBar>
   );
 }
 
@@ -339,14 +342,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontVariant: ['tabular-nums'],
   },
-  footer: {
-    paddingHorizontal: space.xl,
-    paddingVertical: space.lg,
-    gap: space.xs,
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
+  footer: { paddingHorizontal: space.xl, paddingVertical: space.lg, gap: space.xs },
   planButton: { marginTop: space.sm },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   total: { fontFamily: fonts.display, fontSize: 22, fontVariant: ['tabular-nums'] },

@@ -2,8 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BottomBar } from '@/components/bottom-bar';
 import { Button } from '@/components/button';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
@@ -116,15 +117,19 @@ export function PlanScreen() {
   }
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.root}>
+    <View style={styles.root}>
       <View style={styles.map}>
         {optimization.data ? <StopsMap origin={optimization.data.origin} stops={stops} /> : null}
         <TopBar title={list.data?.name} />
       </View>
-      <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent}>
+      <ScrollView
+        style={styles.sheet}
+        contentContainerStyle={styles.sheetContent}
+        // The buttons below sit above the tab bar, so this never reaches it.
+        contentInsetAdjustmentBehavior="never">
         {body}
       </ScrollView>
-      <View style={styles.footer}>
+      <BottomBar style={styles.footer}>
         <Button label="Preferencias" variant="secondary" onPress={() => setEditing(true)} style={styles.footerButton} />
         <Button
           label="Recalcular"
@@ -133,9 +138,9 @@ export function PlanScreen() {
           onPress={() => again()}
           style={styles.footerButton}
         />
-      </View>
+      </BottomBar>
       <PreferencesSheet visible={editing} onClose={() => setEditing(false)} onSaved={again} />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -335,15 +340,6 @@ const styles = StyleSheet.create({
   },
   total: { fontFamily: fonts.display, fontSize: 20, fontVariant: ['tabular-nums'] },
   notes: { lineHeight: 19 },
-  footer: {
-    flexDirection: 'row',
-    gap: space.sm,
-    paddingHorizontal: space.xl,
-    paddingTop: space.md,
-    paddingBottom: space.md,
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
+  footer: { flexDirection: 'row', gap: space.sm, paddingHorizontal: space.xl, paddingVertical: space.md },
   footerButton: { flex: 1 },
 });
