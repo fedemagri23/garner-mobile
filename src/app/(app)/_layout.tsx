@@ -1,4 +1,4 @@
-import { NativeTabs } from 'expo-router/native-tabs';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
 import { LocationProvider } from '@/features/location/location-provider';
 import { colors } from '@/theme/tokens';

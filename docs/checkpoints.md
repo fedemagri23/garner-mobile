@@ -8,7 +8,8 @@ checks automatically in a browser.
 
 You need: Docker, Node 22, pnpm (backend) and npm (app). For a phone, the
 **Expo Go** app from the App Store or Google Play, on the same Wi-Fi as your
-computer.
+computer. The app is on Expo SDK 57, so Expo Go must support SDK 57 — the
+store version does (MCON-015).
 
 **1. The backend**, in `garner-app`:
 

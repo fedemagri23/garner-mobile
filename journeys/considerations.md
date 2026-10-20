@@ -89,3 +89,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** Whichever tab the scanner was opened from, the product it finds opens on Buscar's stack.
 - **Why:** Scanning is a way of searching, and a single destination keeps the scanner from needing to know who opened it.
 - **Revisit when:** Shopping mode (phase 4) scans during a trip — there the product belongs on the trip, not in Buscar.
+
+### MCON-015 — Back on Expo SDK 57 until Expo Go 58 is in the stores
+- **Phase:** 2 · **Area:** tooling · **Status:** deferred
+- **What:** The app was started on SDK 58 and moved back to SDK 57 (React Native 0.86, React 19.2, expo-router 57, jest 29). The only code change was the native tabs import, `expo-router/unstable-native-tabs` on 57.
+- **Why:** SDK 58 shipped on 2026-10-15, and Expo said its Expo Go would reach the App Store and Play Store "within a few weeks". The developer's iPhone has Expo Go 57.0.9, which refuses an SDK 58 project, and a development build on iOS needs a paid Apple developer account. Nothing the app uses is new in 58.
+- **Revisit when:** Expo Go for SDK 58 is in the App Store — then upgrade (`npx expo install expo@~58.0.0 --fix`, the import back to `expo-router/native-tabs`, `jest`/`jest-expo` to their 58 versions), run expo-doctor and every check, and mark this resolved. Store Expo Go supports only the latest SDK, so waiting too long breaks Expo Go again.
