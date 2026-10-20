@@ -223,7 +223,7 @@ the demo catalog, so they all give the "no lo tenemos" answer.
 
 ## Checkpoint 4 — Your lists
 
-_Phase 3 · 2026-10-20 · backend `4d857fb`, app: this commit._
+_Phase 3 · 2026-10-20 · backend `4d857fb`, app `d248a9a`._
 
 What a person can do: see their lists, create one in the right currency,
 rename, copy or delete it, add products to it from the list itself, change

@@ -42,13 +42,13 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Fix:** The scanner closes, then navigates to the product in Buscar. The product's back arrow pops its own stack when there is a screen beneath, and otherwise opens its tab's first screen.
 
 ### MBUG-007 — A new list could silently be made in the wrong currency
-- **Phase:** 3 · **Area:** lists · **Scope:** production code · **Found by:** web smoke test (screenshot) · **Fixed in:** this checkpoint's commit
+- **Phase:** 3 · **Area:** lists · **Scope:** production code · **Found by:** web smoke test (screenshot) · **Fixed in:** d248a9a
 - **Symptom:** In Vienna, with the nearest-store lookup refused by the rate limiter, "Nueva lista" came up with **Pesos (ARS)** selected; "Crear 'Mi lista'" in "A la lista" fell back to pesos the same way. A list's currency cannot be changed afterwards, so the shopper would have been left with a peso list priced at euro stores.
 - **Cause:** Both fell back to `ARS` whenever the local currency was unknown — still loading, no location, no store nearby, or a failed lookup.
 - **Fix:** Nothing is preselected unless the currency of the nearby stores is known; until the shopper picks one, the list cannot be created, and the sheet says why ("Elegí la moneda…" or "Buscando la moneda…").
 
 ### MBUG-008 — The web walk-through typed into a sheet that was closing
-- **Phase:** 3 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** this checkpoint's commit
+- **Phase:** 3 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** d248a9a
 - **Symptom:** "A new list is created in the local currency" timed out: after "Crear lista", the new list's "Agregar producto" field stayed empty although the test had typed into it. Other steps failed now and then when a tap landed on a row of a sheet still sliding in.
 - **Cause:** React Native's Modal on the web keeps a focus trap until it unmounts, so keystrokes went back to the closing sheet's field; and taps were aimed at elements still moving. The "€ 1,15" and "$ 890" checks also matched prices on hidden screens of other tabs, so they proved nothing.
 - **Fix:** One helper decides what a finger could tap — on top at its centre, no longer moving, and inside the open modal if there is one — and `press`, `typeInto` and the new `shown` (visible text only) all use it. The walk-through deletes the lists it creates.
