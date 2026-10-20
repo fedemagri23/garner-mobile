@@ -273,7 +273,7 @@ Nothing new to install; pull both repos and run `pnpm run seed` in
 
 ## Checkpoint 5 — Where to buy
 
-_Phase 3 · 2026-10-20 · backend `27a44c3`, app: this commit._
+_Phase 3 · 2026-10-20 · backend `27a44c3`, app `33a6eb1`._
 
 What a person can do: ask where to buy a list and see three ways to do it —
 one store, a balance, or the cheapest within their limits — with what each

@@ -54,7 +54,7 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Fix:** One helper decides what a finger could tap — on top at its centre, no longer moving, and inside the open modal if there is one — and `press`, `typeInto` and the new `shown` (visible text only) all use it. The walk-through deletes the lists it creates.
 
 ### MBUG-009 — The savings card's button read its icon aloud
-- **Phase:** 3 · **Area:** accessibility · **Scope:** production code · **Found by:** web smoke test · **Fixed in:** this checkpoint's commit
+- **Phase:** 3 · **Area:** accessibility · **Scope:** production code · **Found by:** web smoke test · **Fixed in:** 33a6eb1
 - **Symptom:** The walk-through could not find "Ver el plan" on Inicio; a screen reader would have announced the button with the chevron icon's glyph after its text.
 - **Cause:** The button's name came from its contents, which include the icon font's private-use character.
 - **Fix:** The button carries an explicit accessible label. The walk-through also scrolls a target below the fold into view before tapping it — the card made "Cerrar sesión" fall off the first screen.
