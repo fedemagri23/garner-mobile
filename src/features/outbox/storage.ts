@@ -65,11 +65,22 @@ export async function clearOutboxStorage(): Promise<void> {
 
 function isChange(value: unknown): value is Change {
   if (typeof value !== 'object' || value === null) return false;
-  const change = value as Partial<Change>;
-  return (
-    typeof change.id === 'string' &&
-    typeof change.tripId === 'string' &&
-    ((change.kind === 'item' && typeof (change as { itemId?: unknown }).itemId === 'string') ||
-      (change.kind === 'status' && typeof (change as { action?: unknown }).action === 'string'))
-  );
+  const change = value as Record<string, unknown>;
+  if (typeof change.id !== 'string') return false;
+
+  switch (change.kind) {
+    case 'item':
+      return typeof change.tripId === 'string' && typeof change.itemId === 'string';
+    case 'status':
+      return typeof change.tripId === 'string' && typeof change.action === 'string';
+    case 'report':
+      return (
+        typeof change.productId === 'string' &&
+        typeof change.storeId === 'string' &&
+        typeof change.priceCents === 'number' &&
+        typeof change.currency === 'string'
+      );
+    default:
+      return false;
+  }
 }

@@ -101,3 +101,9 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Symptom:** "1 cambio espera para enviarse" was on screen but `shown()` waited until it timed out; Chrome's blocked-request logs for the offline steps also counted as page errors.
 - **Cause:** The banner's text wraps over two lines, so the centre of its bounding box is empty space and the "is it on top" test (`elementFromPoint`) hit the container instead. Chrome logs `ERR_INTERNET_DISCONNECTED` for every request the offline mode refuses.
 - **Fix:** The helper hit-tests the first line's box; the offline logs are expected.
+
+### MBUG-017 — A price field pushed the page sideways
+- **Phase:** 5 · **Area:** layout · **Scope:** production code (web build) · **Found by:** web smoke test (screenshot) · **Fixed in:** this checkpoint's commit
+- **Symptom:** On "Informar precio" the content was cut off at both edges, as if the page had scrolled sideways; the price field ran from 64 to 443 px on a 390 px screen.
+- **Cause:** A text field in a row with `flex: 1` will not shrink below its own default width unless it says it may (`minWidth: 0`); with the currency symbol beside it, it did not fit.
+- **Fix:** The price field, the trip's price field, the list's "Agregar producto" field and the search field all set `minWidth: 0`. The walk-through fails if any text field is wider than the screen.

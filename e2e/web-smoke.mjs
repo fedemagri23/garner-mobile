@@ -38,6 +38,23 @@ await browser.defaultBrowserContext().overridePermissions(BASE_URL, ['geolocatio
 
 const API_URL = process.env.E2E_API_URL ?? 'http://localhost:3000';
 
+const NEW_ACCOUNT = { email: `web-${Date.now()}@garner.test`, password: 'correct-horse-battery' };
+const LABEL_PHOTO = new URL('./fixtures/label.jpg', import.meta.url).pathname;
+
+/** The prices an account has contributed, as the server lists them. */
+async function serverContributions({ email, password }) {
+  const login = await fetch(`${API_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const { accessToken } = await login.json();
+  const page = await (
+    await fetch(`${API_URL}/v1/price-observations/mine?pageSize=50`, { headers: { authorization: `Bearer ${accessToken}` } })
+  ).json();
+  return page.data;
+}
+
 /** What the server itself says, to check that what the app showed is what it kept. */
 async function serverTrips(status) {
   const login = await fetch(`${API_URL}/v1/auth/login`, {
@@ -574,7 +591,7 @@ await step('signing up with a taken email says so, in Spanish', async () => {
   await text('Ya existe una cuenta con ese email.');
 });
 await step('a password that is too short is explained', async () => {
-  await typeInto('Email', `web-${Date.now()}@garner.test`);
+  await typeInto('Email', NEW_ACCOUNT.email);
   await typeInto('Contraseña', 'corta');
   await press('Crear cuenta');
   await text('una contraseña de al menos 10 caracteres');
@@ -592,6 +609,77 @@ await step('a new account makes its first list from "A la lista"', async () => {
   await text('Agregado a Mi lista.');
   await text('1 producto · ya tiene 1');
   await press('Listo');
+});
+
+// --- Checkpoint 8: reporting a price ---------------------------------------
+// Done as the throwaway account, so the shopper's own history stays clean.
+
+await step('a price is reported from a product, with a photo of the label', async () => {
+  await press('Informar precio');
+  await shown('¿En qué súper estás?');
+  await shown('Coto Centro');
+  await typeInto('Precio en góndola', '960');
+  // Nothing may stick out past the screen: a text field that will not shrink
+  // pushes the page sideways (MBUG-017).
+  const sticksOut = await page.evaluate(() =>
+    [...document.querySelectorAll('input')].some((n) => {
+      const box = n.getBoundingClientRect();
+      return box.width > 0 && box.right > document.documentElement.clientWidth + 1;
+    }),
+  );
+  if (sticksOut) throw new Error('a text field is wider than the screen');
+  const [chooser] = await Promise.all([page.waitForFileChooser(), press('Elegir una foto')]);
+  await chooser.accept([LABEL_PHOTO]);
+  await press('Quitar la foto');
+  const [again] = await Promise.all([page.waitForFileChooser(), press('Elegir una foto')]);
+  await again.accept([LABEL_PHOTO]);
+  await shown('Pesa más');
+  await page.screenshot({ path: `${SHOTS}checkpoint-8-report.png` });
+  await press('Enviar precio');
+  await shown('¡Gracias!');
+  await shown('Tu precio ya llegó. Ayuda a que otros paguen menos.');
+  const [mine] = await serverContributions(NEW_ACCOUNT);
+  if (!mine || mine.priceCents !== 96000 || !mine.hasPhotoEvidence || mine.storeName !== 'Coto Centro') {
+    throw new Error(`the server has ${JSON.stringify(mine)}`);
+  }
+});
+await step('Mis aportes lists it with where it stands', async () => {
+  await press('Ver mis aportes');
+  await shown('Mis aportes');
+  await shown('Agua Mineral 2L');
+  await text('Con foto');
+  await page.screenshot({ path: `${SHOTS}checkpoint-8-contributions.png` });
+  await press('Volver');
+});
+await step('a price reported offline waits, with its photo, and is sent on reconnecting', async () => {
+  await press('Buscar');
+  await pressContaining('Pan Lactal 500g');
+  await press('Informar precio');
+  await shown('¿En qué súper estás?');
+  await shown('Coto Centro');
+  await typeInto('Precio en góndola', '1.250');
+  const [chooser] = await Promise.all([page.waitForFileChooser(), press('Elegir una foto')]);
+  await chooser.accept([LABEL_PHOTO]);
+  await shown('Pesa más');
+  await page.setOfflineMode(true);
+  await press('Enviar precio');
+  await shown('¡Gracias!');
+  await text('Tu precio se envía cuando vuelva la conexión');
+  await page.screenshot({ path: `${SHOTS}checkpoint-8-offline.png` });
+  await press('Ver mis aportes');
+  await shown('Por enviar · con foto');
+  await page.setOfflineMode(false);
+  await gone('Por enviar · con foto');
+  const mine = await serverContributions(NEW_ACCOUNT);
+  const bread = mine.find((row) => row.productName === 'Pan Lactal 500g');
+  if (!bread || bread.priceCents !== 125000 || !bread.hasPhotoEvidence) {
+    throw new Error(`the server has ${JSON.stringify(mine.map((r) => [r.productName, r.priceCents, r.hasPhotoEvidence]))}`);
+  }
+  await press('Volver');
+});
+await step('Inicio counts the prices reported', async () => {
+  await press('Inicio');
+  await shown('2 precios informados o de tus compras');
 });
 
 // --- Vienna: the same app, in euros, on Vienna's clocks -------------------

@@ -12,11 +12,11 @@ import {
 } from 'react';
 import { AppState } from 'react-native';
 
-import type { Api } from '@/api/client';
 import { currentTripKey, useRememberTrip } from '@/features/trip/trip-cache';
 import { useSession } from '@/session/session-provider';
 
-import { drain, enqueue, type Change, type SendResult } from './changes';
+import { drain, enqueue, type Change } from './changes';
+import { send } from './send';
 import { loadQueue, saveQueue } from './storage';
 
 /** How often waiting changes are tried again while they wait. */
@@ -34,45 +34,13 @@ interface OutboxValue {
   /** Everything waiting was just sent. */
   justSynced: boolean;
   /** Changes the server will never take, since the last time this was dismissed. */
-  rejected: number;
+  rejected: Change[];
   dismissRejected: () => void;
   add: (change: Change) => void;
   flush: () => Promise<void>;
 }
 
 const OutboxContext = createContext<OutboxValue | null>(null);
-
-/** Sends one change. Never throws: what went wrong is the answer. */
-async function send(api: Api, change: Change): Promise<SendResult> {
-  try {
-    const path = { params: { path: { id: change.tripId } } };
-    const answer =
-      change.kind === 'item'
-        ? await api.PATCH('/v1/shopping-sessions/{id}/items/{itemId}', {
-            params: { path: { id: change.tripId, itemId: change.itemId } },
-            body: change.progress,
-          })
-        : change.action === 'pause'
-          ? await api.POST('/v1/shopping-sessions/{id}/pause', path)
-          : change.action === 'resume'
-            ? await api.POST('/v1/shopping-sessions/{id}/resume', path)
-            : change.action === 'complete'
-              ? await api.POST('/v1/shopping-sessions/{id}/complete', path)
-              : await api.POST('/v1/shopping-sessions/{id}/abandon', path);
-
-    const { response, data } = answer;
-    if (response.ok) {
-      return { result: 'ok', trip: data };
-    }
-    // The server answered. A busy or limiting one is worth another try; one
-    // that refuses (the trip is over, the line is gone) never will accept.
-    return response.status === 401 || response.status === 408 || response.status === 429 || response.status >= 500
-      ? { result: 'retry' }
-      : { result: 'drop' };
-  } catch {
-    return { result: 'retry', unreachable: true };
-  }
-}
 
 /**
  * Holds the changes made during a trip until the server has them.
@@ -93,7 +61,7 @@ export function OutboxProvider({ children }: { children: ReactNode }) {
   const [reachable, setReachable] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [justSynced, setJustSynced] = useState(false);
-  const [rejected, setRejected] = useState(0);
+  const [rejected, setRejected] = useState<Change[]>([]);
 
   // The queue as of now, for code that runs between renders; and how many of
   // its first entries are being sent, which must not be merged into.
@@ -136,11 +104,20 @@ export function OutboxProvider({ children }: { children: ReactNode }) {
       });
 
       const done = new Set(snapshot.slice(0, snapshot.length - outcome.remaining.length).map((c) => c.id));
-      // Changes made while this was sending sit after the snapshot; keep them.
-      commit(queueRef.current.filter((change) => !done.has(change.id)));
+      // Changes made while this was sending sit after the snapshot; keep them,
+      // and what a retried change learned (a photo already up) with it.
+      const learned = new Map(outcome.remaining.map((change) => [change.id, change]));
+      commit(
+        queueRef.current.filter((change) => !done.has(change.id)).map((change) => learned.get(change.id) ?? change),
+      );
 
       if (unreachable) setReachable(false);
-      if (outcome.dropped.length > 0) setRejected((count) => count + outcome.dropped.length);
+      if (outcome.dropped.length > 0) setRejected((list) => [...list, ...outcome.dropped]);
+      if (outcome.sentKinds.has('report')) {
+        // A price just reached the server: history and prices have news.
+        void queryClient.invalidateQueries({ queryKey: ['contributions'] });
+        void queryClient.invalidateQueries({ queryKey: ['prices'] });
+      }
       if (outcome.remaining.length === 0 && outcome.sent > 0) {
         setJustSynced(true);
         // The server's own version of the trip replaces the local guess.
@@ -209,7 +186,7 @@ export function OutboxProvider({ children }: { children: ReactNode }) {
       syncing,
       justSynced,
       rejected,
-      dismissRejected: () => setRejected(0),
+      dismissRejected: () => setRejected([]),
       add,
       flush,
     }),

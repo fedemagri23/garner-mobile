@@ -174,3 +174,21 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** The banner says "Sin conexión" when the phone reports no network, or when the last request failed to reach the server. A phone with a weak signal that connects but times out looks online until a request fails; and a server that is down looks like a bad connection.
 - **Why:** There is no honest way to know the server is reachable without asking it, and every send is that question.
 - **Revisit when:** People are told they are offline when only the server is down — then tell the two apart with a request to the health endpoint.
+
+### MCON-029 — A price report is queued like a trip change, and its photo waits on the phone
+- **Phase:** 5 · **Area:** contributions · **Status:** accepted
+- **What:** "Enviar precio" puts the report on the same queue as a trip's changes, with its own id as the report's id on the server, so a repeated send lands one report. The photo is copied into the app's documents folder (the picker's cache copy can be cleared by the system) and uploaded when the report is sent; an upload that is done but whose report has to wait is remembered, not repeated. A photo the server refuses (too big, not an image) or one that is gone from the phone does not hold the price back: the price goes without it. Reports from more than 7 days ago are refused by the server and the shopper is told.
+- **Why:** The place a price is seen is often a shop aisle with little signal; a price that can only be sent online would not be sent. Keeping the price ahead of the photo reflects what each is worth.
+- **Revisit when:** Photos wait so long that the documents folder grows — delete reports' photos older than a week, or compress them further before keeping them.
+
+### MCON-030 — A price can only be reported at one of the nearest six known stores
+- **Phase:** 5 · **Area:** contributions · **Status:** accepted
+- **What:** The store to report at is chosen from the six nearest to the shopper's position (nearest preselected), with the last known price at each; there is no search, and a store not in the catalog cannot be reported at. The currency is the one of the store's country (pesos for AR, euros for AT and the rest of the euro area).
+- **Why:** The backend rejects a price for an unknown store, and most shoppers are standing in the nearest one; a list is faster than a search field, and keeps a report to a place that exists.
+- **Revisit when:** Shoppers are in a shop that is not in the catalog (shops added by shoppers is a separate feature not yet planned), or standing between two stores that are both closer than a known third.
+
+### MCON-031 — A report's standing is the server's word, shown as it is
+- **Phase:** 5 · **Area:** contributions · **Status:** accepted
+- **What:** "Mis aportes" says ACCEPTED as "Ya cuenta", UNDER_REVIEW as "En revisión · no cambia los precios hasta que otros lo confirmen", and REJECTED as "No se aceptó · parecía muy distinto de lo habitual". A brand-new account's first prices usually start in review; nothing in the app lets the shopper appeal or edit one.
+- **Why:** The backend decides trust from who reported, how far the price is from the usual one and whether there is a photo (garner-app pricing). The app's job is to say what happened without alarm.
+- **Revisit when:** People ask why their price "did not count" — then say why (too far from usual, a new account) and offer to add a photo.

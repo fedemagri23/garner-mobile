@@ -21,6 +21,24 @@ describe('the outbox on disk', () => {
     expect(await loadQueue()).toEqual(queue);
   });
 
+  it('brings back a price report, photo and all, and drops one missing its price', async () => {
+    const report: Change = {
+      kind: 'report',
+      id: 'r1',
+      productId: 'p1',
+      productName: 'Leche',
+      storeId: 's1',
+      storeName: 'Coto',
+      priceCents: 139000,
+      currency: 'ARS',
+      observedAt: 'T',
+      photoUri: 'file:///label.jpg',
+    };
+    await AsyncStorage.setItem('garner.outbox.v1', JSON.stringify([report, { kind: 'report', id: 'r2' }]));
+
+    expect(await loadQueue()).toEqual([report]);
+  });
+
   it('is empty when nothing was saved', async () => {
     expect(await loadQueue()).toEqual([]);
     expect(await loadTrip()).toBeNull();

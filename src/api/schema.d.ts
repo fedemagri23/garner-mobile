@@ -1784,6 +1784,9 @@ export interface components {
             productId: string;
             /** Format: uuid */
             storeId: string;
+            productName: string;
+            storeName: string;
+            supermarketName: string;
             /** @description Price of one unit, in minor units (cents) */
             priceCents: number;
             /** @example ARS */

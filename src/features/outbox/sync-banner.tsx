@@ -16,12 +16,17 @@ const changes = (n: number) => (n === 1 ? '1 cambio' : `${n} cambios`);
 export function SyncBanner() {
   const { online, pending, syncing, justSynced, rejected, dismissRejected } = useOutbox();
 
-  if (rejected > 0) {
+  if (rejected.length > 0) {
+    const prices = rejected.filter((change) => change.kind === 'report').length;
+    const trip = rejected.length - prices;
+    const parts = [
+      trip > 0 ? `${changes(trip)} de la compra, que ya no estaba abierta` : null,
+      prices > 0 ? `${prices === 1 ? '1 precio' : `${prices} precios`}, que el servidor no aceptó` : null,
+    ].filter(Boolean);
+
     return (
       <Banner tone="warning" icon="alert-circle-outline" role="alert">
-        <Text style={styles.text}>
-          No pudimos enviar {changes(rejected)}: la compra ya no estaba abierta.
-        </Text>
+        <Text style={styles.text}>No pudimos enviar {parts.join(' y ')}.</Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Entendido"

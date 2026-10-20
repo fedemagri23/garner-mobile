@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     borderRadius: radii.md,
   },
-  addInput: { flex: 1, height: '100%', fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.ink },
+  addInput: { flex: 1, minWidth: 0, height: '100%', fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.ink },
   matches: {
     backgroundColor: colors.surface,
     borderWidth: 1,

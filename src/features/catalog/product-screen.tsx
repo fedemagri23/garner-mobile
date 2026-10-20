@@ -3,6 +3,7 @@ import { router, useLocalSearchParams, useNavigation, useSegments } from 'expo-r
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Button } from '@/components/button';
 import { ProductTile } from '@/components/product-tile';
 import { Screen } from '@/components/screen';
 import { StateMessage } from '@/components/state-message';
@@ -100,6 +101,11 @@ export function ProductScreen() {
           </View>
           <PriceHistoryCard productId={id} />
           <StorePrices productId={id} />
+          <Button
+            label="Informar precio"
+            variant="secondary"
+            onPress={() => router.push({ pathname: '/report-price', params: { productId: id } })}
+          />
         </>
       )}
     </Screen>

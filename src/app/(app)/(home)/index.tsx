@@ -7,6 +7,7 @@ import { Screen } from '@/components/screen';
 import { SearchBox } from '@/components/search-box';
 import { Text } from '@/components/text';
 import { useMe } from '@/features/account/use-me';
+import { ContributionsLink } from '@/features/contributions/contributions-link';
 import { LocationChip } from '@/features/location/location-chip';
 import { SavingsCard } from '@/features/plan/savings-card';
 import { PriceDropList } from '@/features/prices/price-drop-list';
@@ -46,6 +47,8 @@ export default function HomeScreen() {
       <SavingsCard />
 
       <PriceDropList />
+
+      <ContributionsLink />
 
       <Button label="Cerrar sesión" variant="secondary" onPress={signOut} />
     </Screen>

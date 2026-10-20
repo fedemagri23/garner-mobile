@@ -111,7 +111,12 @@ The spec's hardest requirement (§27): a trip survives a lost connection.
 | `/v1/shopping-sessions/**` | trips |
 | `POST /v1/price-observations` with a client `id` and `observedAt` | idempotent reports |
 
-## Phase 5 — Contributions
+## Phase 5 — Contributions ✅ (checkpoint 8)
+
+Done: "Informar precio" from a product (and so from the scanner, which opens
+the product), with an optional photo of the shelf label, sent when there is a
+connection; "Mis aportes" with each price's standing; backend names on each
+contribution (garner-app `ab5da96`, CON-047).
 
 - Report a price from the product screen or the scanner, with a photo of the
   shelf label (`expo-image-picker`, upload then attach).

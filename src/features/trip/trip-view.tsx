@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   },
   priceFieldInvalid: { borderColor: colors.danger },
   symbol: { fontFamily: fonts.bodyBold, fontSize: 18 },
-  priceInput: { flex: 1, height: '100%', fontFamily: fonts.bodyBold, fontSize: 20, color: colors.ink },
+  priceInput: { flex: 1, minWidth: 0, height: '100%', fontFamily: fonts.bodyBold, fontSize: 20, color: colors.ink },
   doneButton: { minHeight: 52, borderRadius: 12 },
   allDone: {
     flexDirection: 'row',

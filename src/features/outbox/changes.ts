@@ -2,7 +2,8 @@ import type { components } from '@/api/types';
 import type { Trip, TripItem } from '@/features/trip/stops';
 
 /**
- * What a shopper changes during a trip, kept until the server has it.
+ * What a shopper does that the server has to hear about, kept until it has:
+ * changes during a trip, and prices reported from a shelf.
  *
  * The outbox is a list of these in the order they happened. Replaying them
  * in that order is safe because each one is absolute — "this line is bought
@@ -14,9 +15,35 @@ import type { Trip, TripItem } from '@/features/trip/stops';
 export type Progress = components['schemas']['RecordItemProgressRequest'];
 export type StatusAction = 'pause' | 'resume' | 'complete' | 'abandon';
 
-export type Change =
-  | { kind: 'item'; id: string; tripId: string; itemId: string; progress: Progress }
-  | { kind: 'status'; id: string; tripId: string; action: StatusAction; at: string };
+export type ItemChange = { kind: 'item'; id: string; tripId: string; itemId: string; progress: Progress };
+export type StatusChange = { kind: 'status'; id: string; tripId: string; action: StatusAction; at: string };
+
+/**
+ * A price seen on a shelf. Its `id` is the report's own id on the server, so
+ * a send that is repeated lands one report, not two. The names are only for
+ * showing it while it waits.
+ */
+export type ReportChange = {
+  kind: 'report';
+  id: string;
+  productId: string;
+  productName: string;
+  storeId: string;
+  storeName: string;
+  priceCents: number;
+  currency: string;
+  observedAt: string;
+  /** A photo of the shelf label, kept on the phone until it is uploaded. */
+  photoUri: string | null;
+  /** Set once the photo is on the server, so a retry does not upload it again. */
+  photoKey?: string;
+};
+
+export type Change = ItemChange | StatusChange | ReportChange;
+
+/** The changes that belong to a trip. */
+export const isTripChange = (change: Change): change is ItemChange | StatusChange =>
+  change.kind !== 'report';
 
 /** How one change ended when it was sent. */
 export type SendResult =
@@ -27,7 +54,7 @@ export type SendResult =
    * Try again later: no connection (`unreachable`), or a server that answered
    * but is busy or limiting us.
    */
-  | { result: 'retry'; unreachable?: boolean };
+  | { result: 'retry'; unreachable?: boolean; patch?: Partial<ReportChange> };
 
 /**
  * Adds a change at the end. Changes to the same line merge into its earlier
@@ -50,7 +77,7 @@ export function enqueue(queue: Change[], change: Change, frozen = 0): Change[] {
     );
 
     if (index !== -1) {
-      const earlier = queue[index] as Extract<Change, { kind: 'item' }>;
+      const earlier = queue[index] as ItemChange;
       return queue.map((entry, i) =>
         i === index ? { ...earlier, progress: { ...earlier.progress, ...change.progress } } : entry,
       );
@@ -68,28 +95,47 @@ export function enqueue(queue: Change[], change: Change, frozen = 0): Change[] {
 export async function drain(
   queue: Change[],
   send: (change: Change) => Promise<SendResult>,
-): Promise<{ remaining: Change[]; sent: number; dropped: Change[]; lastTrip?: Trip }> {
+): Promise<{
+  remaining: Change[];
+  sent: number;
+  dropped: Change[];
+  /** What each change that was sent was, to know what to refresh. */
+  sentKinds: Set<Change['kind']>;
+  lastTrip?: Trip;
+}> {
   let index = 0;
   let sent = 0;
   let lastTrip: Trip | undefined;
   const dropped: Change[] = [];
+  const sentKinds = new Set<Change['kind']>();
+  let remainingFirst: Change | undefined;
 
   while (index < queue.length) {
     const outcome = await send(queue[index]);
 
     if (outcome.result === 'retry') {
+      // Progress made before giving up — a photo already uploaded — is kept.
+      const entry = queue[index];
+      if (outcome.patch && entry.kind === 'report') {
+        remainingFirst = { ...entry, ...outcome.patch };
+      }
       break;
     }
     if (outcome.result === 'drop') {
       dropped.push(queue[index]);
     } else {
       sent += 1;
+      sentKinds.add(queue[index].kind);
       lastTrip = outcome.trip ?? lastTrip;
     }
     index += 1;
   }
 
-  return { remaining: queue.slice(index), sent, dropped, lastTrip };
+  const remaining = queue.slice(index);
+  if (remainingFirst) {
+    remaining[0] = remainingFirst;
+  }
+  return { remaining, sent, dropped, sentKinds, lastTrip };
 }
 
 /** The lines with something still waiting to be sent. */
@@ -98,6 +144,10 @@ export function pendingItemIds(queue: Change[], tripId: string): Set<string> {
     queue.flatMap((change) => (change.kind === 'item' && change.tripId === tripId ? [change.itemId] : [])),
   );
 }
+
+/** Prices reported and not yet sent, oldest first. */
+export const pendingReports = (queue: Change[]): ReportChange[] =>
+  queue.filter((change): change is ReportChange => change.kind === 'report');
 
 const STATUS_AFTER: Record<StatusAction, Trip['status']> = {
   pause: 'PAUSED',
@@ -112,7 +162,7 @@ const STATUS_AFTER: Record<StatusAction, Trip['status']> = {
  * the server's own answer replaces this, and the two agree.
  */
 export function applyChanges(trip: Trip, queue: Change[]): Trip {
-  const mine = queue.filter((change) => change.tripId === trip.id);
+  const mine = queue.filter(isTripChange).filter((change) => change.tripId === trip.id);
   if (mine.length === 0) {
     return trip;
   }

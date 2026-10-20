@@ -6,7 +6,7 @@ import { useSession } from '@/session/session-provider';
 import { useShopperLocation } from './location-provider';
 
 /** The money shops are priced in, by the country they are in. */
-const CURRENCY_BY_COUNTRY: Record<string, string> = {
+export const CURRENCY_BY_COUNTRY: Record<string, string> = {
   AR: 'ARS',
   AT: 'EUR',
   BE: 'EUR',

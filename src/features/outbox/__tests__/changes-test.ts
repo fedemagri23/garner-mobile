@@ -1,6 +1,15 @@
 import type { Trip, TripItem } from '@/features/trip/stops';
 
-import { applyChanges, drain, enqueue, pendingItemIds, type Change, type Progress } from '../changes';
+import {
+  applyChanges,
+  drain,
+  enqueue,
+  pendingItemIds,
+  pendingReports,
+  type Change,
+  type Progress,
+  type ReportChange,
+} from '../changes';
 
 const item = (id: string, overrides: Partial<TripItem> = {}): TripItem =>
   ({
@@ -105,7 +114,7 @@ describe('drain', () => {
   it('sends everything in order when the server takes it all', async () => {
     const order: string[] = [];
     const result = await drain(three, async (change) => {
-      order.push(change.kind === 'item' ? change.itemId : change.action);
+      order.push(change.kind === 'item' ? change.itemId : change.kind === 'status' ? change.action : 'report');
       return { result: 'ok' };
     });
 
@@ -141,7 +150,12 @@ describe('drain', () => {
   });
 
   it('is a no-op on an empty queue', async () => {
-    expect(await drain([], async () => ({ result: 'ok' }))).toEqual({ remaining: [], sent: 0, dropped: [] });
+    expect(await drain([], async () => ({ result: 'ok' }))).toEqual({
+      remaining: [],
+      sent: 0,
+      dropped: [],
+      sentKinds: new Set(),
+    });
   });
 });
 
@@ -194,5 +208,56 @@ describe('applyChanges', () => {
 
     expect(applyChanges(base, [])).toBe(base);
     expect(applyChanges(base, [tick('a', { isPurchased: true }, 'trip-2')])).toBe(base);
+  });
+});
+
+const report = (id: string, overrides: Partial<ReportChange> = {}): ReportChange => ({
+  kind: 'report',
+  id,
+  productId: 'p1',
+  productName: 'Leche',
+  storeId: 's1',
+  storeName: 'Coto',
+  priceCents: 139000,
+  currency: 'ARS',
+  observedAt: '2026-10-21T10:00:00Z',
+  photoUri: null,
+  ...overrides,
+});
+
+describe('price reports in the queue', () => {
+  it('are never merged, and wait in order with the trip\'s changes', () => {
+    let queue: Change[] = [];
+    queue = enqueue(queue, tick('a', { isPurchased: true }));
+    queue = enqueue(queue, report('r1'));
+    queue = enqueue(queue, report('r2', { priceCents: 135000 }));
+
+    expect(queue.map((change) => change.kind)).toEqual(['item', 'report', 'report']);
+    expect(pendingReports(queue).map((r) => r.id)).toEqual(['r1', 'r2']);
+  });
+
+  it('do not touch a trip\'s view', () => {
+    const base = trip([item('a')]);
+
+    expect(applyChanges(base, [report('r1')])).toBe(base);
+    expect(pendingItemIds([report('r1')], 'trip-1').size).toBe(0);
+  });
+
+  it('keep a photo that is already up when their own send has to be retried', async () => {
+    const queue: Change[] = [report('r1', { photoUri: 'file:///label.jpg' }), tick('a', { isPurchased: true })];
+
+    const result = await drain(queue, async () => ({ result: 'retry', patch: { photoKey: 'user/photo.jpg' } }));
+
+    expect(result.sent).toBe(0);
+    expect(result.remaining).toHaveLength(2);
+    expect(result.remaining[0]).toMatchObject({ id: 'r1', photoKey: 'user/photo.jpg' });
+    // The queue the caller passed is not changed behind its back.
+    expect(queue[0]).not.toHaveProperty('photoKey');
+  });
+
+  it('say what kinds were sent, to know what to refresh', async () => {
+    const result = await drain([tick('a', { isPurchased: true }), report('r1')], async () => ({ result: 'ok' }));
+
+    expect([...result.sentKinds].sort()).toEqual(['item', 'report']);
   });
 });

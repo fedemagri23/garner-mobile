@@ -16,6 +16,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
 import { ApiError } from '@/api/client';
+import { AppProviders } from '@/components/app-providers';
 import { SessionProvider, useSession } from '@/session/session-provider';
 import { colors } from '@/theme/tokens';
 
@@ -70,19 +71,26 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
 
   const signedIn = status === 'signedIn';
 
+  const stack = (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ground } }}>
+      <Stack.Protected guard={signedIn}>
+        <Stack.Screen name="(app)" />
+        <Stack.Screen name="scan" options={{ presentation: 'fullScreenModal' }} />
+        <Stack.Screen name="report-price" options={{ presentation: 'fullScreenModal' }} />
+      </Stack.Protected>
+      <Stack.Protected guard={!signedIn}>
+        <Stack.Screen name="sign-in" />
+        <Stack.Screen name="sign-up" />
+      </Stack.Protected>
+    </Stack>
+  );
+
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ground } }}>
-        <Stack.Protected guard={signedIn}>
-          <Stack.Screen name="(app)" />
-          <Stack.Screen name="scan" options={{ presentation: 'fullScreenModal' }} />
-        </Stack.Protected>
-        <Stack.Protected guard={!signedIn}>
-          <Stack.Screen name="sign-in" />
-          <Stack.Screen name="sign-up" />
-        </Stack.Protected>
-      </Stack>
+      {/* Where the shopper is and what waits to be sent are shared by every
+          screen — the full-screen ones above the tabs included. */}
+      {signedIn ? <AppProviders>{stack}</AppProviders> : stack}
     </>
   );
 }

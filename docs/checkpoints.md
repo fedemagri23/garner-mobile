@@ -414,3 +414,51 @@ storage and the network state). Nothing changes in `garner-app`.
 - "Sin conexión" is the phone's word plus the last request's (MCON-028).
 - Not yet tried on a real phone: only in the browser, with Chrome's offline
   mode, and with unit tests for the queue, the storage and the session.
+
+---
+
+## Checkpoint 8 — Report a price
+
+_Phase 5 · 2026-10-21 · backend `ab5da96`, app: this commit._
+
+What a person can do: report the price on a shelf, with a photo of the label
+if they want; see every price they have reported and where it stands; and do
+both without a signal.
+
+Pull both repos; in `garner-mobile` run `npm install` (three packages are new:
+the photo picker, local files and the network state). Run `pnpm run seed` in
+`garner-app`. Use a **new account** (Crear cuenta) for steps 2 to 6 so your
+usual account's history stays clean — your reports are real data.
+
+**Check by hand** (the camera needs the phone)
+
+1. Open a product (search **Agua Mineral 2L**) and tap **Informar precio** at
+   the bottom. The screen lists the stores nearest you — in central Buenos
+   Aires, **Coto Centro, Carrefour Almagro, Día Caballito**, each with the last
+   known price; in Vienna, **Billa, Hofer, Spar**. The nearest is selected.
+2. Type a price (for the water at Coto, `960`). Tap **Sacar foto del cartel**:
+   allow the camera, photograph a label (any paper will do), accept. The photo
+   shows with **Pesa más**; the bin removes it. **Elegir una foto** takes one
+   from the gallery instead.
+3. **Enviar precio**: **¡Gracias!** — "Tu precio ya llegó" once it has.
+4. **Ver mis aportes** (also on Inicio, above Cerrar sesión): the price with
+   its store, the day, **Con foto**, and a status — for a new account usually
+   **En revisión · No cambia los precios hasta que otros lo confirmen**.
+5. **Offline:** open another product, **Informar precio**, put the phone in
+   airplane mode, type a price, add a photo and **Enviar precio**: **¡Gracias!
+   Tu precio se envía cuando vuelva la conexión**. **Ver mis aportes** shows it
+   on top, **Por enviar · con foto**, in orange.
+6. Close the app, reopen it still offline: the price is still waiting. Turn
+   airplane mode off: within seconds it is sent, and it leaves the orange list
+   for the ordinary one.
+7. A price far from the usual (the water at `99999`) is refused: the banner
+   says **No pudimos enviar 1 precio, que el servidor no aceptó**.
+
+**Known limits**
+
+- A price can be reported only at one of the six nearest known stores
+  (MCON-030); a shop not in the catalog cannot be reported at.
+- A new account's prices start in review (MCON-031).
+- Not yet tried on a real phone: the camera, the photo's trip through the
+  documents folder and the upload from a phone file were tested only in the
+  browser, with a file picked from disk.

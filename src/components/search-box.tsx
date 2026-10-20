@@ -61,5 +61,5 @@ const styles = StyleSheet.create({
   focused: { borderWidth: 2, borderColor: colors.accent, paddingHorizontal: space.lg - 1 },
   pressed: { backgroundColor: colors.surfaceMuted },
   placeholder: { fontFamily: fonts.bodyMedium },
-  input: { flex: 1, height: '100%', fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.ink },
+  input: { flex: 1, minWidth: 0, height: '100%', fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.ink },
 });
