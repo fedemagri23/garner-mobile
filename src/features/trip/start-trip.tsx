@@ -7,6 +7,7 @@ import { Text } from '@/components/text';
 import { useLists } from '@/features/lists/use-lists';
 import { useOutbox } from '@/features/outbox/outbox-provider';
 import { SyncBanner } from '@/features/outbox/sync-banner';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { productCount } from '@/lib/format';
 import { colors, radii, space } from '@/theme/tokens';
@@ -27,11 +28,10 @@ export function StartTrip() {
       <SyncBanner />
       <View style={styles.header}>
         <Text variant="title" accessibilityRole="header">
-          Compra
+          {t('trip.start.title')}
         </Text>
         <Text tone="muted">
-          Marcá lo que vas poniendo en el carrito y anotá lo que pagás. Para seguir un plan de varios
-          súper, empezá desde “¿Dónde conviene comprar?” en tu lista.
+          {t('trip.start.intro')}
         </Text>
       </View>
       {lists.isPending ? (
@@ -39,7 +39,7 @@ export function StartTrip() {
       ) : lists.isError ? (
         <StateMessage tone="danger" message={errorMessage(lists.error)} />
       ) : withItems.length === 0 ? (
-        <StateMessage message="Armá una lista con productos para empezar una compra." />
+        <StateMessage message={t('trip.start.noLists')} />
       ) : (
         withItems.map((list) => (
           <View key={list.id} style={styles.row}>
@@ -50,8 +50,8 @@ export function StartTrip() {
               </Text>
             </View>
             <Button
-              label="Empezar"
-              accessibilityLabel={`Empezar la compra de ${list.name}`}
+              label={t('trip.start.begin')}
+              accessibilityLabel={t('trip.start.beginLabel', { list: list.name })}
               loading={start.isPending && start.variables?.listId === list.id}
               disabled={start.isPending || pending > 0}
               onPress={() => start.mutate({ listId: list.id })}
@@ -62,7 +62,7 @@ export function StartTrip() {
       )}
       {pending > 0 ? (
         <Text variant="caption" tone="muted">
-          Estamos enviando tu compra anterior; en cuanto llegue podés empezar otra.
+          {t('trip.start.sendingPrevious')}
         </Text>
       ) : null}
       {start.isError ? <Text tone="danger">{errorMessage(start.error)}</Text> : null}

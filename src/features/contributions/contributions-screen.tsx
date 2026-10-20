@@ -8,6 +8,7 @@ import { Text } from '@/components/text';
 import { pendingReports, type ReportChange } from '@/features/outbox/changes';
 import { useOutbox } from '@/features/outbox/outbox-provider';
 import { SyncBanner } from '@/features/outbox/sync-banner';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDay, formatPrice } from '@/lib/format';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
@@ -15,14 +16,10 @@ import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 import { useMyContributions, type Contribution } from './use-contributions';
 
 /** How a contribution stands, in the words of the shopper who made it. */
-const STATUS: Record<Contribution['status'], { label: string; note: string; tone: 'accent' | 'signal' | 'danger' }> = {
-  ACCEPTED: { label: 'Ya cuenta', note: 'Aparece en los precios que ven los demás.', tone: 'accent' },
-  UNDER_REVIEW: {
-    label: 'En revisión',
-    note: 'No cambia los precios hasta que otros lo confirmen.',
-    tone: 'signal',
-  },
-  REJECTED: { label: 'No se aceptó', note: 'Parecía muy distinto de lo habitual.', tone: 'danger' },
+const TONE: Record<Contribution['status'], 'accent' | 'signal' | 'danger'> = {
+  ACCEPTED: 'accent',
+  UNDER_REVIEW: 'signal',
+  REJECTED: 'danger',
 };
 
 /** "Mis aportes": prices waiting to be sent, then the ones the server has. */
@@ -48,15 +45,15 @@ export function ContributionsScreen() {
           <View style={styles.header}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Volver"
+              accessibilityLabel={t('common.back')}
               onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
               style={styles.round}>
               <Ionicons name="chevron-back" size={20} color={colors.ink} />
             </Pressable>
             <Text variant="title" accessibilityRole="header">
-              Mis aportes
+              {t('contributions.link.title')}
             </Text>
-            <Text tone="muted">Los precios que informaste y los de tus compras. Cada uno ayuda a otros a pagar menos.</Text>
+            <Text tone="muted">{t('contributions.list.intro')}</Text>
             <SyncBanner />
             {waiting.map((report) => (
               <Waiting key={report.id} report={report} />
@@ -69,7 +66,7 @@ export function ContributionsScreen() {
           ) : mine.isError ? (
             <StateMessage tone="danger" message={errorMessage(mine.error)} />
           ) : waiting.length > 0 ? null : (
-            <StateMessage message="Todavía no informaste ningún precio. Abrí un producto y tocá “Informar precio”." />
+            <StateMessage message={t('contributions.list.empty')} />
           )
         }
       />
@@ -82,14 +79,14 @@ function Waiting({ report }: { report: ReportChange }) {
     <View
       style={[styles.row, styles.waiting]}
       accessible
-      accessibilityLabel={`${report.productName}, ${formatPrice(report.priceCents, report.currency)} en ${report.storeName}, por enviar`}>
+      accessibilityLabel={t('contributions.list.waitingLabel', { product: report.productName, price: formatPrice(report.priceCents, report.currency), store: report.storeName })}>
       <View style={styles.rowText}>
         <Text variant="bodyStrong">{report.productName}</Text>
         <Text variant="caption" tone="muted">
           {report.storeName} · {formatDay(report.observedAt)}
         </Text>
         <Text variant="caption" tone="signal" style={styles.strong}>
-          Por enviar{report.photoUri ? ' · con foto' : ''}
+          {t('contributions.list.waiting')}{report.photoUri ? t('contributions.list.withPhoto') : ''}
         </Text>
       </View>
       <Text style={styles.price}>{formatPrice(report.priceCents, report.currency)}</Text>
@@ -98,15 +95,23 @@ function Waiting({ report }: { report: ReportChange }) {
 }
 
 function Row({ row }: { row: Contribution }) {
-  const status = STATUS[row.status];
+  const status = {
+    label: t(`contributions.list.status.${row.status}.label`),
+    note: t(`contributions.list.status.${row.status}.note`),
+    tone: TONE[row.status],
+  };
   const origin =
-    row.sourceType === 'PURCHASE_CONFIRMED' ? 'De tu compra' : row.hasPhotoEvidence ? 'Con foto' : 'Informado por vos';
+    row.sourceType === 'PURCHASE_CONFIRMED'
+      ? t('contributions.list.fromPurchase')
+      : row.hasPhotoEvidence
+        ? t('contributions.list.photo')
+        : t('contributions.list.reported');
 
   return (
     <View
       style={styles.row}
       accessible
-      accessibilityLabel={`${row.productName}, ${formatPrice(row.priceCents, row.currency)} en ${row.storeName}. ${status.label}. ${status.note}`}>
+      accessibilityLabel={t('contributions.list.rowLabel', { product: row.productName, price: formatPrice(row.priceCents, row.currency), store: row.storeName, status: status.label, note: status.note })}>
       <View style={styles.rowText}>
         <Text variant="bodyStrong">{row.productName}</Text>
         <Text variant="caption" tone="muted">

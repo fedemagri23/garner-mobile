@@ -11,6 +11,7 @@ import { ContributionsLink } from '@/features/contributions/contributions-link';
 import { LocationChip } from '@/features/location/location-chip';
 import { SavingsCard } from '@/features/plan/savings-card';
 import { PriceDropList } from '@/features/prices/price-drop-list';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { useSession } from '@/session/session-provider';
 import { colors, space } from '@/theme/tokens';
@@ -28,10 +29,10 @@ export default function HomeScreen() {
           ) : me.isError ? (
             <Text tone="danger">{errorMessage(me.error)}</Text>
           ) : (
-            <Text tone="muted">Hola, {me.data.displayName}</Text>
+            <Text tone="muted">{t('shell.home.greeting', { name: me.data.displayName })}</Text>
           )}
           <Text variant="title" accessibilityRole="header">
-            ¿Qué compramos hoy?
+            {t('shell.home.question')}
           </Text>
         </View>
         <LocationChip />
@@ -50,7 +51,7 @@ export default function HomeScreen() {
 
       <ContributionsLink />
 
-      <Button label="Cerrar sesión" variant="secondary" onPress={signOut} />
+      <Button label={t('shell.home.signOut')} variant="secondary" onPress={signOut} />
     </Screen>
   );
 }

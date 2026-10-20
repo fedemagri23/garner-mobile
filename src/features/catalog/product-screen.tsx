@@ -12,19 +12,12 @@ import { NewAlertSheet } from '@/features/alerts/new-alert-sheet';
 import { AddToListSheet } from '@/features/lists/add-to-list-sheet';
 import { useShopperLocation } from '@/features/location/location-provider';
 import { usePriceHistory, useProductPrices, type StorePrice } from '@/features/prices/use-prices';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
-import { confidenceLabel, confidenceTone, formatDistance, formatPrice } from '@/lib/format';
+import { confidenceLabel, confidenceTone, formatDistance, formatPrice, shortDay } from '@/lib/format';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
 import { useProduct } from './use-catalog';
-
-const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-
-/** "2026-09-19" → "19 sep". The history's days are UTC calendar days. */
-const shortDate = (day: string) => {
-  const [, month, date] = day.split('-').map(Number);
-  return `${date} ${MONTHS[month - 1]}`;
-};
 
 /** A product: where it is cheapest near the shopper, and how its price moved. */
 export function ProductScreen() {
@@ -53,7 +46,7 @@ export function ProductScreen() {
       <View style={styles.topBar}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Volver"
+          accessibilityLabel={t('common.back')}
           onPress={back}
           style={({ pressed }) => [styles.back, pressed && styles.pressed]}>
           <Ionicons name="chevron-back" size={20} color={colors.ink} />
@@ -61,11 +54,11 @@ export function ProductScreen() {
         {product.data ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Agregar a la lista"
+            accessibilityLabel={t('browse.product.addToList')}
             onPress={() => setAdding(true)}
             style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
             <Ionicons name="add" size={18} color={colors.ink} />
-            <Text variant="label">A la lista</Text>
+            <Text variant="label">{t('browse.product.toList')}</Text>
           </Pressable>
         ) : null}
       </View>
@@ -94,7 +87,7 @@ export function ProductScreen() {
       ) : product.isError ? (
         <StateMessage
           tone="danger"
-          message={errorMessage(product.error, { 404: 'Este producto ya no está en el catálogo.' })}
+          message={errorMessage(product.error, { 404: t('browse.product.gone') })}
         />
       ) : (
         <>
@@ -115,12 +108,12 @@ export function ProductScreen() {
           <StorePrices productId={id} />
           <View style={styles.actions}>
             <Button
-              label="Informar precio"
+              label={t('browse.product.reportPrice')}
               variant="secondary"
               onPress={() => router.push({ pathname: '/report-price', params: { productId: id } })}
               style={styles.action}
             />
-            <Button label="Avisame si baja" onPress={() => setWatching(true)} style={styles.action} />
+            <Button label={t('browse.product.watch')} onPress={() => setWatching(true)} style={styles.action} />
           </View>
         </>
       )}
@@ -157,9 +150,9 @@ function PriceHistoryCard({ productId }: { productId: string }) {
   if (points.length === 0 || !trend || !currency) {
     return (
       <View style={styles.card}>
-        <Text variant="bodyStrong">Últimos 30 días</Text>
+        <Text variant="bodyStrong">{t('browse.product.history.title')}</Text>
         <Text tone="muted" variant="caption">
-          Todavía no hay historial de precios de este producto.
+          {t('browse.product.history.empty')}
         </Text>
       </View>
     );
@@ -175,22 +168,24 @@ function PriceHistoryCard({ productId }: { productId: string }) {
   const last = points[points.length - 1];
   const movement =
     trend.direction === 'stable'
-      ? 'se mantuvo estable'
-      : `${trend.direction === 'up' ? 'subió' : 'bajó'} ${Math.abs(Math.round(trend.changePercent))}%`;
+      ? t('browse.product.history.stable')
+      : t(trend.direction === 'up' ? 'browse.product.history.up' : 'browse.product.history.down', {
+          percent: Math.abs(Math.round(trend.changePercent)),
+        });
 
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text variant="bodyStrong">Últimos 30 días</Text>
+        <Text variant="bodyStrong">{t('browse.product.history.title')}</Text>
         <Text variant="caption" tone="muted">
-          promedio <Text variant="caption" style={styles.strong}>{price(average)}</Text>
+          {t('browse.product.history.average')}<Text variant="caption" style={styles.strong}>{price(average)}</Text>
         </Text>
       </View>
       <View
         style={styles.bars}
         accessible
         accessibilityRole="image"
-        accessibilityLabel={`Precio promedio por día: de ${price(first.averageCents)} el ${shortDate(first.date)} a ${price(last.averageCents)} el ${shortDate(last.date)}; ${movement}.`}>
+        accessibilityLabel={t('browse.product.history.chart', { from: price(first.averageCents), fromDay: shortDay(first.date), to: price(last.averageCents), toDay: shortDay(last.date), movement })}>
         {points.map((point, index) => (
           <View
             key={point.date}
@@ -206,13 +201,13 @@ function PriceHistoryCard({ productId }: { productId: string }) {
       </View>
       <View style={styles.cardHeader}>
         <Text variant="caption" tone="muted">
-          {shortDate(first.date)}
+          {shortDay(first.date)}
         </Text>
         <Text variant="caption" tone="muted">
           {movement}
         </Text>
         <Text variant="caption" tone="muted">
-          {shortDate(last.date)}
+          {shortDay(last.date)}
         </Text>
       </View>
     </View>
@@ -234,8 +229,8 @@ function StorePrices({ productId }: { productId: string }) {
       <StateMessage
         message={
           nearby
-            ? 'Todavía nadie informó este precio cerca tuyo.'
-            : 'Todavía nadie informó este precio.'
+            ? t('browse.product.stores.noneNearby')
+            : t('browse.product.stores.none')
         }
       />
     );
@@ -260,15 +255,15 @@ function StorePrices({ productId }: { productId: string }) {
     <View style={styles.section}>
       <View style={styles.cardHeader}>
         <Text variant="heading" accessibilityRole="header">
-          {nearby ? 'Cerca tuyo' : 'Todos los súper'}
+          {nearby ? t('browse.product.stores.nearby') : t('browse.product.stores.all')}
         </Text>
         <Text variant="caption" tone="muted">
-          más barato primero
+          {t('browse.product.stores.cheapestFirst')}
         </Text>
       </View>
       {location.status === 'none' ? (
         <Text variant="caption" tone="muted">
-          Sin tu ubicación no podemos ordenar por cercanía.
+          {t('browse.product.stores.noLocation')}
         </Text>
       ) : null}
       <View style={styles.list}>{body}</View>
@@ -278,13 +273,20 @@ function StorePrices({ productId }: { productId: string }) {
 
 function StorePriceRow({ price, cheapest, last }: { price: StorePrice; cheapest: number; last: boolean }) {
   const difference = price.priceCents - cheapest;
-  const delta = difference === 0 ? 'el más barato' : `+ ${formatPrice(difference, price.currency)}`;
+  const delta = difference === 0 ? t('browse.product.stores.cheapest') : `+ ${formatPrice(difference, price.currency)}`;
 
   return (
     <View
       style={[styles.row, !last && styles.divider]}
       accessible
-      accessibilityLabel={`${price.storeName}, ${formatPrice(price.priceCents, price.currency)}, ${delta}. ${confidenceLabel[price.confidence]}${price.distanceKm !== null ? `, a ${formatDistance(price.distanceKm)}` : ''}${price.isOpenNow ? '' : ', cerrado ahora'}`}>
+      accessibilityLabel={t('browse.product.stores.rowLabel', {
+        store: price.storeName,
+        price: formatPrice(price.priceCents, price.currency),
+        delta,
+        confidence: confidenceLabel(price.confidence),
+        distance: price.distanceKm !== null ? t('browse.product.stores.distanceLabel', { distance: formatDistance(price.distanceKm) }) : '',
+        closed: price.isOpenNow ? '' : t('browse.product.stores.closedLabel'),
+      })}>
       <View style={styles.rowText}>
         <Text variant="bodyStrong">{price.storeName}</Text>
         <View style={styles.meta}>
@@ -294,11 +296,11 @@ function StorePriceRow({ price, cheapest, last }: { price: StorePrice; cheapest:
             </Text>
           ) : null}
           <Text variant="caption" tone={confidenceTone[price.confidence]} style={styles.strong}>
-            {confidenceLabel[price.confidence]}
+            {confidenceLabel(price.confidence)}
           </Text>
           {price.isOpenNow ? null : (
             <Text variant="caption" tone="muted">
-              · cerrado ahora
+              {t('browse.product.stores.closedNowDot')}
             </Text>
           )}
         </View>

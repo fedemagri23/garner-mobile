@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';
 
@@ -17,7 +18,7 @@ export async function pickPhoto(source: 'camera' | 'library'): Promise<PhotoResu
   if (source === 'camera') {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      return { error: 'Necesitamos la cámara para sacar la foto. Podés permitirla en los ajustes del teléfono.' };
+      return { error: t('contributions.photo.needCamera') };
     }
   }
 
@@ -37,7 +38,7 @@ export async function pickPhoto(source: 'camera' | 'library'): Promise<PhotoResu
     return null;
   }
   if (asset.fileSize !== undefined && asset.fileSize > MAX_PHOTO_BYTES) {
-    return { error: 'La foto pesa más de 5 MB. Probá con otra.' };
+    return { error: t('contributions.photo.tooBig') };
   }
 
   return { photo: { uri: keepPhoto(asset.uri), width: asset.width, height: asset.height } };

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { t } from '@/i18n';
 import { colors, space } from '@/theme/tokens';
 
 import { Text } from './text';
@@ -27,7 +28,7 @@ export function Sheet({
       <KeyboardAvoidingView
         style={styles.fill}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <Pressable style={styles.backdrop} accessibilityLabel="Cerrar" onPress={onClose} />
+        <Pressable style={styles.backdrop} accessibilityLabel={t('common.close')} onPress={onClose} />
         <View style={[styles.sheet, { paddingBottom: space.xl + insets.bottom }]}>
           <Text variant="heading" accessibilityRole="header">
             {title}

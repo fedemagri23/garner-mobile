@@ -2,12 +2,10 @@ import { StyleSheet, View } from 'react-native';
 
 import { Chip } from '@/components/chip';
 import { Text } from '@/components/text';
+import { t } from '@/i18n';
 import { space } from '@/theme/tokens';
 
-export const LIST_CURRENCIES = [
-  { code: 'ARS', label: 'Pesos' },
-  { code: 'EUR', label: 'Euros' },
-];
+export const LIST_CURRENCIES = [{ code: 'ARS' }, { code: 'EUR' }] as const;
 
 /**
  * A new list's currency, fixed once the list exists. It starts on the
@@ -26,28 +24,28 @@ export function CurrencyPicker({
   onChange: (code: string) => void;
 }) {
   const note = looking
-    ? 'Buscando la moneda de los súper cerca tuyo…'
+    ? t('lists.currency.looking')
     : value === null
-      ? 'Elegí la moneda de los súper donde vas a comprar.'
+      ? t('lists.currency.choose')
       : value === local
-        ? 'La de los súper cerca tuyo.'
+        ? t('lists.currency.local')
         : '';
 
   return (
     <View style={styles.box}>
-      <Text variant="label">Moneda</Text>
+      <Text variant="label">{t('lists.currency.label')}</Text>
       <View style={styles.chips}>
         {LIST_CURRENCIES.map((option) => (
           <Chip
             key={option.code}
-            label={`${option.label} (${option.code})`}
+            label={`${t(`lists.currency.${option.code}`)} (${option.code})`}
             selected={value === option.code}
             onPress={() => onChange(option.code)}
           />
         ))}
       </View>
       <Text variant="caption" tone="muted">
-        {note ? `${note} ` : ''}No se puede cambiar después.
+        {note ? `${note} ` : ''}{t('lists.currency.permanent')}
       </Text>
     </View>
   );

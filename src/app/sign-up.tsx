@@ -6,6 +6,7 @@ import { Button } from '@/components/button';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
 import { TextField } from '@/components/text-field';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { useSession } from '@/session/session-provider';
 import { colors, space } from '@/theme/tokens';
@@ -26,8 +27,8 @@ export default function SignUpScreen() {
     } catch (failure) {
       setError(
         errorMessage(failure, {
-          409: 'Ya existe una cuenta con ese email.',
-          400: 'Revisá los datos: un email válido y una contraseña de al menos 10 caracteres.',
+          409: t('shell.auth.signUp.emailTaken'),
+          400: t('shell.auth.signUp.invalid'),
         }),
       );
       setSubmitting(false);
@@ -38,18 +39,18 @@ export default function SignUpScreen() {
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen contentStyle={styles.content}>
         <Text variant="title" accessibilityRole="header">
-          Creá tu cuenta
+          {t('shell.auth.signUp.title')}
         </Text>
         <View style={styles.form}>
           <TextField
-            label="Nombre"
+            label={t('shell.auth.signUp.name')}
             value={displayName}
             onChangeText={setDisplayName}
             autoComplete="name"
             textContentType="name"
           />
           <TextField
-            label="Email"
+            label={t('shell.auth.email')}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -58,7 +59,7 @@ export default function SignUpScreen() {
             textContentType="emailAddress"
           />
           <TextField
-            label="Contraseña"
+            label={t('shell.auth.password')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -67,7 +68,7 @@ export default function SignUpScreen() {
             onSubmitEditing={submit}
           />
           <Text variant="caption" tone="muted">
-            Al menos 10 caracteres.
+            {t('shell.auth.signUp.minLength')}
           </Text>
           {error ? (
             <Text tone="danger" accessibilityLiveRegion="polite" accessibilityRole="alert">
@@ -75,17 +76,17 @@ export default function SignUpScreen() {
             </Text>
           ) : null}
           <Button
-            label="Crear cuenta"
+            label={t('shell.auth.signUp.submit')}
             onPress={submit}
             loading={submitting}
             disabled={!displayName || !email || !password}
           />
         </View>
         <View style={styles.footer}>
-          <Text tone="muted">¿Ya tenés cuenta?</Text>
+          <Text tone="muted">{t('shell.auth.signUp.haveAccount')}</Text>
           <Link href="/sign-in" style={styles.link}>
             <Text variant="bodyStrong" tone="accent">
-              Ingresar
+              {t('shell.auth.signUp.signIn')}
             </Text>
           </Link>
         </View>

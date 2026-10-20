@@ -7,6 +7,7 @@ import { Chip } from '@/components/chip';
 import { Sheet } from '@/components/sheet';
 import { Text } from '@/components/text';
 import { useShopperLocation } from '@/features/location/location-provider';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatPrice } from '@/lib/format';
 import { parsePrice, priceInput } from '@/lib/parse-price';
@@ -16,11 +17,7 @@ import { useCreateAlert } from './use-alerts';
 
 type Kind = 'BELOW_THRESHOLD' | 'PRICE_DROP' | 'CHEAPER_NEARBY';
 
-const KINDS: { kind: Kind; label: string }[] = [
-  { kind: 'BELOW_THRESHOLD', label: 'Baja de un precio' },
-  { kind: 'PRICE_DROP', label: 'Baja un porcentaje' },
-  { kind: 'CHEAPER_NEARBY', label: 'Más barato cerca' },
-];
+const KINDS: Kind[] = ['BELOW_THRESHOLD', 'PRICE_DROP', 'CHEAPER_NEARBY'];
 const DROPS = [5, 10, 15, 20];
 
 /**
@@ -79,37 +76,37 @@ export function NewAlertSheet({
   };
 
   return (
-    <Sheet title="Avisame si baja" subtitle={productName} visible={visible} onClose={close}>
+    <Sheet title={t('alerts.create.title')} subtitle={productName} visible={visible} onClose={close}>
       {done ? (
         <View style={styles.group}>
-          <Text variant="bodyStrong">Listo: te avisamos en Avisos.</Text>
+          <Text variant="bodyStrong">{t('alerts.create.done')}</Text>
           <Button
-            label="Ver mis alertas"
+            label={t('alerts.create.viewAlerts')}
             variant="secondary"
             onPress={() => {
               close();
               router.navigate('/inbox/alerts');
             }}
           />
-          <Button label="Cerrar" onPress={close} />
+          <Button label={t('common.close')} onPress={close} />
         </View>
       ) : (
         <View style={styles.group}>
           <View style={styles.chips}>
             {KINDS.map((option) => (
-              <Chip key={option.kind} label={option.label} selected={kind === option.kind} onPress={() => setKind(option.kind)} />
+              <Chip key={option} label={t(`alerts.create.kinds.${option}`)} selected={kind === option} onPress={() => setKind(option)} />
             ))}
           </View>
 
           {kind === 'BELOW_THRESHOLD' ? (
             <View style={styles.group}>
-              <Text variant="label">Avisame cuando cueste menos de</Text>
+              <Text variant="label">{t('alerts.create.whenBelow')}</Text>
               <View style={[styles.field, invalid && styles.fieldInvalid]}>
                 <TextInput
                   value={text}
                   onChangeText={setText}
-                  accessibilityLabel="Precio límite"
-                  placeholder={suggested ? priceInput(suggested) : 'Precio'}
+                  accessibilityLabel={t('alerts.create.limitLabel')}
+                  placeholder={suggested ? priceInput(suggested) : t('alerts.create.pricePlaceholder')}
                   placeholderTextColor={colors.muted}
                   keyboardType="decimal-pad"
                   style={styles.input}
@@ -117,17 +114,17 @@ export function NewAlertSheet({
               </View>
               <Text variant="caption" tone={invalid ? 'danger' : 'muted'}>
                 {invalid
-                  ? 'Ese precio no se entiende. Probá con 1.150 o 1,15.'
+                  ? t('alerts.create.invalidPrice')
                   : cheapestCents && currency
-                    ? `Hoy lo más barato cerca tuyo es ${formatPrice(cheapestCents, currency)}.`
-                    : 'El precio por unidad.'}
+                    ? t('alerts.create.cheapestNow', { price: formatPrice(cheapestCents, currency) })
+                    : t('alerts.create.perUnit')}
               </Text>
             </View>
           ) : null}
 
           {kind === 'PRICE_DROP' ? (
             <View style={styles.group}>
-              <Text variant="label">Avisame cuando baje por lo menos</Text>
+              <Text variant="label">{t('alerts.create.whenDrop')}</Text>
               <View style={styles.chips}>
                 {DROPS.map((percent) => (
                   <Chip key={percent} label={`${percent}%`} selected={drop === percent} onPress={() => setDrop(percent)} />
@@ -137,15 +134,15 @@ export function NewAlertSheet({
           ) : null}
 
           {kind === 'CHEAPER_NEARBY' ? (
-            <Text tone="muted">Te avisamos cuando un súper cerca tuyo pase a ser el más barato para este producto.</Text>
+            <Text tone="muted">{t('alerts.create.cheaperHelp')}</Text>
           ) : null}
 
           <Text variant="caption" tone="muted">
-            {point ? `Cerca tuyo, a menos de ${radiusKm} km.` : 'Necesitamos tu ubicación para saber qué es “cerca”.'}
-            {currency === null && point ? ' Todavía no conocemos precios cerca tuyo.' : ''}
+            {point ? t('alerts.create.nearRadius', { km: radiusKm }) : t('alerts.create.needLocation')}
+            {currency === null && point ? t('alerts.create.noPricesNearby') : ''}
           </Text>
           {create.isError ? <Text tone="danger">{errorMessage(create.error)}</Text> : null}
-          <Button label="Crear alerta" disabled={!ready} loading={create.isPending} onPress={() => submit().catch(() => undefined)} />
+          <Button label={t('alerts.create.submit')} disabled={!ready} loading={create.isPending} onPress={() => submit().catch(() => undefined)} />
         </View>
       )}
     </Sheet>

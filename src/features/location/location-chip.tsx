@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/text';
+import { t } from '@/i18n';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
 import { useShopperLocation } from './location-provider';
@@ -17,8 +18,8 @@ export function LocationChip() {
     location.status === 'ready'
       ? location.label
       : location.status === 'locating'
-        ? 'Ubicando…'
-        : 'Sin ubicación';
+        ? t('shell.location.locating')
+        : t('shell.location.none');
 
   const content = (
     <>
@@ -36,7 +37,7 @@ export function LocationChip() {
 
   if (!canSwitch || location.status !== 'ready') {
     return (
-      <View style={styles.chip} accessible accessibilityLabel={`Ubicación: ${label}`}>
+      <View style={styles.chip} accessible accessibilityLabel={t('shell.location.chip', { label })}>
         {content}
       </View>
     );
@@ -47,7 +48,7 @@ export function LocationChip() {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Ubicación: ${label}. Cambiar`}
+      accessibilityLabel={t('shell.location.chipChange', { label })}
       onPress={() => setMode(other)}
       hitSlop={(MIN_TOUCH - 36) / 2}
       style={({ pressed }) => [styles.chip, pressed && styles.pressed]}>

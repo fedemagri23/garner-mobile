@@ -5,6 +5,7 @@ import { ProductTile } from '@/components/product-tile';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useShopperLocation } from '@/features/location/location-provider';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDistance, formatPrice } from '@/lib/format';
 import { colors, fonts, radii, space } from '@/theme/tokens';
@@ -19,14 +20,14 @@ export function PriceDropList() {
   let body;
   if (location.status === 'none') {
     body = (
-      <StateMessage message="Permití el acceso a tu ubicación para ver qué bajó cerca tuyo." />
+      <StateMessage message={t('shell.home.needLocation')} />
     );
   } else if (location.status === 'locating' || drops.isPending) {
     body = <StateMessage loading />;
   } else if (drops.isError) {
     body = <StateMessage tone="danger" message={errorMessage(drops.error)} />;
   } else if (drops.data.length === 0) {
-    body = <StateMessage message="Esta semana no bajó nada cerca tuyo." />;
+    body = <StateMessage message={t('shell.home.noDrops')} />;
   } else {
     body = drops.data.map((drop, index) => (
       <PriceDropRow key={drop.productId} drop={drop} last={index === drops.data.length - 1} />
@@ -36,7 +37,7 @@ export function PriceDropList() {
   return (
     <View style={styles.section}>
       <Text variant="heading" accessibilityRole="header">
-        Bajaron cerca tuyo
+        {t('shell.home.dropsTitle')}
       </Text>
       <View style={styles.card}>{body}</View>
     </View>
@@ -44,12 +45,12 @@ export function PriceDropList() {
 }
 
 function PriceDropRow({ drop, last }: { drop: PriceDrop; last: boolean }) {
-  const where = `${drop.storeName} · a ${formatDistance(drop.distanceKm)}`;
+  const where = t('shell.home.dropWhere', { store: drop.storeName, distance: formatDistance(drop.distanceKm) });
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${drop.productName}, ${formatPrice(drop.priceCents, drop.currency)}, bajó ${drop.dropPercent}%, en ${where}`}
+      accessibilityLabel={t('shell.home.dropLabel', { product: drop.productName, price: formatPrice(drop.priceCents, drop.currency), percent: drop.dropPercent, where })}
       onPress={() => router.push(`/product/${drop.productId}`)}
       style={({ pressed }) => [styles.row, !last && styles.divider, pressed && styles.pressed]}>
       <ProductTile name={drop.productName} imageUrl={drop.imageUrl} />

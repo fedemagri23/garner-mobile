@@ -2,11 +2,12 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/text';
+import { t } from '@/i18n';
 import { fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
 import { useOutbox } from './outbox-provider';
 
-const changes = (n: number) => (n === 1 ? '1 cambio' : `${n} cambios`);
+const changes = (n: number) => t('shell.sync.changes', { count: n });
 
 /**
  * Where the shopper's changes stand, in plain words: offline and what waits,
@@ -20,19 +21,19 @@ export function SyncBanner() {
     const prices = rejected.filter((change) => change.kind === 'report').length;
     const trip = rejected.length - prices;
     const parts = [
-      trip > 0 ? `${changes(trip)} de la compra, que ya no estaba abierta` : null,
-      prices > 0 ? `${prices === 1 ? '1 precio' : `${prices} precios`}, que el servidor no aceptó` : null,
+      trip > 0 ? t('shell.sync.tripRejected', { changes: changes(trip) }) : null,
+      prices > 0 ? t('shell.sync.priceRejected', { prices: t('shell.sync.prices', { count: prices }) }) : null,
     ].filter(Boolean);
 
     return (
       <Banner tone="warning" icon="alert-circle-outline" role="alert">
-        <Text style={styles.text}>No pudimos enviar {parts.join(' y ')}.</Text>
+        <Text style={styles.text}>{t('shell.sync.failed', { parts: parts.join(t('shell.sync.and')) })}</Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Entendido"
+          accessibilityLabel={t('shell.sync.understood')}
           onPress={dismissRejected}
           style={styles.dismiss}>
-          <Text style={styles.dismissText}>Entendido</Text>
+          <Text style={styles.dismissText}>{t('shell.sync.understood')}</Text>
         </Pressable>
       </Banner>
     );
@@ -42,13 +43,11 @@ export function SyncBanner() {
     return (
       <Banner tone="offline" icon="cloud-offline-outline">
         <Text style={styles.text}>
-          Sin conexión ·{' '}
+          {t('shell.sync.offline')} ·{' '}
           {pending > 0 ? (
-            <Text style={styles.bold}>
-              {changes(pending)} {pending === 1 ? 'espera' : 'esperan'} para enviarse
-            </Text>
+            <Text style={styles.bold}>{t('shell.sync.waiting', { count: pending })}</Text>
           ) : (
-            'lo que marques se envía al volver'
+            t('shell.sync.offlineHint')
           )}
         </Text>
       </Banner>
@@ -58,7 +57,7 @@ export function SyncBanner() {
   if (pending > 0) {
     return (
       <Banner tone="offline" icon="sync-outline">
-        <Text style={styles.text}>{syncing ? 'Enviando' : 'Por enviar'} {changes(pending)}…</Text>
+        <Text style={styles.text}>{t(syncing ? 'shell.sync.sending' : 'shell.sync.toSend', { changes: changes(pending) })}</Text>
       </Banner>
     );
   }
@@ -66,7 +65,7 @@ export function SyncBanner() {
   if (justSynced) {
     return (
       <Banner tone="ok" icon="checkmark-circle-outline">
-        <Text style={styles.text}>Todo enviado</Text>
+        <Text style={styles.text}>{t('shell.sync.allSent')}</Text>
       </Banner>
     );
   }

@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/button';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDay } from '@/lib/format';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
@@ -30,15 +31,15 @@ export default function AlertsScreen() {
           <View style={styles.header}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Volver"
+              accessibilityLabel={t('common.back')}
               onPress={() => (router.canGoBack() ? router.back() : router.replace('/inbox'))}
               style={styles.round}>
               <Ionicons name="chevron-back" size={20} color={colors.ink} />
             </Pressable>
             <Text variant="title" accessibilityRole="header">
-              Mis alertas
+              {t('alerts.list.title')}
             </Text>
-            <Text tone="muted">Te avisamos en Avisos cuando un precio cumple lo que pediste. Pausá una para dejar de recibirla sin borrarla.</Text>
+            <Text tone="muted">{t('alerts.list.intro')}</Text>
           </View>
         }
         ListEmptyComponent={
@@ -47,7 +48,7 @@ export default function AlertsScreen() {
           ) : alerts.isError ? (
             <StateMessage tone="danger" message={errorMessage(alerts.error)} />
           ) : (
-            <StateMessage message="No tenés alertas. Abrí un producto y tocá “Avisame si baja”." />
+            <StateMessage message={t('alerts.list.empty')} />
           )
         }
       />
@@ -69,37 +70,37 @@ function AlertRow({ alert }: { alert: Alert }) {
             {describeAlert(alert)}
           </Text>
           <Text variant="caption" tone={alert.isEnabled ? 'accent' : 'muted'} style={styles.strong}>
-            {alert.isEnabled ? 'Activa' : 'En pausa'}
-            {alert.lastTriggeredAt ? ` · avisó ${formatDay(alert.lastTriggeredAt)}` : ''}
+            {alert.isEnabled ? t('alerts.list.active') : t('alerts.list.paused')}
+            {alert.lastTriggeredAt ? t('alerts.list.triggered', { when: formatDay(alert.lastTriggeredAt) }) : ''}
           </Text>
         </View>
         <Switch
           value={alert.isEnabled}
           onValueChange={(isEnabled) => toggle.mutate({ id: alert.id, isEnabled })}
-          accessibilityLabel={`${alert.isEnabled ? 'Pausar' : 'Activar'} la alerta de ${alert.productName}`}
+          accessibilityLabel={t(alert.isEnabled ? 'alerts.list.pauseLabel' : 'alerts.list.activateLabel', { product: alert.productName })}
           trackColor={{ true: colors.accent, false: colors.lineStrong }}
         />
       </View>
       {asking ? (
         <View style={styles.confirm}>
-          <Text style={styles.confirmText}>¿Borrar esta alerta?</Text>
+          <Text style={styles.confirmText}>{t('alerts.list.askDelete')}</Text>
           <Button
-            label="Sí, borrar"
+            label={t('alerts.list.confirmDelete')}
             loading={remove.isPending}
             onPress={() => remove.mutate(alert.id)}
             style={[styles.small, styles.danger]}
           />
-          <Button label="No" variant="secondary" onPress={() => setAsking(false)} style={styles.small} />
+          <Button label={t('alerts.list.no')} variant="secondary" onPress={() => setAsking(false)} style={styles.small} />
         </View>
       ) : (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Borrar la alerta de ${alert.productName}`}
+          accessibilityLabel={t('alerts.list.deleteLabel', { product: alert.productName })}
           onPress={() => setAsking(true)}
           style={styles.trash}>
           <Ionicons name="trash-outline" size={16} color={colors.muted} />
           <Text variant="caption" tone="muted">
-            Borrar
+            {t('alerts.list.delete')}
           </Text>
         </Pressable>
       )}

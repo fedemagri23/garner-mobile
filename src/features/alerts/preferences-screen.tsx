@@ -7,9 +7,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StateMessage } from '@/components/state-message';
 import { Stepper } from '@/components/stepper';
 import { Text } from '@/components/text';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
+import { LanguageCard } from '@/i18n/language-card';
 import { PushCard } from '@/features/push/push-card';
 
 import { localToUtcHour, utcToLocalHour } from './messages';
@@ -27,13 +29,13 @@ export default function PreferencesScreen() {
       <ScrollView contentContainerStyle={styles.content} contentInsetAdjustmentBehavior="automatic">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Volver"
+          accessibilityLabel={t('common.back')}
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/inbox'))}
           style={styles.round}>
           <Ionicons name="chevron-back" size={20} color={colors.ink} />
         </Pressable>
         <Text variant="title" accessibilityRole="header">
-          Preferencias
+          {t('alerts.preferences.title')}
         </Text>
         {preferences.data ? (
           <Form preferences={preferences.data} />
@@ -60,8 +62,8 @@ function Form({ preferences }: { preferences: Preferences }) {
     <View style={styles.form}>
       <Card>
         <Option
-          label="Avisos de precio"
-          note="Cuando uno de tus productos baja, te escribimos."
+          label={t('alerts.preferences.priceAlerts')}
+          note={t('alerts.preferences.priceAlertsNote')}
           value={preferences.priceAlertsEnabled}
           onChange={(priceAlertsEnabled) => save.mutate({ priceAlertsEnabled })}
         />
@@ -71,11 +73,11 @@ function Form({ preferences }: { preferences: Preferences }) {
 
       <Card>
         <Option
-          label="También por email"
+          label={t('alerts.preferences.email')}
           note={
             preferences.emailAvailable
-              ? 'Te escribimos a tu email aunque no abras la app. Aceptás recibirlos; podés desactivarlo cuando quieras.'
-              : 'Este servidor todavía no envía emails.'
+              ? t('alerts.preferences.emailNote')
+              : t('alerts.preferences.emailUnavailable')
           }
           value={preferences.emailEnabled}
           disabled={!preferences.emailAvailable}
@@ -85,8 +87,8 @@ function Form({ preferences }: { preferences: Preferences }) {
 
       <Card>
         <Option
-          label="No molestar de noche"
-          note="Los avisos que lleguen en ese horario esperan a que termine."
+          label={t('alerts.preferences.quiet')}
+          note={t('alerts.preferences.quietNote')}
           value={quiet}
           onChange={(on) =>
             on ? saveQuiet(from, to) : save.mutate({ quietHoursStartUtc: null, quietHoursEndUtc: null })
@@ -95,7 +97,7 @@ function Form({ preferences }: { preferences: Preferences }) {
         {quiet ? (
           <View style={styles.steppers}>
             <Stepper
-              label="Desde"
+              label={t('alerts.preferences.from')}
               value={from}
               display={pad(from)}
               min={0}
@@ -106,7 +108,7 @@ function Form({ preferences }: { preferences: Preferences }) {
               }}
             />
             <Stepper
-              label="Hasta"
+              label={t('alerts.preferences.to')}
               value={to}
               display={pad(to)}
               min={0}
@@ -117,7 +119,7 @@ function Form({ preferences }: { preferences: Preferences }) {
               }}
             />
             <Text variant="caption" tone="muted">
-              En la hora de tu teléfono.
+              {t('alerts.preferences.localTime')}
             </Text>
           </View>
         ) : null}
@@ -125,17 +127,19 @@ function Form({ preferences }: { preferences: Preferences }) {
 
       <Card>
         <Stepper
-          label="Entre dos avisos de una alerta"
+          label={t('alerts.preferences.spacing')}
           value={Math.round(preferences.minMinutesBetweenAlerts / 60)}
-          display={`${Math.round(preferences.minMinutesBetweenAlerts / 60)} h`}
+          display={t('alerts.preferences.spacingValue', { count: Math.round(preferences.minMinutesBetweenAlerts / 60) })}
           min={1}
           max={24}
           onChange={(hours) => save.mutate({ minMinutesBetweenAlerts: hours * 60 })}
         />
         <Text variant="caption" tone="muted">
-          Lo menos que esperamos antes de volver a avisarte por la misma alerta.
+          {t('alerts.preferences.spacingNote')}
         </Text>
       </Card>
+
+      <LanguageCard />
 
       {save.isError ? <Text tone="danger">{errorMessage(save.error)}</Text> : null}
     </View>

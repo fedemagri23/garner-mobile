@@ -228,3 +228,21 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** The app side (permission, token, registration, tap to open) is typechecked, unit-tested for the routing, and exported for both platforms, but never ran against Expo's service or a real device. The backend side is tested against a stand-in (CON-050).
 - **Why:** It needs a development build, which needs EAS and, on iPhone, a paid Apple developer account.
 - **Revisit when:** The first development build is made; try the steps in docs/checkpoints.md, checkpoint 10.
+
+### MCON-038 — Languages come from typed catalogs; changing language restarts the screens
+- **Phase:** 7 (checkpoint 11) · **Area:** i18n · **Status:** accepted
+- **What:** Spanish, English and German live in `src/i18n/catalog/<language>/<area>.ts`, read with `t('area.key')` through `i18next`. Keys are type-checked against the Spanish catalog (a typo or a missing translation fails `tsc`), and a test checks the languages have the same phrases and the same `{{placeholders}}`. The language is the shopper's pick, else the phone's, else Spanish. Changing it remounts everything below the provider, so a screen cannot stay half in the old language; the shopper lands on Inicio.
+- **Why:** Text is written from plain functions as well as components (alert messages, errors, plan wording), so a hook per component would miss some. A remount is blunt but cannot leave stale text. The session and cache sit above the provider and survive it.
+- **Revisit when:** Returning to Preferencias after a change matters (restore the route), or a screen holds state worth keeping across a change.
+
+### MCON-039 — Dates and money are written by the app, not by `Intl`
+- **Phase:** 7 (checkpoint 11) · **Area:** i18n · **Status:** accepted
+- **What:** Month and weekday names come from the catalog and prices from `formatPrice` (separators, symbol position and spacing per language), not from `Intl`. In English pesos read `AR$1,390`; in German `1.390 ARS`.
+- **Why:** iOS, Android and the web disagree on `Intl` details (Spanish "sep" or "sept", whether pesos show ",00"), and a price must read the same everywhere.
+- **Revisit when:** More languages or currencies make the tables unwieldy; then lean on `Intl` and test per platform.
+
+### MCON-040 — Words from the server are still Spanish or English
+- **Phase:** 7 (checkpoint 11) · **Area:** i18n · **Status:** open
+- **What:** Alerts in the inbox are written in the chosen language from facts, but push notifications are Spanish only (CON-049), emails are English, API error messages other than the ones screens map by status are English, and product, brand and category names are not translated.
+- **Why:** The server does not know the user's language yet.
+- **Revisit when:** Checkpoint 14 sends the locale and the backend writes push and email text in it.

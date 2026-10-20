@@ -6,6 +6,8 @@ import { Button } from '@/components/button';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
 import { TextField } from '@/components/text-field';
+import { t } from '@/i18n';
+import { LanguageChoices } from '@/i18n/language-card';
 import { errorMessage } from '@/lib/error-message';
 import { useSession } from '@/session/session-provider';
 import { colors, radii, space } from '@/theme/tokens';
@@ -38,17 +40,16 @@ export default function SignInScreen() {
             </Text>
           </View>
           <Text variant="display" accessibilityRole="header">
-            Pagá menos por la misma compra.
+            {t('shell.auth.signIn.headline')}
           </Text>
           <Text tone="muted">
-            Compará precios de los súper de tu barrio, armá tu lista y te decimos dónde conviene
-            comprar cada cosa.
+            {t('shell.auth.signIn.intro')}
           </Text>
         </View>
 
         <View style={styles.form}>
           <TextField
-            label="Email"
+            label={t('shell.auth.email')}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -57,7 +58,7 @@ export default function SignInScreen() {
             textContentType="emailAddress"
           />
           <TextField
-            label="Contraseña"
+            label={t('shell.auth.password')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -71,7 +72,7 @@ export default function SignInScreen() {
             </Text>
           ) : null}
           <Button
-            label="Ingresar"
+            label={t('shell.auth.signIn.submit')}
             onPress={submit}
             loading={submitting}
             disabled={!email || !password}
@@ -79,13 +80,14 @@ export default function SignInScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text tone="muted">¿Primera vez?</Text>
+          <Text tone="muted">{t('shell.auth.signIn.firstTime')}</Text>
           <Link href="/sign-up" style={styles.link}>
             <Text variant="bodyStrong" tone="accent">
-              Crear cuenta
+              {t('shell.auth.signIn.createAccount')}
             </Text>
           </Link>
         </View>
+        <LanguageChoices />
       </Screen>
     </KeyboardAvoidingView>
   );

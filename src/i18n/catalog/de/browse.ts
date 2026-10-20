@@ -1,0 +1,55 @@
+import type { browse as es } from '../es/browse';
+import type { Catalog } from '../types';
+
+export const browse: Catalog<typeof es> = {
+  product: {
+    gone: 'Dieses Produkt ist nicht mehr im Katalog.',
+    addToList: 'Zur Liste hinzufügen',
+    toList: 'Zur Liste',
+    reportPrice: 'Preis melden',
+    watch: 'Sag mir, wenn es günstiger wird',
+    history: {
+      title: 'Letzte 30 Tage',
+      empty: 'Für dieses Produkt gibt es noch keinen Preisverlauf.',
+      average: 'Durchschnitt ',
+      stable: 'blieb stabil',
+      up: 'stieg um {{percent}}%',
+      down: 'fiel um {{percent}}%',
+      chart: 'Durchschnittspreis pro Tag: von {{from}} am {{fromDay}} auf {{to}} am {{toDay}}; {{movement}}.',
+    },
+    stores: {
+      nearby: 'In deiner Nähe',
+      all: 'Alle Supermärkte',
+      cheapestFirst: 'günstigste zuerst',
+      noLocation: 'Ohne deinen Standort können wir nicht nach Entfernung sortieren.',
+      noneNearby: 'Niemand hat diesen Preis in deiner Nähe gemeldet.',
+      none: 'Niemand hat diesen Preis bisher gemeldet.',
+      cheapest: 'der günstigste',
+      closedNow: 'jetzt geschlossen',
+      closedNowDot: '· jetzt geschlossen',
+      rowLabel: '{{store}}, {{price}}, {{delta}}. {{confidence}}{{distance}}{{closed}}',
+      distanceLabel: ', {{distance}} entfernt',
+      closedLabel: ', jetzt geschlossen',
+    },
+  },
+  search: {
+    all: 'Alle',
+    noResults: 'Wir haben keine Produkte für „{{search}}“ gefunden.',
+    emptyCategory: 'In dieser Kategorie gibt es keine Produkte.',
+  },
+  scan: {
+    title: 'Code scannen',
+    torch: 'Taschenlampe',
+    notFound: 'Dieses Produkt haben wir noch nicht im Katalog.',
+    invalid: 'Dieser Code sieht nicht nach einem gültigen Barcode aus.',
+    code: 'Code {{code}}',
+    again: 'Noch einen scannen',
+    aim: 'Richte die Kamera auf den Barcode der Verpackung. Wir suchen ihn automatisch.',
+    noCamera: 'Ohne Kamera gib den Code unter den Strichen ein.',
+    barcode: 'Barcode',
+    find: 'Suchen',
+    needCamera: 'Zum Lesen von Codes brauchen wir die Kamera.',
+    allowCamera: 'Kamera erlauben',
+    openSettings: 'Einstellungen öffnen',
+  },
+};

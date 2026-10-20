@@ -6,6 +6,7 @@ import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
 import { SyncBanner } from '@/features/outbox/sync-banner';
 import { useOutbox } from '@/features/outbox/outbox-provider';
+import { t } from '@/i18n';
 import { formatPrice, productCount } from '@/lib/format';
 import { colors, fonts, radii, space } from '@/theme/tokens';
 
@@ -29,35 +30,35 @@ export function TripSummary({ trip, onDone }: { trip: Trip; onDone: () => void }
       <View style={styles.hero}>
         <Ionicons name="checkmark-circle" size={48} color={colors.accent} />
         <Text variant="title" accessibilityRole="header">
-          Compra terminada
+          {t('trip.summary.title')}
         </Text>
         <Text tone="muted">{trip.listName}</Text>
       </View>
       <View style={styles.card}>
-        <Line label="Gastaste" value={formatPrice(actualTotalCents, trip.currency)} strong />
-        <Line label="Productos" value={`${productCount(purchasedItemCount)} de ${trip.totals.itemCount}`} />
+        <Line label={t('trip.summary.spent')} value={formatPrice(actualTotalCents, trip.currency)} strong />
+        <Line label={t('trip.summary.products')} value={t('trip.summary.productsOf', { bought: productCount(purchasedItemCount), total: trip.totals.itemCount })} />
         {expectedForPurchased > 0 ? (
           <Line
-            label={difference <= 0 ? 'Menos de lo esperado' : 'Más de lo esperado'}
+            label={difference <= 0 ? t('trip.summary.less') : t('trip.summary.more')}
             value={formatPrice(Math.abs(difference), trip.currency)}
             tone={difference <= 0 ? 'accent' : 'signal'}
           />
         ) : null}
-        <Line label="Esperabas para toda la lista" value={formatPrice(expectedTotalCents, trip.currency)} />
+        <Line label={t('trip.summary.expectedAll')} value={formatPrice(expectedTotalCents, trip.currency)} />
       </View>
       <Text tone="muted">
         {shared === 1
-          ? 'El precio que anotaste ya cuenta para los demás: así todos sabemos dónde conviene.'
+          ? t('trip.summary.sharedOne')
           : shared > 1
-            ? `Los ${shared} precios que anotaste ya cuentan para los demás: así todos sabemos dónde conviene.`
-            : 'No anotaste precios en un súper conocido, así que esta vez no se comparte ninguno.'}
+            ? t('trip.summary.sharedMany', { count: shared })
+            : t('trip.summary.sharedNone')}
       </Text>
       {pending > 0 ? (
         <Text variant="caption" tone="muted">
-          Tu compra se envía cuando vuelva la conexión; no hace falta que hagas nada.
+          {t('trip.summary.offline')}
         </Text>
       ) : null}
-      <Button label="Listo" onPress={onDone} />
+      <Button label={t('trip.summary.done')} onPress={onDone} />
     </Screen>
   );
 }

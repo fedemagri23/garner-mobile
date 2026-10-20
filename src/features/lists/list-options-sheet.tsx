@@ -6,6 +6,7 @@ import { Button } from '@/components/button';
 import { Sheet } from '@/components/sheet';
 import { Text } from '@/components/text';
 import { TextField } from '@/components/text-field';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { colors, space } from '@/theme/tokens';
 
@@ -45,7 +46,7 @@ export function ListOptionsSheet({
   };
 
   const copy = async () => {
-    const created = await duplicate.mutateAsync(`${list.name} (copia)`);
+    const created = await duplicate.mutateAsync(t('lists.options.copySuffix', { name: list.name }));
     close();
     router.push(`/lists/${created.id}`);
   };
@@ -61,7 +62,7 @@ export function ListOptionsSheet({
       {mode === 'menu' ? (
         <View style={styles.actions}>
           <Button
-            label="Cambiar el nombre"
+            label={t('lists.options.rename')}
             variant="secondary"
             onPress={() => {
               setName(list.name);
@@ -69,17 +70,17 @@ export function ListOptionsSheet({
             }}
           />
           <Button
-            label="Duplicar la lista"
+            label={t('lists.options.duplicate')}
             variant="secondary"
             loading={duplicate.isPending}
             onPress={() => copy().catch(() => undefined)}
           />
-          <Button label="Eliminar la lista" variant="secondary" onPress={() => setMode('delete')} />
+          <Button label={t('lists.options.delete')} variant="secondary" onPress={() => setMode('delete')} />
         </View>
       ) : mode === 'rename' ? (
         <View style={styles.actions}>
           <TextField
-            label="Nombre"
+            label={t('lists.options.name')}
             value={name}
             onChangeText={setName}
             maxLength={120}
@@ -88,7 +89,7 @@ export function ListOptionsSheet({
             onSubmitEditing={() => name.trim() && saveName().catch(() => undefined)}
           />
           <Button
-            label="Guardar"
+            label={t('lists.options.save')}
             disabled={!name.trim() || name.trim() === list.name}
             loading={rename.isPending}
             onPress={() => saveName().catch(() => undefined)}
@@ -97,16 +98,15 @@ export function ListOptionsSheet({
       ) : (
         <View style={styles.actions}>
           <Text>
-            ¿Eliminar “{list.name}” y sus {list.totals.itemCount} productos? No se puede deshacer.
-            Las compras que ya empezaste con ella se conservan.
+            {t('lists.options.confirmDelete', { name: list.name, count: list.totals.itemCount })}
           </Text>
           <Button
-            label="Sí, eliminar"
+            label={t('lists.options.yesDelete')}
             loading={remove.isPending}
             onPress={() => destroy().catch(() => undefined)}
             style={styles.danger}
           />
-          <Button label="Cancelar" variant="secondary" onPress={() => setMode('menu')} />
+          <Button label={t('lists.options.cancel')} variant="secondary" onPress={() => setMode('menu')} />
         </View>
       )}
       {failure ? <Text tone="danger">{errorMessage(failure)}</Text> : null}

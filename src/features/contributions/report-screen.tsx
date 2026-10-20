@@ -15,6 +15,7 @@ import { CURRENCY_BY_COUNTRY } from '@/features/location/use-local-currency';
 import { useOutbox } from '@/features/outbox/outbox-provider';
 import { SyncBanner } from '@/features/outbox/sync-banner';
 import { useProductPrices } from '@/features/prices/use-prices';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDistance, formatPrice } from '@/lib/format';
 import { parsePrice } from '@/lib/parse-price';
@@ -57,7 +58,7 @@ export function ReportScreen() {
       if (result && 'error' in result) setPhotoError(result.error);
       else if (result) setPhoto(result.photo.uri);
     } catch {
-      setPhotoError('No pudimos abrir la cámara. Probá de nuevo.');
+      setPhotoError(t('contributions.photo.cameraFailed'));
     }
   };
 
@@ -82,13 +83,13 @@ export function ReportScreen() {
 
   let storesBody;
   if (location.status === 'none') {
-    storesBody = <StateMessage message="Necesitamos tu ubicación para saber en qué súper estás." />;
+    storesBody = <StateMessage message={t('contributions.report.needLocation')} />;
   } else if (location.status === 'locating' || stores.isPending) {
     storesBody = <StateMessage loading />;
   } else if (stores.isError) {
     storesBody = <StateMessage tone="danger" message={errorMessage(stores.error)} />;
   } else if (list.length === 0) {
-    storesBody = <StateMessage message="No hay súper conocidos cerca tuyo. Todavía no podemos aceptar el precio." />;
+    storesBody = <StateMessage message={t('contributions.report.noStores')} />;
   } else {
     storesBody = list.map((store, index) => (
       <StoreRow
@@ -111,13 +112,13 @@ export function ReportScreen() {
         <View style={styles.topBar}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Cerrar"
+            accessibilityLabel={t('common.close')}
             onPress={() => router.back()}
             style={styles.round}>
             <Ionicons name="close" size={22} color={colors.ink} />
           </Pressable>
           <Text variant="heading" accessibilityRole="header">
-            Informar precio
+            {t('contributions.report.title')}
           </Text>
           <View style={styles.roundSpacer} />
         </View>
@@ -141,12 +142,12 @@ export function ReportScreen() {
         )}
 
         <View style={styles.group}>
-          <Text variant="label">¿En qué súper estás?</Text>
+          <Text variant="label">{t('contributions.report.whichStore')}</Text>
           <View style={styles.card}>{storesBody}</View>
         </View>
 
         <View style={styles.group}>
-          <Text variant="label">Precio en góndola</Text>
+          <Text variant="label">{t('contributions.report.shelfPrice')}</Text>
           <View style={[styles.priceField, invalid && styles.priceFieldInvalid]}>
             <Text style={styles.symbol} tone="muted">
               {symbol}
@@ -154,7 +155,7 @@ export function ReportScreen() {
             <TextInput
               value={text}
               onChangeText={setText}
-              accessibilityLabel="Precio en góndola"
+              accessibilityLabel={t('contributions.report.shelfPrice')}
               placeholder="0"
               placeholderTextColor={colors.muted}
               keyboardType="decimal-pad"
@@ -163,11 +164,11 @@ export function ReportScreen() {
             />
           </View>
           <Text variant="caption" tone={invalid ? 'danger' : 'muted'}>
-            {invalid ? 'Ese precio no se entiende. Probá con 1.150 o 1,15.' : 'El precio de una unidad, como dice el cartel.'}
+            {invalid ? t('contributions.report.invalid') : t('contributions.report.perUnit')}
           </Text>
           {chosen && !currency ? (
             <Text variant="caption" tone="danger">
-              Todavía no aceptamos precios en {chosen.country}.
+              {t('contributions.report.unsupportedCountry', { country: chosen.country })}
             </Text>
           ) : null}
         </View>
@@ -175,16 +176,16 @@ export function ReportScreen() {
         <View style={styles.group}>
           {photo ? (
             <View style={styles.photoRow}>
-              <Image source={photo} style={styles.thumb} contentFit="cover" accessibilityLabel="Foto del cartel" />
+              <Image source={photo} style={styles.thumb} contentFit="cover" accessibilityLabel={t('contributions.report.labelPhoto')} />
               <View style={styles.photoText}>
-                <Text variant="bodyStrong">Foto del cartel</Text>
+                <Text variant="bodyStrong">{t('contributions.report.labelPhoto')}</Text>
                 <Text variant="caption" tone="accent">
-                  Pesa más
+                  {t('contributions.report.weighsMore')}
                 </Text>
               </View>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Quitar la foto"
+                accessibilityLabel={t('contributions.report.removePhoto')}
                 onPress={() => setPhoto(null)}
                 style={styles.round}>
                 <Ionicons name="trash-outline" size={20} color={colors.ink} />
@@ -193,21 +194,21 @@ export function ReportScreen() {
           ) : (
             <View style={styles.photoButtons}>
               {canUseCamera ? (
-                <PhotoButton icon="camera-outline" label="Sacar foto del cartel" onPress={() => take('camera')} />
+                <PhotoButton icon="camera-outline" label={t('contributions.report.takePhoto')} onPress={() => take('camera')} />
               ) : null}
-              <PhotoButton icon="image-outline" label="Elegir una foto" onPress={() => take('library')} />
+              <PhotoButton icon="image-outline" label={t('contributions.report.pickPhoto')} onPress={() => take('library')} />
             </View>
           )}
           {photoError ? <Text tone="danger">{photoError}</Text> : null}
           <Text variant="caption" tone="muted">
-            La foto es opcional. Con ella, tu precio pesa más para los demás.
+            {t('contributions.report.photoHelp')}
           </Text>
         </View>
 
-        <Button label="Enviar precio" disabled={!ready} onPress={submit} />
+        <Button label={t('contributions.report.submit')} disabled={!ready} onPress={submit} />
         {chosen && cents !== null && currency ? (
           <Text variant="caption" tone="muted" style={styles.center}>
-            {formatPrice(cents, currency)} en {chosen.name}
+            {t('contributions.report.summary', { price: formatPrice(cents, currency), store: chosen.name })}
           </Text>
         ) : null}
       </ScrollView>
@@ -232,7 +233,7 @@ function StoreRow({
     <Pressable
       accessibilityRole="radio"
       accessibilityState={{ selected }}
-      accessibilityLabel={`${store.name}, a ${formatDistance(store.distanceKm)}`}
+      accessibilityLabel={t('contributions.report.storeLabel', { store: store.name, distance: formatDistance(store.distanceKm) })}
       onPress={onPress}
       style={[styles.storeRow, !last && styles.divider, selected && styles.storeRowSelected]}>
       <Ionicons
@@ -244,7 +245,7 @@ function StoreRow({
         <Text variant="bodyStrong">{store.name}</Text>
         <Text variant="caption" tone="muted">
           {formatDistance(store.distanceKm)}
-          {lastPrice ? ` · último precio acá ${formatPrice(lastPrice.priceCents, lastPrice.currency)}` : ''}
+          {lastPrice ? t('contributions.report.lastPrice', { price: formatPrice(lastPrice.priceCents, lastPrice.currency) }) : ''}
         </Text>
       </View>
     </Pressable>
@@ -285,18 +286,18 @@ function Thanks({ reportId }: { reportId: string }) {
           <Ionicons name="checkmark-circle" size={56} color={colors.accent} />
         </View>
         <Text variant="title" accessibilityRole="header" style={styles.center}>
-          ¡Gracias!
+          {t('contributions.report.thanks')}
         </Text>
         <Text tone="muted" style={styles.center}>
           {waiting
             ? online
-              ? 'Estamos enviando tu precio.'
-              : 'Tu precio se envía cuando vuelva la conexión; no hace falta que hagas nada.'
-            : 'Tu precio ya llegó. Ayuda a que otros paguen menos.'}
+              ? t('contributions.report.sending')
+              : t('contributions.report.offline')
+            : t('contributions.report.arrived')}
         </Text>
-        <Button label="Listo" onPress={() => router.back()} />
+        <Button label={t('contributions.report.done')} onPress={() => router.back()} />
         <Button
-          label="Ver mis aportes"
+          label={t('contributions.report.viewMine')}
           variant="secondary"
           onPress={() => {
             router.back();

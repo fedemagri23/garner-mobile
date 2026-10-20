@@ -1,20 +1,28 @@
+import { t } from '@/i18n';
+import { decimal } from '@/lib/format';
+
+const VIOLATIONS = [
+  'TOO_MANY_STORES',
+  'TOO_FAR',
+  'TOO_LONG',
+  'EXTRA_STORE_NOT_WORTH_IT',
+  'EXCLUDED_SUPERMARKET',
+] as const;
+
 /** Why a cheaper plan was not offered, in the shopper's terms. */
-export const VIOLATION: Record<string, string> = {
-  TOO_MANY_STORES: 'tiene más paradas de las que elegiste',
-  TOO_FAR: 'te hace caminar o manejar más de lo que elegiste',
-  TOO_LONG: 'lleva más tiempo del que elegiste',
-  EXTRA_STORE_NOT_WORTH_IT: 'una parada más ahorra menos de lo que vale la pena',
-  EXCLUDED_SUPERMARKET: 'pasa por un súper que excluiste',
-};
+export const violationText = (code: string): string =>
+  (VIOLATIONS as readonly string[]).includes(code)
+    ? t(`plan.violations.${code as (typeof VIOLATIONS)[number]}`)
+    : code;
 
 /** "Coto y Día", "Coto, Día y Carrefour". */
 export function joinNames(names: string[]): string {
   if (names.length <= 1) return names[0] ?? '';
-  return `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`;
+  return `${names.slice(0, -1).join(', ')} ${t('plan.and')} ${names[names.length - 1]}`;
 }
 
 /** "+1,2 km" — the extra distance against shopping at one convenient store. */
-export const extraKm = (km: number) =>
-  km < 0.05 ? 'nada' : `+${(Math.round(km * 10) / 10).toString().replace('.', ',')} km`;
+export const extraKm = (km: number) => (km < 0.05 ? t('plan.none') : `+${decimal(km)} km`);
 
-export const extraMinutes = (minutes: number) => (minutes < 1 ? 'nada' : `+${Math.round(minutes)} min`);
+export const extraMinutes = (minutes: number) =>
+  minutes < 1 ? t('plan.none') : `+${Math.round(minutes)} min`;

@@ -10,6 +10,7 @@ import { Text } from '@/components/text';
 import { useList } from '@/features/lists/use-lists';
 import { useStartTrip } from '@/features/trip/use-trip';
 import { useShopperLocation } from '@/features/location/location-provider';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatPrice, productCount } from '@/lib/format';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
@@ -17,8 +18,8 @@ import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 import type { MapStop } from './map-types';
 import { PreferencesSheet } from './preferences-sheet';
 import { StopsMap } from './stops-map';
-import { MODES, planFor, useOptimization, useRequestPlan, type Mode, type Plan, type PlanStop } from './use-plan';
-import { extraKm, extraMinutes, joinNames, VIOLATION } from './wording';
+import { MODES, modeLabel, planFor, useOptimization, useRequestPlan, type Mode, type Plan, type PlanStop } from './use-plan';
+import { extraKm, extraMinutes, joinNames, violationText } from './wording';
 
 const MAP_HEIGHT = 260;
 
@@ -69,24 +70,24 @@ export function PlanScreen() {
 
   let body;
   if (location.status === 'none') {
-    body = <StateMessage message="Necesitamos tu ubicación para saber qué súper te quedan cerca." />;
+    body = <StateMessage message={t('plan.screen.needLocation')} />;
   } else if (request.isError) {
     body = (
       <StateMessage
         tone="danger"
-        message={errorMessage(request.error, { 409: 'La lista está vacía: agregale productos primero.' })}
+        message={errorMessage(request.error, { 409: t('plan.screen.emptyList') })}
       />
     );
   } else if (optimization.data?.status === 'FAILED') {
-    body = <StateMessage tone="danger" message="No pudimos calcular el plan. Probá de nuevo en un rato." />;
+    body = <StateMessage tone="danger" message={t('plan.screen.failed')} />;
   } else if (optimization.isError) {
     body = <StateMessage tone="danger" message={errorMessage(optimization.error)} />;
   } else if (!result) {
-    body = <StateMessage loading message="Comparando precios en los súper cerca tuyo…" />;
+    body = <StateMessage loading message={t('plan.screen.comparing')} />;
   } else if (!result.cheapest && !result.bestBalance && !result.simplest) {
     body = (
       <StateMessage
-        message={`Ningún súper cerca tuyo tiene precios en ${currency === 'EUR' ? 'euros' : currency === 'ARS' ? 'pesos' : currency} para esta lista.`}
+        message={t('plan.screen.noneInCurrency', { currency: currency === 'EUR' || currency === 'ARS' ? t(`plan.screen.currencyNames.${currency}`) : currency })}
       />
     );
   } else {
@@ -102,7 +103,7 @@ export function PlanScreen() {
                 accessibilityState={{ selected }}
                 onPress={() => setMode(entry.mode)}
                 style={[styles.tab, selected && styles.tabSelected]}>
-                <Text style={[styles.tabText, selected && styles.tabTextSelected]}>{entry.label}</Text>
+                <Text style={[styles.tabText, selected && styles.tabTextSelected]}>{modeLabel(entry.mode)}</Text>
               </Pressable>
             );
           })}
@@ -110,7 +111,7 @@ export function PlanScreen() {
         {plan ? (
           <PlanDetails plan={plan} currency={currency} />
         ) : (
-          <StateMessage message="No hay un plan así dentro de tus preferencias." />
+          <StateMessage message={t('plan.screen.noPlan')} />
         )}
         <Notes plan={plan} result={result} currency={currency} />
       </>
@@ -133,8 +134,8 @@ export function PlanScreen() {
         {body}
         {plan && optimization.data ? (
           <Button
-            label="Empezar la compra"
-            accessibilityLabel={`Empezar la compra: ${MODES.find((entry) => entry.mode === shown)?.label ?? ''}`}
+            label={t('plan.screen.start')}
+            accessibilityLabel={t('plan.screen.startLabel', { mode: shown ? modeLabel(shown) : '' })}
             loading={start.isPending}
             onPress={() =>
               start
@@ -146,9 +147,9 @@ export function PlanScreen() {
         ) : null}
         {start.isError ? <Text tone="danger">{errorMessage(start.error)}</Text> : null}
         <View style={styles.footer}>
-          <Button label="Preferencias" variant="secondary" onPress={() => setEditing(true)} style={styles.footerButton} />
+          <Button label={t('plan.screen.preferences')} variant="secondary" onPress={() => setEditing(true)} style={styles.footerButton} />
           <Button
-            label="Recalcular"
+            label={t('plan.screen.recalculate')}
             variant="secondary"
             disabled={location.status !== 'ready' || request.isPending}
             onPress={() => again()}
@@ -168,7 +169,7 @@ function TopBar({ title }: { title?: string }) {
     <View style={[styles.topBar, { top: insets.top + space.sm }]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Volver"
+        accessibilityLabel={t('common.back')}
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/lists'))}
         style={styles.round}>
         <Ionicons name="chevron-back" size={20} color={colors.ink} />
@@ -188,16 +189,16 @@ function PlanDetails({ plan, currency }: { plan: Plan; currency: string }) {
   return (
     <>
       <View style={styles.stats}>
-        <Stat label="Ahorrás" value={formatPrice(plan.savingsCents, currency)} accent />
-        <Stat label="Recorrido" value={extraKm(plan.additionalDistanceKm)} />
-        <Stat label="Tiempo aprox." value={extraMinutes(plan.additionalMinutes)} />
+        <Stat label={t('plan.screen.saves')} value={formatPrice(plan.savingsCents, currency)} accent />
+        <Stat label={t('plan.screen.route')} value={extraKm(plan.additionalDistanceKm)} />
+        <Stat label={t('plan.screen.time')} value={extraMinutes(plan.additionalMinutes)} />
       </View>
       <View style={styles.stops}>
         {plan.stores.map((stop, index) => (
           <Stop key={stop.storeId} stop={stop} currency={currency} last={index === plan.stores.length - 1} />
         ))}
         <View style={styles.totalRow}>
-          <Text tone="muted">Total</Text>
+          <Text tone="muted">{t('plan.screen.total')}</Text>
           <Text style={styles.total}>{formatPrice(plan.totalCents, currency)}</Text>
         </View>
       </View>
@@ -229,7 +230,7 @@ function Stop({ stop, currency, last }: { stop: PlanStop; currency: string; last
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        accessibilityLabel={`Parada ${stop.order}: ${stop.storeName}, ${productCount(stop.items.length)}, ${formatPrice(stop.subtotalCents, currency)}`}
+        accessibilityLabel={t('plan.screen.stopLabel', { order: stop.order, store: stop.storeName, count: productCount(stop.items.length), price: formatPrice(stop.subtotalCents, currency) })}
         onPress={() => setOpen((value) => !value)}
         style={styles.stop}>
         <View style={styles.order}>
@@ -240,7 +241,7 @@ function Stop({ stop, currency, last }: { stop: PlanStop; currency: string; last
         <View style={styles.stopText}>
           <Text variant="bodyStrong">{stop.storeName}</Text>
           <Text variant="caption" tone="muted" numberOfLines={open ? undefined : 1}>
-            {open && stop.addressLine ? stop.addressLine : `${productCount(stop.items.length)} · ${preview}`}
+            {open && stop.addressLine ? stop.addressLine : t('plan.screen.stopMeta', { count: productCount(stop.items.length), preview })}
           </Text>
         </View>
         <Text style={styles.subtotal}>{formatPrice(stop.subtotalCents, currency)}</Text>
@@ -275,18 +276,21 @@ function Notes({
   currency: string;
 }) {
   if (!result) return null;
-  const notes: string[] = ['Distancias y tiempos estimados.'];
+  const notes: string[] = [t('plan.screen.notes.estimated')];
 
   const missing = [...new Set([...(plan?.missingProducts ?? []), ...result.unavailableProducts])];
   if (missing.length > 0) {
-    notes.push(`No encontramos cerca: ${joinNames(missing)}.`);
+    notes.push(t('plan.screen.notes.missing', { names: joinNames(missing) }));
   }
 
   const cheaper = result.rejectedCheaperAlternatives[0];
   if (cheaper && plan && cheaper.plan.totalCents < plan.totalCents) {
-    const reasons = cheaper.violations.map((code) => VIOLATION[code] ?? code);
+    const reasons = cheaper.violations.map(violationText);
     notes.push(
-      `Hay un plan ${formatPrice(plan.totalCents - cheaper.plan.totalCents, currency)} más barato, pero ${joinNames(reasons)}.`,
+      t('plan.screen.notes.cheaper', {
+        price: formatPrice(plan.totalCents - cheaper.plan.totalCents, currency),
+        reasons: joinNames(reasons),
+      }),
     );
   }
 

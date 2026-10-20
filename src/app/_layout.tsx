@@ -17,6 +17,7 @@ import { useEffect } from 'react';
 
 import { ApiError } from '@/api/client';
 import { AppProviders } from '@/components/app-providers';
+import { LanguageProvider } from '@/i18n/language-provider';
 import { SessionProvider, useSession } from '@/session/session-provider';
 import { colors } from '@/theme/tokens';
 
@@ -47,7 +48,10 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
         {/* A font that fails to load falls back to the system font, not a blank app. */}
-        <RootNavigator fontsReady={fontsLoaded || fontError !== null} />
+        {/* Inside the session so changing language never signs anyone out. */}
+        <LanguageProvider>
+          <RootNavigator fontsReady={fontsLoaded || fontError !== null} />
+        </LanguageProvider>
       </SessionProvider>
     </QueryClientProvider>
   );

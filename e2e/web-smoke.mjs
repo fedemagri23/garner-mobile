@@ -77,6 +77,11 @@ async function openPage(position) {
   const tab = await browser.newPage();
   await tab.setViewport({ width: 390, height: 844 });
   await tab.setGeolocation(position);
+  // The phone is set to Spanish (Argentina); the app follows it unless the shopper picks otherwise.
+  await tab.evaluateOnNewDocument(() => {
+    Object.defineProperty(navigator, 'languages', { get: () => ['es-AR', 'es'] });
+    Object.defineProperty(navigator, 'language', { get: () => 'es-AR' });
+  });
   tab.on('pageerror', (error) => errors.push(`page error: ${error.message}`));
   tab.on('console', (message) => {
     // The checks provoke refusals on purpose (wrong password, taken email,
@@ -811,6 +816,46 @@ await step('in Vienna, the euro list is planned at the Vienna stores', async () 
   await pressContaining('Hofer Landstraße');
   await shown('Landstraßer Hauptstraße 70');
   await page.screenshot({ path: `${SHOTS}vienna-plan.png` });
+});
+
+// --- Checkpoint 11: the app in three languages ----------------------------
+
+const reachLanguages = async (alerts, preferences) => {
+  await press(alerts);
+  await press(preferences);
+};
+
+await step('English: the whole app changes, prices are written the English way, and it survives a reload', async () => {
+  await reachLanguages('Avisos', 'Preferencias de avisos');
+  await shown('Idioma');
+  await press('English');
+  await text('Hi, Fede');
+  await text('What are we buying today?');
+  await text('€0.69');
+  await page.screenshot({ path: `${SHOTS}language-en-home.png` });
+  await page.reload({ waitUntil: 'networkidle0' });
+  await text('Hi, Fede');
+});
+await step('German: dates, plurals and prices follow', async () => {
+  await reachLanguages('Alerts', 'Alert preferences');
+  await shown('Language');
+  await press('Deutsch');
+  await text('Hallo, Fede');
+  await text('Was kaufen wir heute?');
+  await text('0,69\u00a0€');
+  await page.screenshot({ path: `${SHOTS}language-de-home.png` });
+});
+await step('Español comes back, and a signed-out phone can pick a language too', async () => {
+  await reachLanguages('Hinweise', 'Einstellungen für Hinweise');
+  await shown('Sprache');
+  await press('Español');
+  await text('Hola, Fede');
+  await press('Cerrar sesión');
+  await text('Pagá menos por la misma compra.');
+  await press('English');
+  await text('Pay less for the same shop.');
+  await press('Español');
+  await text('Pagá menos por la misma compra.');
 });
 
 await browser.close();

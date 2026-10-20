@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { t } from '@/i18n';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
 import { Text } from './text';
@@ -29,18 +30,18 @@ export function Stepper({
       <Text style={styles.label}>{label}</Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Menos: ${label}`}
+        accessibilityLabel={t('common.stepper.less', { label })}
         disabled={value <= min}
         onPress={() => onChange(Math.max(min, value - step))}
         style={[styles.button, value <= min && styles.disabled]}>
         <Ionicons name="remove" size={18} color={colors.ink} />
       </Pressable>
-      <Text style={styles.value} accessibilityLabel={`${label}: ${display}`}>
+      <Text style={styles.value} accessibilityLabel={t('common.stepper.value', { label, display })}>
         {display}
       </Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Más: ${label}`}
+        accessibilityLabel={t('common.stepper.more', { label })}
         disabled={value >= max}
         onPress={() => onChange(Math.min(max, value + step))}
         style={[styles.button, value >= max && styles.disabled]}>

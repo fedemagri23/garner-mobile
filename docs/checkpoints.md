@@ -551,3 +551,29 @@ la app todavía no está registrada…". It has not been run on a phone (MCON-03
 - The last hop (Expo to Apple/Google to the phone) is untested here; the
   backend is tested against a stand-in for Expo's service.
 - One account's phone is moved to whoever registers it next.
+
+## Checkpoint 11 — The app in Spanish, English and German
+
+**What works:** the whole app speaks the language of the phone (Spanish,
+English or German; anything else falls back to Spanish). Dates, plurals and
+prices follow it: `$ 1.390` / `AR$1,390` / `1.390 ARS`, `€ 1,15` / `€1.15` /
+`1,15 €`. You can also pick a language yourself: on the sign-in screen, and in
+Avisos → Preferencias → Idioma. The choice is remembered.
+
+**Check**
+
+1. Set the phone to English, open the app (or Avisos → Preferencias → Idioma →
+   English): _Hi, Fede_, _What are we buying today?_, tabs _Home, Search, Lists,
+   Shop, Alerts_. In Vienna, prices read _€0.69_.
+2. Switch to Deutsch: _Hallo, Fede_, _Was kaufen wir heute?_, prices _0,69 €_,
+   dates like _19. Sept._. Open a product, a list, the plan, a trip: nothing is
+   left in Spanish.
+3. Choose _Como el teléfono_ (_Same as the phone_ / _Wie das Telefon_) to follow
+   the phone again.
+4. On the sign-in screen the three languages are offered too.
+
+**Known limits**
+
+- After changing language you land on Inicio (MCON-038).
+- Push notifications are in Spanish, emails in English, product names are not
+  translated (MCON-040, checkpoint 14).

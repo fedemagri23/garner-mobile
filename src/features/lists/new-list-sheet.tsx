@@ -5,6 +5,7 @@ import { Sheet } from '@/components/sheet';
 import { Text } from '@/components/text';
 import { TextField } from '@/components/text-field';
 import { useLocalCurrency } from '@/features/location/use-local-currency';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 
 import { CurrencyPicker } from './currency-picker';
@@ -43,12 +44,12 @@ export function NewListSheet({ visible, onClose }: { visible: boolean; onClose: 
   };
 
   return (
-    <Sheet title="Nueva lista" visible={visible} onClose={close}>
+    <Sheet title={t('lists.create.title')} visible={visible} onClose={close}>
       <TextField
-        label="Nombre"
+        label={t('lists.create.name')}
         value={name}
         onChangeText={setName}
-        placeholder="Compra semanal"
+        placeholder={t('lists.create.placeholder')}
         maxLength={120}
         autoFocus
         returnKeyType="done"
@@ -57,7 +58,7 @@ export function NewListSheet({ visible, onClose }: { visible: boolean; onClose: 
       <CurrencyPicker value={chosen} local={local} looking={looking} onChange={setCurrency} />
       {create.isError ? <Text tone="danger">{errorMessage(create.error)}</Text> : null}
       <Button
-        label="Crear lista"
+        label={t('lists.create.submit')}
         disabled={!ready}
         loading={create.isPending}
         onPress={() => submit().catch(() => undefined)}

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { unwrap } from '@/api/client';
 import type { components } from '@/api/types';
 import { useShopperLocation } from '@/features/location/location-provider';
+import { t } from '@/i18n';
 import { useSession } from '@/session/session-provider';
 
 export type Optimization = components['schemas']['OptimizationResponse'];
@@ -13,11 +14,14 @@ export type Mode = OptimizationResult['recommended'];
 export type Preferences = components['schemas']['OptimizationPreferencesResponse'];
 
 /** The three alternatives, in the order the tabs show them. */
-export const MODES: { mode: Mode; key: 'simplest' | 'bestBalance' | 'cheapest'; label: string }[] = [
-  { mode: 'SIMPLEST', key: 'simplest', label: 'Más simple' },
-  { mode: 'BEST_BALANCE', key: 'bestBalance', label: 'Equilibrado' },
-  { mode: 'CHEAPEST', key: 'cheapest', label: 'Más barato' },
+export const MODES: { mode: Mode; key: 'simplest' | 'bestBalance' | 'cheapest' }[] = [
+  { mode: 'SIMPLEST', key: 'simplest' },
+  { mode: 'BEST_BALANCE', key: 'bestBalance' },
+  { mode: 'CHEAPEST', key: 'cheapest' },
 ];
+
+/** A mode's name in the current language. */
+export const modeLabel = (mode: Mode) => t(`plan.modes.${MODES.find((entry) => entry.mode === mode)!.key}`);
 
 export const planFor = (result: OptimizationResult, mode: Mode): Plan | null =>
   result[MODES.find((entry) => entry.mode === mode)!.key] ?? null;

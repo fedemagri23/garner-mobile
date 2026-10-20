@@ -1,11 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
+import { t } from '@/i18n';
 import { colors, fonts, radii, space } from '@/theme/tokens';
 
 import { Text } from './text';
-
-const LABEL = 'Buscar productos';
 
 /** The search field. Editable on the search screen, a shortcut to it elsewhere. */
 export function SearchBox({
@@ -13,6 +12,7 @@ export function SearchBox({
   focused,
   ...input
 }: TextInputProps & { onPress?: () => void; focused?: boolean }) {
+  const LABEL = t('common.searchProducts');
   const icon = <Ionicons name="search" size={20} color={colors.muted} />;
 
   if (onPress) {

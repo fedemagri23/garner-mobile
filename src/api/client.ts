@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import createClient from 'openapi-fetch';
 
 import type { ApiErrorBody, paths } from './types';
@@ -21,7 +22,7 @@ export class ApiError extends Error {
   constructor(status: number, body: Partial<ApiErrorBody> | undefined) {
     const messages = Array.isArray(body?.message)
       ? body.message
-      : [body?.message ?? 'Algo salió mal. Probá de nuevo.'];
+      : [body?.message ?? t('common.errors.generic')];
     super(messages.join('\n'));
     this.name = 'ApiError';
     this.status = status;

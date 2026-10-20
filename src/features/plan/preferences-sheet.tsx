@@ -7,10 +7,11 @@ import { Sheet } from '@/components/sheet';
 import { StateMessage } from '@/components/state-message';
 import { Stepper } from '@/components/stepper';
 import { Text } from '@/components/text';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { space } from '@/theme/tokens';
 
-import { MODES, usePlanPreferences, useSavePlanPreferences, type Mode, type Preferences } from './use-plan';
+import { MODES, modeLabel, usePlanPreferences, useSavePlanPreferences, type Mode, type Preferences } from './use-plan';
 
 /**
  * How far the shopper will go to save: the plan never recommends breaking
@@ -28,7 +29,7 @@ export function PreferencesSheet({
   const preferences = usePlanPreferences();
 
   return (
-    <Sheet title="Preferencias" subtitle="Para todas tus listas" visible={visible} onClose={onClose}>
+    <Sheet title={t('plan.sheet.title')} subtitle={t('plan.sheet.subtitle')} visible={visible} onClose={onClose}>
       {preferences.data ? (
         <Form initial={preferences.data} onClose={onClose} onSaved={onSaved} />
       ) : preferences.isError ? (
@@ -69,12 +70,12 @@ function Form({
   return (
     <View style={styles.form}>
       <View style={styles.group}>
-        <Text variant="label">Qué te mostramos primero</Text>
+        <Text variant="label">{t('plan.sheet.first')}</Text>
         <View style={styles.chips}>
           {MODES.map((entry) => (
             <Chip
               key={entry.mode}
-              label={entry.label}
+              label={modeLabel(entry.mode)}
               selected={mode === entry.mode}
               onPress={() => setMode(entry.mode)}
             />
@@ -82,7 +83,7 @@ function Form({
         </View>
       </View>
       <Stepper
-        label="Súper como máximo"
+        label={t('plan.sheet.maxStores')}
         value={maxStores}
         display={String(maxStores)}
         min={1}
@@ -90,27 +91,27 @@ function Form({
         onChange={setMaxStores}
       />
       <Stepper
-        label="Recorrido extra"
+        label={t('plan.sheet.extraKm')}
         value={extraKm}
-        display={`${extraKm} km`}
+        display={t('plan.sheet.km', { count: extraKm })}
         min={0}
         max={50}
         onChange={setExtraKm}
       />
       <Stepper
-        label="Tiempo extra"
+        label={t('plan.sheet.extraMinutes')}
         value={extraMinutes}
-        display={`${extraMinutes} min`}
+        display={t('plan.sheet.min', { count: extraMinutes })}
         min={0}
         max={240}
         step={5}
         onChange={setExtraMinutes}
       />
       <Text variant="caption" tone="muted">
-        El extra se cuenta contra comprar todo en el súper más conveniente.
+        {t('plan.sheet.note')}
       </Text>
       {save.isError ? <Text tone="danger">{errorMessage(save.error)}</Text> : null}
-      <Button label="Guardar y calcular" loading={save.isPending} onPress={() => submit().catch(() => undefined)} />
+      <Button label={t('plan.sheet.save')} loading={save.isPending} onPress={() => submit().catch(() => undefined)} />
     </View>
   );
 }

@@ -94,11 +94,11 @@ describe('groupByDay', () => {
     );
 
     expect(groups.map((g) => [g.section, g.items.map((i) => i.id)])).toEqual([
-      ['Hoy', ['a']],
-      ['Esta semana', ['b']],
-      ['Antes', ['c']],
+      ['today', ['a']],
+      ['week', ['b']],
+      ['earlier', ['c']],
     ]);
-    expect(groupByDay([message({ createdAt: '2026-10-21T01:00:00' })], now).map((g) => g.section)).toEqual(['Hoy']);
+    expect(groupByDay([message({ createdAt: '2026-10-21T01:00:00' })], now).map((g) => g.section)).toEqual(['today']);
   });
 });
 

@@ -7,13 +7,13 @@ import { Sheet } from '@/components/sheet';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useLocalCurrency } from '@/features/location/use-local-currency';
+import { t } from '@/i18n';
+import { productCount } from '@/lib/format';
 import { errorMessage } from '@/lib/error-message';
 import { colors, radii, space } from '@/theme/tokens';
 
 import { CurrencyPicker } from './currency-picker';
 import { useAddToList, useCreateList, useListDetails, useLists, type ListDetail } from './use-lists';
-
-const FIRST_LIST_NAME = 'Mi lista';
 
 /**
  * "A la lista": pick a list and the product goes on it. The sheet stays open
@@ -56,8 +56,8 @@ export function AddToListSheet({
     const result = await add.mutateAsync({ list, productId });
     setDone(
       result.quantity === 1
-        ? `Agregado a ${result.listName}.`
-        : `Ahora hay ${result.quantity} en ${result.listName}.`,
+        ? t('lists.addTo.addedTo', { list: result.listName })
+        : t('lists.addTo.nowHasIn', { quantity: result.quantity, list: result.listName }),
     );
   };
 
@@ -65,7 +65,7 @@ export function AddToListSheet({
     if (!firstListCurrency) {
       return;
     }
-    const list = await create.mutateAsync({ name: FIRST_LIST_NAME, currency: firstListCurrency });
+    const list = await create.mutateAsync({ name: t('lists.addTo.firstListName'), currency: firstListCurrency });
     await addTo({ ...list, items: [] });
   };
 
@@ -77,7 +77,7 @@ export function AddToListSheet({
   } else if (lists.data.length === 0) {
     body = (
       <View style={styles.empty}>
-        <Text tone="muted">Todavía no tenés listas.</Text>
+        <Text tone="muted">{t('lists.addTo.none')}</Text>
         <CurrencyPicker
           value={firstListCurrency}
           local={local}
@@ -85,7 +85,7 @@ export function AddToListSheet({
           onChange={setPicked}
         />
         <Button
-          label={`Crear “${FIRST_LIST_NAME}” y agregar`}
+          label={t('lists.addTo.createAndAdd', { name: t('lists.addTo.firstListName') })}
           disabled={!firstListCurrency}
           loading={create.isPending || add.isPending}
           onPress={() => createAndAdd().catch(() => undefined)}
@@ -105,15 +105,15 @@ export function AddToListSheet({
         <Pressable
           key={list.id}
           accessibilityRole="button"
-          accessibilityLabel={`${list.name}, ${count === 1 ? '1 producto' : `${count} productos`}${item ? `, ya tiene ${item.quantity}` : ''}`}
+          accessibilityLabel={t('lists.addTo.rowLabel', { list: list.name, count: productCount(count), has: item ? t('lists.addTo.hasLabel', { quantity: item.quantity }) : '' })}
           disabled={add.isPending}
           onPress={() => addTo(list).catch(() => undefined)}
           style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
           <View style={styles.rowText}>
             <Text variant="bodyStrong">{list.name}</Text>
             <Text variant="caption" tone="muted">
-              {count === 1 ? '1 producto' : `${count} productos`}
-              {item ? ` · ya tiene ${item.quantity}` : ''}
+              {productCount(count)}
+              {item ? t('lists.addTo.hasMeta', { quantity: item.quantity }) : ''}
             </Text>
           </View>
           <Ionicons name={item ? 'add-circle' : 'add-circle-outline'} size={26} color={colors.accent} />
@@ -125,7 +125,7 @@ export function AddToListSheet({
   const failure = add.error ?? create.error;
 
   return (
-    <Sheet title="Agregar a una lista" subtitle={productName} visible={visible} onClose={close}>
+    <Sheet title={t('lists.addTo.title')} subtitle={productName} visible={visible} onClose={close}>
       <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
         {body}
       </ScrollView>
@@ -136,10 +136,10 @@ export function AddToListSheet({
       ) : null}
       {failure ? (
         <Text tone="danger" accessibilityLiveRegion="polite">
-          {errorMessage(failure, { 422: 'Esa lista ya está llena.' })}
+          {errorMessage(failure, { 422: t('lists.addTo.full') })}
         </Text>
       ) : null}
-      <Button label="Listo" variant="secondary" onPress={close} />
+      <Button label={t('lists.addTo.done')} variant="secondary" onPress={close} />
     </Sheet>
   );
 }

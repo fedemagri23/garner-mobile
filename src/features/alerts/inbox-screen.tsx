@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/button';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
@@ -47,7 +48,7 @@ export default function InboxScreen() {
         renderItem={({ item }) => <Message message={item} onPress={() => open(item)} />}
         renderSectionHeader={({ section }) => (
           <Text style={styles.section} tone="muted" accessibilityRole="header">
-            {section.title}
+            {t(`alerts.sections.${section.title}`)}
           </Text>
         )}
         stickySectionHeadersEnabled={false}
@@ -63,17 +64,17 @@ export default function InboxScreen() {
             <View style={styles.titleRow}>
               <View style={styles.titleText}>
                 <Text variant="title" accessibilityRole="header">
-                  Avisos
+                  {t('alerts.inbox.title')}
                 </Text>
                 {unread > 0 ? (
                   <Text variant="caption" tone="accent" style={styles.strong}>
-                    {unread === 1 ? '1 sin leer' : `${unread} sin leer`}
+                    {t('alerts.inbox.unread', { count: unread })}
                   </Text>
                 ) : null}
               </View>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Preferencias de avisos"
+                accessibilityLabel={t('alerts.inbox.preferencesLabel')}
                 onPress={() => router.push('/inbox/preferences')}
                 style={styles.round}>
                 <Ionicons name="options-outline" size={20} color={colors.ink} />
@@ -81,12 +82,12 @@ export default function InboxScreen() {
             </View>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Mis alertas, ${alerts.data?.length ?? 0}`}
+              accessibilityLabel={t('alerts.inbox.alertsLinkLabel', { count: alerts.data?.length ?? 0 })}
               onPress={() => router.push('/inbox/alerts')}
               style={({ pressed }) => [styles.alertsLink, pressed && styles.pressed]}>
               <Ionicons name="notifications-outline" size={20} color={colors.accent} />
               <Text style={styles.alertsText} tone="accent">
-                Mis alertas{alerts.data ? ` (${alerts.data.length})` : ''}
+                {alerts.data ? t('alerts.inbox.alertsLinkCount', { count: alerts.data.length }) : t('alerts.inbox.alertsLink')}
               </Text>
               <Ionicons name="chevron-forward" size={16} color={colors.accent} />
             </Pressable>
@@ -99,7 +100,7 @@ export default function InboxScreen() {
           ) : messages.isError ? (
             <StateMessage tone="danger" message={errorMessage(messages.error)} />
           ) : (
-            <StateMessage message="Todavía no hay avisos. Abrí un producto y tocá “Avisame si baja”: te escribimos acá cuando pase." />
+            <StateMessage message={t('alerts.inbox.empty')} />
           )
         }
       />
@@ -121,9 +122,9 @@ function EmailCard() {
   return (
     <View style={styles.email}>
       <Ionicons name="mail-outline" size={22} color={colors.accent} />
-      <Text style={styles.emailText}>¿También por email? Te avisamos aunque no abras la app.</Text>
+      <Text style={styles.emailText}>{t('alerts.inbox.emailCard')}</Text>
       <Button
-        label="Activar"
+        label={t('alerts.inbox.emailActivate')}
         loading={save.isPending}
         onPress={() => save.mutate({ emailEnabled: true })}
         style={styles.emailButton}
@@ -140,7 +141,7 @@ function Message({ message, onPress }: { message: Notification; onPress: () => v
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${unread ? 'Sin leer. ' : ''}${title}. ${body} ${when}`}
+      accessibilityLabel={`${unread ? t('alerts.inbox.unreadPrefix') : ''}${title}. ${body} ${when}`}
       onPress={onPress}
       style={({ pressed }) => [styles.message, pressed && styles.pressed]}>
       <View style={[styles.icon, unread ? styles.iconUnread : styles.iconRead]}>

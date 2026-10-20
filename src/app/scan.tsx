@@ -9,6 +9,7 @@ import { ApiError } from '@/api/client';
 import { Button } from '@/components/button';
 import { Text } from '@/components/text';
 import { useBarcodeLookup } from '@/features/catalog/use-catalog';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
@@ -50,9 +51,9 @@ export default function ScanScreen() {
       const status = error instanceof ApiError ? error.status : 0;
       setOutcome(
         status === 404
-          ? { kind: 'notFound', code, message: 'Todavía no tenemos este producto en el catálogo.' }
+          ? { kind: 'notFound', code, message: t('browse.scan.notFound') }
           : status === 400
-            ? { kind: 'invalid', code, message: 'Ese código no parece un código de barras válido.' }
+            ? { kind: 'invalid', code, message: t('browse.scan.invalid') }
             : { kind: 'error', code, message: errorMessage(error) },
       );
       busy.current = false;
@@ -84,18 +85,18 @@ export default function ScanScreen() {
         <View style={styles.topBar}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Cerrar"
+            accessibilityLabel={t('common.close')}
             onPress={() => router.back()}
             style={styles.round}>
             <Ionicons name="close" size={22} color={colors.onAccent} />
           </Pressable>
           <Text style={styles.title} tone="onAccent">
-            Escaneá el código
+            {t('browse.scan.title')}
           </Text>
           {cameraReady && Platform.OS !== 'web' ? (
             <Pressable
               accessibilityRole="switch"
-              accessibilityLabel="Linterna"
+              accessibilityLabel={t('browse.scan.torch')}
               accessibilityState={{ checked: torch }}
               onPress={() => setTorch((on) => !on)}
               style={styles.round}>
@@ -124,15 +125,15 @@ export default function ScanScreen() {
           <View style={styles.outcome} accessibilityLiveRegion="polite">
             <Text variant="bodyStrong">{outcome.message}</Text>
             <Text variant="caption" tone="muted">
-              Código {outcome.code}
+              {t('browse.scan.code', { code: outcome.code })}
             </Text>
-            <Button label="Escanear otro" variant="secondary" onPress={() => setOutcome(null)} />
+            <Button label={t('browse.scan.again')} variant="secondary" onPress={() => setOutcome(null)} />
           </View>
         ) : (
           <Text tone="muted">
             {cameraReady
-              ? 'Apuntá al código de barras del envase. Lo buscamos solos.'
-              : 'Sin cámara, escribí el código que está debajo de las barras.'}
+              ? t('browse.scan.aim')
+              : t('browse.scan.noCamera')}
           </Text>
         )}
 
@@ -140,8 +141,8 @@ export default function ScanScreen() {
           <TextInput
             value={typed}
             onChangeText={setTyped}
-            accessibilityLabel="Código de barras"
-            placeholder="Código de barras"
+            accessibilityLabel={t('browse.scan.barcode')}
+            placeholder={t('browse.scan.barcode')}
             placeholderTextColor={colors.muted}
             keyboardType="number-pad"
             returnKeyType="search"
@@ -149,7 +150,7 @@ export default function ScanScreen() {
             style={styles.input}
           />
           <Button
-            label="Buscar"
+            label={t('browse.scan.find')}
             loading={lookup.isPending}
             disabled={!typed.trim()}
             onPress={() => find(typed)}
@@ -177,10 +178,10 @@ function CameraPermission({
   return (
     <View style={styles.permission}>
       <Text tone="onAccent" style={styles.permissionText}>
-        Para leer códigos necesitamos usar la cámara.
+        {t('browse.scan.needCamera')}
       </Text>
       <Button
-        label={canAskAgain ? 'Permitir la cámara' : 'Abrir ajustes'}
+        label={canAskAgain ? t('browse.scan.allowCamera') : t('browse.scan.openSettings')}
         variant="secondary"
         onPress={canAskAgain ? onAsk : () => Linking.openSettings()}
       />

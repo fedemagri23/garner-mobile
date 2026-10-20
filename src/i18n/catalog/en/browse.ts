@@ -1,0 +1,55 @@
+import type { browse as es } from '../es/browse';
+import type { Catalog } from '../types';
+
+export const browse: Catalog<typeof es> = {
+  product: {
+    gone: 'This product is no longer in the catalogue.',
+    addToList: 'Add to list',
+    toList: 'To list',
+    reportPrice: 'Report a price',
+    watch: 'Tell me if it drops',
+    history: {
+      title: 'Last 30 days',
+      empty: 'There is no price history for this product yet.',
+      average: 'average ',
+      stable: 'stayed stable',
+      up: 'rose {{percent}}%',
+      down: 'dropped {{percent}}%',
+      chart: 'Average price per day: from {{from}} on {{fromDay}} to {{to}} on {{toDay}}; {{movement}}.',
+    },
+    stores: {
+      nearby: 'Near you',
+      all: 'All supermarkets',
+      cheapestFirst: 'cheapest first',
+      noLocation: "Without your location we can't sort by distance.",
+      noneNearby: 'Nobody has reported this price near you yet.',
+      none: 'Nobody has reported this price yet.',
+      cheapest: 'the cheapest',
+      closedNow: 'closed now',
+      closedNowDot: '· closed now',
+      rowLabel: '{{store}}, {{price}}, {{delta}}. {{confidence}}{{distance}}{{closed}}',
+      distanceLabel: ', {{distance}} away',
+      closedLabel: ', closed now',
+    },
+  },
+  search: {
+    all: 'All',
+    noResults: 'We found no products for “{{search}}”.',
+    emptyCategory: 'There are no products in this category.',
+  },
+  scan: {
+    title: 'Scan the code',
+    torch: 'Torch',
+    notFound: 'We do not have this product in the catalogue yet.',
+    invalid: "That code doesn't look like a valid barcode.",
+    code: 'Code {{code}}',
+    again: 'Scan another',
+    aim: 'Point at the barcode on the package. We look it up automatically.',
+    noCamera: 'Without a camera, type the code printed under the bars.',
+    barcode: 'Barcode',
+    find: 'Search',
+    needCamera: 'We need to use the camera to read codes.',
+    allowCamera: 'Allow the camera',
+    openSettings: 'Open settings',
+  },
+};

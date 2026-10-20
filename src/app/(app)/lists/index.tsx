@@ -9,6 +9,7 @@ import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { NewListSheet } from '@/features/lists/new-list-sheet';
 import { useLists, type ListSummary } from '@/features/lists/use-lists';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDay, formatPrice, productCount } from '@/lib/format';
 import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
@@ -28,16 +29,16 @@ export default function ListsScreen() {
         ListHeaderComponent={
           <View style={styles.header}>
             <Text variant="title" accessibilityRole="header">
-              Tus listas
+              {t('lists.index.title')}
             </Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Nueva lista"
+              accessibilityLabel={t('lists.index.newLabel')}
               onPress={() => setCreating(true)}
               style={({ pressed }) => [styles.newButton, pressed && styles.pressed]}>
               <Ionicons name="add" size={20} color={colors.onAccent} />
               <Text variant="label" tone="onAccent">
-                Nueva
+                {t('lists.index.new')}
               </Text>
             </Pressable>
           </View>
@@ -49,8 +50,8 @@ export default function ListsScreen() {
             <StateMessage tone="danger" message={errorMessage(lists.error)} />
           ) : (
             <View style={styles.empty}>
-              <Text tone="muted">Todavía no tenés listas. Armá una y agregale productos.</Text>
-              <Button label="Crear mi primera lista" onPress={() => setCreating(true)} />
+              <Text tone="muted">{t('lists.index.empty')}</Text>
+              <Button label={t('lists.index.createFirst')} onPress={() => setCreating(true)} />
             </View>
           )
         }
@@ -65,8 +66,8 @@ function ListRow({ list }: { list: ListSummary }) {
   const priced = itemCount > unpricedItemCount;
   const meta = [
     productCount(itemCount),
-    priced ? `${formatPrice(expectedTotalCents, list.currency)} estimado` : null,
-    `editada ${formatDay(list.updatedAt)}`,
+    priced ? t('lists.index.estimated', { price: formatPrice(expectedTotalCents, list.currency) }) : null,
+    t('lists.index.edited', { when: formatDay(list.updatedAt) }),
   ]
     .filter(Boolean)
     .join(' · ');

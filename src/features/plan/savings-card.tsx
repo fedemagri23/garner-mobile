@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/text';
 import { useLists } from '@/features/lists/use-lists';
+import { t } from '@/i18n';
 import { formatDay, formatPrice, productCount } from '@/lib/format';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
@@ -31,16 +32,16 @@ export function SavingsCard() {
   if (!list) {
     return (
       <Card
-        overline="Tus listas"
-        headline="Armá tu lista"
-        body="Agregá lo que comprás y te decimos dónde conviene comprarlo."
-        action="Ir a Listas"
+        overline={t('plan.card.listsOverline')}
+        headline={t('plan.card.makeList')}
+        body={t('plan.card.makeListBody')}
+        action={t('plan.card.goToLists')}
         onPress={() => router.navigate('/lists')}
       />
     );
   }
 
-  const overline = `${list.name} · ${productCount(list.totals.itemCount)}`;
+  const overline = t('plan.card.overline', { list: list.name, count: productCount(list.totals.itemCount) });
   const optimization = latest.data;
   const result = optimization?.result;
   const plan = result ? planFor(result, result.recommended) : null;
@@ -50,9 +51,9 @@ export function SavingsCard() {
     return (
       <Card
         overline={overline}
-        headline="¿Dónde conviene?"
-        body="Comparamos tu lista en los súper cerca tuyo."
-        action="Calcular el plan"
+        headline={t('plan.card.where')}
+        body={t('plan.card.whereBody')}
+        action={t('plan.card.calculate')}
         onPress={toPlan}
       />
     );
@@ -60,19 +61,22 @@ export function SavingsCard() {
 
   const currency = result?.currency ?? list.currency;
   const chains = joinNames([...new Set(plan.stores.map((stop) => stop.supermarketName))]);
-  const when = optimization.completedAt ? `Calculado ${formatDay(optimization.completedAt)}. ` : '';
+  const when = optimization.completedAt ? t('plan.card.calculated', { when: formatDay(optimization.completedAt) }) : '';
   const body =
     plan.stores.length > 1
-      ? `${when}Dividiendo la compra entre ${chains}, ${plan.additionalDistanceKm >= 0.05 ? `a ${extraKm(plan.additionalDistanceKm).slice(1)} más de recorrido` : 'sin recorrido extra'}.`
-      : `${when}Todo en ${chains}.`;
+      ? when +
+        (plan.additionalDistanceKm >= 0.05
+          ? t('plan.card.split', { chains, km: extraKm(plan.additionalDistanceKm).slice(1) })
+          : t('plan.card.splitNoExtra', { chains }))
+      : when + t('plan.card.all', { chains });
 
   return (
     <Card
       overline={overline}
       headline={formatPrice(plan.savingsCents, currency)}
-      headlineNote="de ahorro"
+      headlineNote={t('plan.card.savingsNote')}
       body={body}
-      action="Ver el plan"
+      action={t('plan.card.viewPlan')}
       onPress={toPlan}
     />
   );

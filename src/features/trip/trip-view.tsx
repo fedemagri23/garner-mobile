@@ -9,6 +9,7 @@ import { pendingItemIds } from '@/features/outbox/changes';
 import { useOutbox } from '@/features/outbox/outbox-provider';
 import { SyncBanner } from '@/features/outbox/sync-banner';
 import { Text } from '@/components/text';
+import { t } from '@/i18n';
 import { formatPrice } from '@/lib/format';
 import { parsePrice, priceInput } from '@/lib/parse-price';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
@@ -58,9 +59,9 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
 
         {trip.status === 'PAUSED' ? (
           <View style={styles.paused} accessibilityRole="alert">
-            <Text style={styles.pausedText}>Compra en pausa</Text>
+            <Text style={styles.pausedText}>{t('trip.view.paused')}</Text>
             <Button
-              label="Seguir"
+              label={t('trip.view.resume')}
               variant="secondary"
               onPress={() => actions.status('resume')}
               style={styles.pausedButton}
@@ -71,18 +72,18 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.overline} tone="muted">
-              {stops.length > 1 ? `Parada ${stopIndex + 1} de ${stops.length}` : trip.listName}
+              {stops.length > 1 ? t('trip.view.stopOf', { current: stopIndex + 1, total: stops.length }) : trip.listName}
             </Text>
             <Text variant="title" style={styles.title} accessibilityRole="header">
               {title}
             </Text>
           </View>
-          <Text style={styles.count} accessibilityLabel={`${done} de ${stop.items.length} comprados`}>
+          <Text style={styles.count} accessibilityLabel={t('trip.view.boughtCount', { done, total: stop.items.length })}>
             {done} / {stop.items.length}
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Opciones de la compra"
+            accessibilityLabel={t('trip.view.options')}
             onPress={() => setOptions(true)}
             style={styles.round}>
             <Ionicons name="ellipsis-horizontal" size={20} color={colors.ink} />
@@ -111,7 +112,7 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
         ) : (
           <View style={styles.allDone}>
             <Ionicons name="checkmark-circle" size={22} color={colors.accent} />
-            <Text variant="bodyStrong">Todo listo en esta parada.</Text>
+            <Text variant="bodyStrong">{t('trip.view.stopDone')}</Text>
           </View>
         )}
 
@@ -181,12 +182,12 @@ function FocusCard({
       <View style={styles.focusText}>
         <Text variant="bodyStrong" style={styles.focusName}>
           {item.product.name}
-          {item.quantity !== 1 ? ` × ${item.quantity}` : ''}
+          {item.quantity !== 1 ? t('trip.view.quantity', { quantity: item.quantity }) : ''}
         </Text>
         <Text variant="caption" tone="muted">
           {item.expectedUnitPriceCents
-            ? `Esperado ${formatPrice(item.expectedUnitPriceCents, currency)} c/u`
-            : 'Sin precio esperado'}
+            ? t('trip.view.expected', { price: formatPrice(item.expectedUnitPriceCents, currency) })
+            : t('trip.view.noExpected')}
         </Text>
       </View>
       <View style={styles.focusRow}>
@@ -197,8 +198,8 @@ function FocusCard({
           <TextInput
             value={text}
             onChangeText={setText}
-            accessibilityLabel="Precio pagado por unidad"
-            placeholder="Precio"
+            accessibilityLabel={t('trip.view.paidLabel')}
+            placeholder={t('trip.view.pricePlaceholder')}
             placeholderTextColor={colors.muted}
             keyboardType="decimal-pad"
             returnKeyType="done"
@@ -207,7 +208,7 @@ function FocusCard({
           />
         </View>
         <Button
-          label="Listo"
+          label={t('trip.view.done')}
           disabled={invalid}
           onPress={() => onDone(cents)}
           style={styles.doneButton}
@@ -215,8 +216,8 @@ function FocusCard({
       </View>
       <Text variant="caption" tone={invalid ? 'danger' : 'muted'}>
         {invalid
-          ? 'Ese precio no se entiende. Probá con 1.150 o 1,15.'
-          : 'Anotá el precio de la góndola: ayuda a que otros paguen menos.'}
+          ? t('trip.view.invalid')
+          : t('trip.view.hint')}
       </Text>
     </View>
   );
@@ -240,23 +241,23 @@ function Row({
   onToggle: () => void;
   onFocus: () => void;
 }) {
-  const name = `${item.product.name}${item.quantity !== 1 ? ` × ${item.quantity}` : ''}`;
+  const name = `${item.product.name}${item.quantity !== 1 ? t('trip.view.quantity', { quantity: item.quantity }) : ''}`;
   const note = item.isPurchased
     ? item.actualUnitPriceCents !== null
-      ? `Pagado ${formatPrice(item.actualUnitPriceCents, currency)} c/u`
-      : 'Comprado, sin precio'
+      ? t('trip.view.paid', { price: formatPrice(item.actualUnitPriceCents, currency) })
+      : t('trip.view.boughtNoPrice')
     : item.expectedUnitPriceCents
-      ? `Esperado ${formatPrice(item.expectedUnitPriceCents, currency)} c/u`
-      : 'Sin precio esperado';
+      ? t('trip.view.expected', { price: formatPrice(item.expectedUnitPriceCents, currency) })
+      : t('trip.view.noExpected');
   const total = item.isPurchased ? (item.actualLineTotalCents ?? item.expectedLineTotalCents) : null;
-  const waitingNote = waiting ? ' · por enviar' : '';
+  const waitingNote = waiting ? t('trip.view.waiting') : '';
 
   return (
     <View style={[styles.row, !last && styles.divider, focused && styles.rowFocused]}>
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: item.isPurchased }}
-        accessibilityLabel={item.isPurchased ? `Desmarcar ${item.product.name}` : `Marcar ${item.product.name}`}
+        accessibilityLabel={item.isPurchased ? t('trip.view.uncheck', { name: item.product.name }) : t('trip.view.check', { name: item.product.name })}
         onPress={onToggle}
         style={styles.check}>
         {item.isPurchased ? (
@@ -303,16 +304,16 @@ function StopFooter({
     <View style={styles.footer}>
       <View style={styles.spent}>
         <Text variant="caption" tone="muted">
-          Gastado en esta parada
+          {t('trip.view.spentHere')}
         </Text>
         <Text style={styles.spentValue}>{formatPrice(spentAt(stop), currency)}</Text>
       </View>
       <View style={styles.footerButtons}>
         {first ? null : (
-          <Button label="Anterior" variant="secondary" onPress={onPrevious} style={styles.footerButton} />
+          <Button label={t('trip.view.previous')} variant="secondary" onPress={onPrevious} style={styles.footerButton} />
         )}
         <Button
-          label={last ? 'Terminar la compra' : 'Siguiente parada'}
+          label={last ? t('trip.view.finish') : t('trip.view.nextStop')}
           onPress={onNext}
           style={styles.footerButton}
         />
@@ -349,25 +350,24 @@ function OptionsSheet({
   };
 
   return (
-    <Sheet title={trip.listName} subtitle="Compra en curso" visible={visible} onClose={close}>
+    <Sheet title={trip.listName} subtitle={t('trip.sheet.subtitle')} visible={visible} onClose={close}>
       {abandoning ? (
         <View style={styles.sheetActions}>
           <Text>
-            ¿Abandonar la compra? Lo que marcaste no se guarda como compra ni se comparte. Tu lista
-            queda como está.
+            {t('trip.sheet.askAbandon')}
           </Text>
-          <Button label="Sí, abandonar" onPress={() => run('abandon')} style={styles.danger} />
-          <Button label="Cancelar" variant="secondary" onPress={() => setAbandoning(false)} />
+          <Button label={t('trip.sheet.yesAbandon')} onPress={() => run('abandon')} style={styles.danger} />
+          <Button label={t('trip.sheet.cancel')} variant="secondary" onPress={() => setAbandoning(false)} />
         </View>
       ) : (
         <View style={styles.sheetActions}>
-          <Button label="Terminar la compra" onPress={onFinish} />
+          <Button label={t('trip.sheet.finish')} onPress={onFinish} />
           {trip.status === 'PAUSED' ? (
-            <Button label="Seguir la compra" variant="secondary" onPress={() => run('resume')} />
+            <Button label={t('trip.sheet.resume')} variant="secondary" onPress={() => run('resume')} />
           ) : (
-            <Button label="Pausar" variant="secondary" onPress={() => run('pause')} />
+            <Button label={t('trip.sheet.pause')} variant="secondary" onPress={() => run('pause')} />
           )}
-          <Button label="Abandonar" variant="secondary" onPress={() => setAbandoning(true)} />
+          <Button label={t('trip.sheet.abandon')} variant="secondary" onPress={() => setAbandoning(true)} />
         </View>
       )}
     </Sheet>
@@ -398,14 +398,14 @@ function FinishSheet({
   };
 
   return (
-    <Sheet title="Terminar la compra" visible={visible} onClose={onClose}>
+    <Sheet title={t('trip.sheet.finishTitle')} visible={visible} onClose={onClose}>
       <Text>
         {left === 0
-          ? `Compraste los ${itemCount} productos.`
-          : `Compraste ${purchasedItemCount} de ${itemCount} productos. Tu lista no cambia: lo que falta sigue ahí para la próxima.`}
+          ? t('trip.sheet.boughtAll', { count: itemCount })
+          : t('trip.sheet.boughtSome', { bought: purchasedItemCount, count: itemCount })}
       </Text>
-      <Button label="Terminar" onPress={finish} />
-      <Button label="Seguir comprando" variant="secondary" onPress={onClose} />
+      <Button label={t('trip.sheet.finishNow')} onPress={finish} />
+      <Button label={t('trip.sheet.keepShopping')} variant="secondary" onPress={onClose} />
     </Sheet>
   );
 }

@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 export interface Point {
   latitude: number;
   longitude: number;
@@ -33,13 +35,13 @@ export function resolveLocation({ mode, device, saved }: LocationInputs): Shoppe
     status: 'ready',
     point,
     source: 'device',
-    label: 'Tu ubicación',
+    label: t('shell.location.current'),
   });
   const fromSaved = (place: Point & { label: string | null }): ShopperLocation => ({
     status: 'ready',
     point: { latitude: place.latitude, longitude: place.longitude },
     source: 'saved',
-    label: place.label ?? 'Ubicación guardada',
+    label: place.label ?? t('shell.location.saved'),
   });
 
   if (mode === 'saved' && saved) {

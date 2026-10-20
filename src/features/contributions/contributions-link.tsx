@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/text';
 import { pendingReports } from '@/features/outbox/changes';
+import { t } from '@/i18n';
 import { useOutbox } from '@/features/outbox/outbox-provider';
 import { colors, radii, space } from '@/theme/tokens';
 
@@ -18,17 +19,13 @@ export function ContributionsLink() {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={total > 0 ? `Mis aportes, ${total}` : 'Mis aportes'}
+      accessibilityLabel={total > 0 ? t('contributions.link.label', { count: total }) : t('contributions.link.title')}
       onPress={() => router.push('/contributions')}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
       <View style={styles.text}>
-        <Text variant="bodyStrong">Mis aportes</Text>
+        <Text variant="bodyStrong">{t('contributions.link.title')}</Text>
         <Text variant="caption" tone="muted">
-          {total === 0
-            ? 'Informá un precio y ayudá a otros a pagar menos.'
-            : total === 1
-              ? '1 precio informado o de tus compras'
-              : `${total} precios informados o de tus compras`}
+          {total === 0 ? t('contributions.link.empty') : t('contributions.link.some', { count: total })}
         </Text>
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.muted} />

@@ -4,6 +4,7 @@ import type { ComponentProps } from 'react';
 import type { ColorValue } from 'react-native';
 
 import { useUnreadCount } from '@/features/alerts/use-alerts';
+import { t } from '@/i18n';
 import { colors, fonts } from '@/theme/tokens';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -33,14 +34,14 @@ export default function AppTabsWeb() {
         tabBarLabelStyle: { fontFamily: fonts.bodySemi, fontSize: 11 },
         sceneStyle: { backgroundColor: colors.ground },
       }}>
-      <Tabs.Screen name="(home)" options={{ title: 'Inicio', tabBarIcon: tabIcon('home-outline') }} />
-      <Tabs.Screen name="search" options={{ title: 'Buscar', tabBarIcon: tabIcon('search-outline') }} />
-      <Tabs.Screen name="lists" options={{ title: 'Listas', tabBarIcon: tabIcon('list-outline') }} />
-      <Tabs.Screen name="shop" options={{ title: 'Compra', tabBarIcon: tabIcon('cart-outline') }} />
+      <Tabs.Screen name="(home)" options={{ title: t('trip.tabs.home'), tabBarIcon: tabIcon('home-outline') }} />
+      <Tabs.Screen name="search" options={{ title: t('trip.tabs.search'), tabBarIcon: tabIcon('search-outline') }} />
+      <Tabs.Screen name="lists" options={{ title: t('trip.tabs.lists'), tabBarIcon: tabIcon('list-outline') }} />
+      <Tabs.Screen name="shop" options={{ title: t('trip.tabs.shop'), tabBarIcon: tabIcon('cart-outline') }} />
       <Tabs.Screen
         name="inbox"
         options={{
-          title: 'Avisos',
+          title: t('trip.tabs.inbox'),
           tabBarIcon: tabIcon('notifications-outline'),
           tabBarBadge: unread > 0 ? (unread > 9 ? '9+' : unread) : undefined,
         }}

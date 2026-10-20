@@ -8,6 +8,7 @@ import { Button } from '@/components/button';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useProductSearch, type Product } from '@/features/catalog/use-catalog';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDay, formatPrice, productCount } from '@/lib/format';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
@@ -29,7 +30,7 @@ export function ListScreen() {
         {list.isError ? (
           <StateMessage
             tone="danger"
-            message={errorMessage(list.error, { 404: 'Esta lista ya no existe.' })}
+            message={errorMessage(list.error, { 404: t('lists.detail.gone') })}
           />
         ) : (
           <StateMessage loading />
@@ -65,16 +66,16 @@ export function ListScreen() {
                 {data.items.length > 0 ? (
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="Dónde comprar"
+                    accessibilityLabel={t('lists.detail.wherePlan')}
                     onPress={() => router.push(`/lists/${data.id}/plan`)}
                     style={({ pressed }) => [styles.pill, pressed && styles.pressed]}>
                     <Ionicons name="location-outline" size={16} color={colors.ink} />
-                    <Text variant="label">Dónde comprar</Text>
+                    <Text variant="label">{t('lists.detail.wherePlan')}</Text>
                   </Pressable>
                 ) : null}
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Más opciones"
+                  accessibilityLabel={t('lists.detail.moreOptions')}
                 onPress={() => setOptions(true)}
                 style={({ pressed }) => [styles.round, pressed && styles.pressed]}>
                   <Ionicons name="ellipsis-horizontal" size={20} color={colors.ink} />
@@ -83,7 +84,7 @@ export function ListScreen() {
             </View>
             <View style={styles.titles}>
               <Text tone="muted" variant="caption">
-                {productCount(data.totals.itemCount)} · editada {formatDay(data.updatedAt)}
+                {t('lists.detail.editedMeta', { count: productCount(data.totals.itemCount), when: formatDay(data.updatedAt) })}
               </Text>
               <Text variant="title" accessibilityRole="header">
                 {data.name}
@@ -93,7 +94,7 @@ export function ListScreen() {
           </View>
         }
         ListEmptyComponent={
-          <StateMessage message="La lista está vacía. Buscá un producto arriba para agregarlo." />
+          <StateMessage message={t('lists.detail.empty')} />
         }
         // Part of the scrolling content, not fixed to the bottom: on iOS the
         // tab bar floats over the screen, and only scrolling content is
@@ -109,7 +110,7 @@ function BackButton() {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Volver"
+      accessibilityLabel={t('common.back')}
       onPress={() => (router.canGoBack() ? router.back() : router.replace('/lists'))}
       style={({ pressed }) => [styles.round, pressed && styles.pressed]}>
       <Ionicons name="chevron-back" size={20} color={colors.ink} />
@@ -132,7 +133,9 @@ function AddProduct({ list }: { list: ListDetail }) {
     setAdded(null);
     const result = await add.mutateAsync({ list, productId: product.id });
     setAdded(
-      result.quantity === 1 ? `Agregado: ${product.name}.` : `Ahora hay ${result.quantity} de ${product.name}.`,
+      result.quantity === 1
+        ? t('lists.detail.added', { name: product.name })
+        : t('lists.detail.nowHas', { quantity: result.quantity, name: product.name }),
     );
     setQuery('');
   };
@@ -147,8 +150,8 @@ function AddProduct({ list }: { list: ListDetail }) {
             setQuery(text);
             setAdded(null);
           }}
-          accessibilityLabel="Agregar producto"
-          placeholder="Agregar producto"
+          accessibilityLabel={t('lists.detail.addProduct')}
+          placeholder={t('lists.detail.addProduct')}
           placeholderTextColor={colors.muted}
           autoCorrect={false}
           returnKeyType="search"
@@ -162,7 +165,7 @@ function AddProduct({ list }: { list: ListDetail }) {
             <Pressable
               key={product.id}
               accessibilityRole="button"
-              accessibilityLabel={`Agregar ${product.name}`}
+              accessibilityLabel={t('lists.detail.addNamed', { name: product.name })}
               disabled={add.isPending}
               onPress={() => pick(product).catch(() => undefined)}
               style={({ pressed }) => [
@@ -179,7 +182,7 @@ function AddProduct({ list }: { list: ListDetail }) {
         </View>
       ) : query.trim() && search && !results.isFetching && results.data ? (
         <Text variant="caption" tone="muted">
-          No encontramos “{search}” en el catálogo.
+          {t('lists.detail.notFound', { search })}
         </Text>
       ) : null}
       {added ? (
@@ -189,7 +192,7 @@ function AddProduct({ list }: { list: ListDetail }) {
       ) : null}
       {add.isError ? (
         <Text variant="caption" tone="danger">
-          {errorMessage(add.error, { 422: 'La lista ya está llena.' })}
+          {errorMessage(add.error, { 422: t('lists.detail.full') })}
         </Text>
       ) : null}
     </View>
@@ -218,18 +221,18 @@ function ItemRow({
     <View style={[styles.item, first && styles.itemFirst, last ? styles.itemLast : styles.divider]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={item.quantity === 1 ? `Quitar ${name}` : `Uno menos de ${name}`}
+        accessibilityLabel={item.quantity === 1 ? t('lists.detail.remove', { name }) : t('lists.detail.oneLess', { name })}
         disabled={setQuantity.isPending}
         onPress={() => change(item.quantity - 1)}
         style={styles.step}>
         <Ionicons name={item.quantity === 1 ? 'trash-outline' : 'remove'} size={18} color={colors.ink} />
       </Pressable>
-      <Text style={styles.quantity} accessibilityLabel={`${item.quantity} de ${name}`}>
+      <Text style={styles.quantity} accessibilityLabel={t('lists.detail.quantityOf', { quantity: item.quantity, name })}>
         {item.quantity}
       </Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Uno más de ${name}`}
+        accessibilityLabel={t('lists.detail.oneMore', { name })}
         disabled={setQuantity.isPending}
         onPress={() => change(item.quantity + 1)}
         style={styles.step}>
@@ -237,7 +240,7 @@ function ItemRow({
       </Pressable>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Ver ${name}`}
+        accessibilityLabel={t('lists.detail.view', { name })}
         onPress={() => router.push(`/lists/product/${item.product.id}`)}
         style={styles.itemName}>
         <Text style={styles.itemNameText} numberOfLines={2}>
@@ -262,17 +265,15 @@ function Totals({ list }: { list: ListDetail }) {
   return (
     <View style={styles.footer}>
       <View style={styles.totalRow}>
-        <Text tone="muted">Total estimado</Text>
+        <Text tone="muted">{t('lists.detail.estimatedTotal')}</Text>
         <Text style={styles.total}>{formatPrice(expectedTotalCents, list.currency)}</Text>
       </View>
       <Text variant="caption" tone="muted">
-        Con el precio más barato cerca tuyo de cada producto, cuando lo agregaste.
-        {unpricedItemCount > 0
-          ? ` ${unpricedItemCount === 1 ? '1 producto no tiene' : `${unpricedItemCount} productos no tienen`} precio todavía.`
-          : ''}
+        {t('lists.detail.totalNote')}
+        {unpricedItemCount > 0 ? t('lists.detail.unpriced', { count: unpricedItemCount }) : ''}
       </Text>
       <Button
-        label="¿Dónde conviene comprar?"
+        label={t('lists.detail.whereToBuy')}
         onPress={() => router.push(`/lists/${list.id}/plan`)}
         style={styles.planButton}
       />

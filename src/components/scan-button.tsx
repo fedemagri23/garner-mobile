@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet } from 'react-native';
 
+import { t } from '@/i18n';
 import { colors, radii } from '@/theme/tokens';
 
 /** Opens the barcode scanner. Filled on Inicio, outlined beside an active search. */
@@ -11,7 +12,7 @@ export function ScanButton({ variant = 'filled' }: { variant?: 'filled' | 'outli
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Escanear código de barras"
+      accessibilityLabel={t('common.scanBarcode')}
       onPress={() => router.push('/scan')}
       style={({ pressed }) => [
         styles.button,

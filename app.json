@@ -53,7 +53,8 @@
           "cameraPermission": "Garner usa la cámara para sacar la foto del cartel de precio.",
           "photosPermission": "Garner accede a tus fotos para que elijas la del cartel de precio."
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

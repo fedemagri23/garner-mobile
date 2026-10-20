@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 
 import { Text } from '@/components/text';
+import { t } from '@/i18n';
 import { colors, fonts } from '@/theme/tokens';
 
 import { mapLabel, type MapPoint, type MapStop } from './map-types';
@@ -38,7 +39,7 @@ export function StopsMap({ origin, stops }: { origin: MapPoint; stops: MapStop[]
       toolbarEnabled={false}
       pitchEnabled={false}>
       <Polyline coordinates={route} strokeColor={colors.accent} strokeWidth={3} />
-      <Marker coordinate={origin} anchor={{ x: 0.5, y: 0.5 }} title="Vos">
+      <Marker coordinate={origin} anchor={{ x: 0.5, y: 0.5 }} title={t('plan.map.youMarker')}>
         <View style={styles.you} />
       </Marker>
       {stops.map((stop) => (

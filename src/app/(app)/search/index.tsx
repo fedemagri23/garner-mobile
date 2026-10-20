@@ -11,7 +11,9 @@ import { SearchBox } from '@/components/search-box';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useProductSearch, useTopCategories, type Product } from '@/features/catalog/use-catalog';
+import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
+import { productCount } from '@/lib/format';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { colors, radii, space } from '@/theme/tokens';
 
@@ -44,7 +46,7 @@ export default function SearchScreen() {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.chips}>
-        <Chip label="Todo" selected={categoryId === null} onPress={() => setCategoryId(null)} />
+        <Chip label={t('browse.search.all')} selected={categoryId === null} onPress={() => setCategoryId(null)} />
         {categories.data?.map((category) => (
           <Chip
             key={category.id}
@@ -56,7 +58,7 @@ export default function SearchScreen() {
       </ScrollView>
       {total !== undefined ? (
         <Text variant="caption" tone="muted">
-          {total === 1 ? '1 producto' : `${total} productos`}
+          {productCount(total)}
         </Text>
       ) : null}
     </View>
@@ -76,7 +78,7 @@ export default function SearchScreen() {
             <StateMessage tone="danger" message={errorMessage(results.error)} />
           ) : (
             <StateMessage
-              message={search ? `No encontramos productos para “${search}”.` : 'No hay productos en esta categoría.'}
+              message={search ? t('browse.search.noResults', { search }) : t('browse.search.emptyCategory')}
             />
           )
         }
