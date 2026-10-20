@@ -151,43 +151,172 @@ contribution (garner-app `ab5da96`, CON-047).
 (`POST|DELETE /v1/devices`) and an Expo push channel beside in-app and email —
 one more `NotificationChannel`.
 
+## Order of Phases 7 and 8
+
+The crowdsourcing app screens (Phase 8) add a lot of new text, so the app
+is made translatable first and those screens are built in three languages
+from the start, instead of being written in Spanish and translated after.
+The crowdsourcing backend does not depend on languages, so it can go in
+between. The order:
+
+| Checkpoint | What | Repo |
+| --- | --- | --- |
+| 11 | App translatable: catalogs, locale formatting, language picker | mobile |
+| 12 | Crowdsourcing backend: origin, visibility, weight, create/confirm/flag, review queue | backend |
+| 13 | Crowdsourcing app: add product, add shop, confirm, flag, badges, progress | mobile |
+| 14 | Server-side language: user locale, push/email text, translated names | both |
+
 ## Phase 7 — Internationalization
 
 Spanish (es-AR) stays the default; English and German are added. The app
 follows the phone's language, with a manual choice in settings.
 
-- **Checkpoint 11:** the app's strings move into per-language catalogs
-  (`i18n-js` or `i18next` with `expo-localization`); dates, numbers and
-  money format by locale; a language picker. Messages built from facts
-  (alerts, push) are composed from the catalog.
-- **Checkpoint 12:** the backend learns the user's language
-  (`users.locale`, sent by the app) and writes push/email text in it;
-  product and category names get translations where they exist.
+- **Checkpoint 11:** every string moves out of the screens into per-language
+  catalogs (`i18next` with `expo-localization`); plurals, dates, numbers and
+  money format by locale (pesos and euros are already written by hand in
+  `formatMoney`, which moves onto `Intl`); a language picker; a test that
+  fails when a key exists in one language and not in the others. Messages
+  built from facts (alerts, push) compose from the catalog.
+- **Checkpoint 14:** the backend learns the user's language (`users.locale`,
+  sent by the app) so push and email text are written in it (replacing the
+  Spanish-only `pushText`, CON-048/049); category names get translations.
 
 ## Phase 8 — Crowdsourced products and shops
 
-Rules decided with the user:
+### Rules (decided with the user)
 
-- **Products:** visible to everyone from the moment they are added, marked
-  *Sin verificar*. Search and recommendations weigh them by **user
-  confirmations and price updates**, so a well-confirmed one outranks a
-  fresh one. Garner's team can mark a product **verified** (also the way
-  duplicates are merged or bad entries hidden).
-- **Shops:** visible only to their creator until **at least 10 products have
-  a price at that shop**; then they appear for everyone, still *Sin
-  verificar* until the team verifies them.
-- Integrity: rate limits per user, duplicate detection (barcode, normalized
-  name, distance to an existing store), validated input, flags that hide an
-  entry from search pending review, an admin review queue.
+- **Products** are visible to everyone from the moment they are added,
+  marked *Sin verificar*. Search and recommendations rank them by a weight
+  made of **user confirmations and price updates**, so a well-confirmed
+  product outranks a fresh one, and a team-verified one outranks both.
+- **Shops** are visible only to their creator until **at least 10 different
+  products have an accepted price at that shop**. Then they appear to
+  everyone, still *Sin verificar* until the team verifies them.
+- Garner's team (moderator/admin roles, which exist) marks things
+  **verified**, merges duplicates, hides bad entries.
 
-- **Checkpoint 13:** backend — `origin` (VERIFIED | COMMUNITY), `createdById`,
-  weight inputs on products; store `visibility` driven by a priced-product
-  count; create endpoints, confirm/flag endpoints, duplicate checks, admin
-  review queue. Seed and tests.
-- **Checkpoint 14:** app — add a product (scan a barcode, photo, name,
-  brand, category, size), add a shop (pick on map, name, chain), confirm or
-  flag, *Sin verificar* badges, "your shop is private until N more
-  products" progress.
+### Data model (core database)
+
+- `Product`: `origin` (`VERIFIED` | `COMMUNITY`, existing rows `VERIFIED`),
+  `createdById` (null for team), `confirmationCount`, `flagCount`,
+  `weight` (derived, see below), `moderationStatus`
+  (`ACTIVE` | `UNDER_REVIEW` | `HIDDEN` | `MERGED`), `mergedIntoId`.
+- `StoreLocation`: the same `origin`, `createdById`, `moderationStatus`,
+  plus `pricedProductCount` and `publishedAt` (null while private).
+  `Supermarket` (the chain) gets `origin`/`createdById` too, since a user
+  may add a chain that does not exist.
+- `ProductConfirmation` and `ContentFlag`: one row per (user, target); a
+  unique key makes confirming or flagging twice a no-op. Flags carry a
+  reason (`DUPLICATE` | `WRONG_INFO` | `NOT_EXIST` | `INAPPROPRIATE`).
+- Prices live in a different database (no foreign keys across them), so
+  `pricedProductCount` is a **counter in core**, updated when a price
+  observation is accepted for a (product, store) pair seen there for the
+  first time; a nightly sweep recounts from the pricing database and
+  repairs drift. The pair is recorded in a small `StoreProduct` table in
+  core (store, product, first accepted at), which also makes the count
+  exact and idempotent (distinct products, not distinct prices).
+
+### Weight (ranking)
+
+`weight` is recomputed when a confirmation, flag or accepted price arrives:
+
+- verified: a large fixed bonus
+- + distinct confirming users (capped, so one popular entry doesn't
+  dominate forever)
+- + distinct users with an accepted price update in the last 90 days
+- − flags from distinct users
+- a small decay for entries with no activity.
+
+Search orders by text relevance first, then weight; recommendations and
+the plan's store/product choices read it too. One user's own entry never
+counts toward its own weight (the creator is excluded from confirmations).
+
+### Backend API (checkpoint 12)
+
+- `POST /v1/products` open to any signed-in user (today moderator/admin
+  only): creates a `COMMUNITY` product. Name, category, optional brand,
+  size/unit, optional barcode and photo. Same endpoint for the team,
+  which creates `VERIFIED`.
+- `POST /v1/store-locations` likewise, with the chain given by id or as a
+  new chain name; created private.
+- `POST /v1/products/:id/confirmations`, `DELETE` to take it back.
+- `POST /v1/products/:id/flags`, and the same for stores.
+- `GET /v1/products` and store listings return only what the caller may
+  see; each item carries `origin`, `verified`, `weight` is internal.
+  `GET /v1/store-locations/:id` returns `publication` progress to the
+  creator (`pricedProducts: 6, needed: 10`).
+- Admin/moderator: `GET /v1/moderation/queue` (sorted by flags, then by
+  confirmations), `POST /v1/moderation/:type/:id/verify | hide | restore`,
+  `POST /v1/products/:id/merge` (moves barcodes, list items, prices to the
+  target; leaves a redirect so old ids still resolve).
+
+### Integrity and abuse protection
+
+- **Duplicates:** creation checks before inserting — barcode already
+  exists (return the existing product instead of creating one), normalized
+  name + brand + size match (suggest it, the client may confirm "it's
+  different"), a store within ~50 m of the same chain (suggest it). The
+  name normalizer already exists.
+- **Rate limits and quotas:** per-user daily limits on creating products
+  and shops (Redis limiter exists), tighter for accounts new in the last
+  24 h; a daily cap of flags.
+- **Barcode checksum:** already validated by the domain; a barcode cannot
+  be attached to two products.
+- **Input safety:** length limits, no URLs or HTML in names, images
+  uploaded through the existing evidence storage path (size/type checks),
+  coordinates validated and a store must be on land inside a plausible
+  country range.
+- **Anti-self-dealing:** the creator's own confirmations and prices don't
+  count toward publishing a shop or toward a product's weight. A shop's 10
+  products must be accepted by the price pipeline (its existing fraud
+  heuristics and review statuses apply), from **at least 3 different
+  users** so one person cannot publish their own fake shop alone.
+- **Auto-hide:** flags from N distinct users (e.g. 3, weighted by the
+  flagger's own trust) set `UNDER_REVIEW` and drop the entry from search
+  until a moderator restores it.
+- **Trust:** a simple per-user score (accepted contributions up,
+  hidden/rejected ones down) used to weight flags and to loosen or
+  tighten the quotas.
+- **Auditing:** every moderation action and every create is logged
+  (who, what, when) in a table, never exposing reasons to the creator.
+- **Privacy:** the creator's identity is never exposed to other users;
+  deleting an account keeps the content, drops `createdById`.
+
+### App (checkpoint 13)
+
+- **Add a product** (from a failed search or barcode scan: "No lo
+  encuentro — agregarlo"): barcode prefilled from the scan, name, brand
+  (search or add), category, size and unit, optional photo. Duplicate
+  suggestions shown first ("¿Es este?").
+- **Add a shop**: choose chain (or add), place a pin on the map (starting at
+  the user's location), name and address, opening hours optional.
+  Afterwards a card shows *"Solo vos lo ves: faltan 7 productos con
+  precio para que lo vean todos"* with a progress bar; reporting a price at
+  it counts.
+- **Sin verificar badge** on products and shops; a verified tick
+  for the team's.
+- **Confirm** ("Existe y está bien") and **Flag** ("Reportar") actions on a
+  community product/shop, with reason picker.
+- **Mis aportes** gets the user's products and shops, with their status
+  (private, public, under review, verified, hidden).
+- Offline: creating a product is queued in the outbox like a price report
+  (the client generates the id), with a placeholder shown meanwhile.
+
+### Tests and checkpoint
+
+Backend: unit (weight, publication rule, duplicate detection, quotas),
+e2e (creator-only visibility switches at 10 products from 3 users, a flag
+threshold hides, a merge moves everything). App: tests for the form
+validation and badges, the web e2e covers add-product and add-shop. The
+seed gets one community product and a private shop at 6 of 10.
+Checkpoint steps in `docs/checkpoints.md`.
+
+### Risks to decide later
+
+- Whether `weight` should be exposed as a "Popular" sort option.
+- Moderation tooling beyond API endpoints (an admin web page) — needed
+  before real users, not before the MVP.
+- Legal: user-uploaded photos and names need terms and a takedown path.
 
 ## Later
 
