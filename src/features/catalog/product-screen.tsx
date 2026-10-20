@@ -31,7 +31,8 @@ export function ProductScreen() {
   const prices = useProductPrices(id);
   const [adding, setAdding] = useState(false);
   const navigation = useNavigation();
-  const inSearch = (useSegments() as string[]).includes('search');
+  const segments = useSegments() as string[];
+  const tabRoot = segments.includes('search') ? '/search' : segments.includes('lists') ? '/lists' : '/';
 
   // Back means the screen beneath this one in the tab. A product opened by
   // the scanner has none, and the router's own back would fall through to
@@ -40,7 +41,7 @@ export function ProductScreen() {
     if (navigation.getState()?.index) {
       router.back();
     } else {
-      router.replace(inSearch ? '/search' : '/');
+      router.replace(tabRoot);
     }
   };
 
@@ -69,7 +70,7 @@ export function ProductScreen() {
         <AddToListSheet
           productId={id}
           productName={product.data.name}
-          currency={prices.data?.prices[0]?.currency ?? 'ARS'}
+          currency={prices.data?.prices[0]?.currency ?? null}
           visible={adding}
           onClose={() => setAdding(false)}
         />

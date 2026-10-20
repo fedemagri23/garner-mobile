@@ -218,3 +218,53 @@ the demo catalog, so they all give the "no lo tenemos" answer.
   phase 5.
 - In Expo Go the camera prompt is Expo Go's own; the app's Spanish text
   shows in a development build.
+
+---
+
+## Checkpoint 4 — Your lists
+
+_Phase 3 · 2026-10-20 · backend `4d857fb`, app: this commit._
+
+What a person can do: see their lists, create one in the right currency,
+rename, copy or delete it, add products to it from the list itself, change
+quantities, and see what the list should cost.
+
+Nothing new to install; pull both repos and run `pnpm run seed` in
+`garner-app` for a clean "Compra semanal".
+
+**Check by hand**
+
+1. Sign in as `shopper@garner.test`. Tap **Listas**: **Tus listas** shows
+   **Compra semanal — 4 productos · $ … estimado · editada hoy**.
+2. Tap it. Each item shows − quantity +, its name and its price for that
+   quantity; Agua Mineral 2L says _sin precio_ (the seed gave it none). At
+   the bottom, **Total estimado**, and a note that 1 product has no price.
+3. In **Agregar producto**, type `galle`: Galletitas Surtidas Arcor 400g
+   appears below. Tap it: _"Agregado: Galletitas Surtidas Arcor 400g."_, the
+   list has 5 products, and the cookies cost the cheapest price near you in
+   the list's currency: $ 1.490 near the Obelisco. In Vienna they show _sin
+   precio_ — this list is in pesos and the stores there price in euros;
+   step 7 makes a euro list.
+4. Tap **+** on the cookies: the line doubles. Tap **−** twice: the second
+   time (the trash icon) removes them.
+5. Tap **···** (Más opciones) → **Cambiar el nombre**, rename it, **Guardar**.
+   Then **···** → **Duplicar la lista**: "… (copia)" opens. **···** →
+   **Eliminar la lista** → it asks first → **Sí, eliminar**: back on the
+   original.
+6. Tap an item's name: its product screen opens inside Listas; back returns
+   to the list.
+7. Back on **Tus listas**, tap **Nueva**. With your phone in Vienna, **Euros
+   (EUR)** is already selected ("La de los súper cerca tuyo"); near the
+   Obelisco, Pesos. Name it and **Crear lista**: the empty list opens. Add
+   milk: € 1,15 in Vienna.
+8. Deny location (or be far from any store): **Nueva** selects no currency
+   and **Crear lista** stays disabled until you pick one — a list's currency
+   cannot be changed later.
+
+**Known limits**
+
+- Prices on a list are the cheapest nearby when each item was added, and do
+  not update (MCON-016). "¿Dónde conviene comprar?" — the real plan — is
+  checkpoint 5.
+- No drag to reorder, and quantities go one by one (MCON-017).
+- Inicio's savings card is still a placeholder until checkpoint 5.

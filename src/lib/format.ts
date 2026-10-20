@@ -67,3 +67,19 @@ export const confidenceTone: Record<ConfidenceLevel, 'accent' | 'muted' | 'signa
   LIKELY_CURRENT: 'muted',
   POSSIBLY_OUTDATED: 'signal',
 };
+
+const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+/** "hoy", "ayer", or "12 oct", on the phone's calendar. */
+export function formatDay(iso: string, now: Date = new Date()): string {
+  const date = new Date(iso);
+  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOf(now) - startOf(date)) / 86_400_000);
+
+  if (days === 0) return 'hoy';
+  if (days === 1) return 'ayer';
+  return `${date.getDate()} ${MONTHS[date.getMonth()]}`;
+}
+
+/** "1 producto", "3 productos". */
+export const productCount = (n: number) => (n === 1 ? '1 producto' : `${n} productos`);

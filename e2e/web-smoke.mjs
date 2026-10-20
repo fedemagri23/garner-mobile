@@ -12,6 +12,10 @@
  *
  * Screenshots of the last screen of each section, and of any failure, go to
  * e2e/screenshots/ (git-ignored).
+ *
+ * The lists it creates it deletes again, so the shopper keeps the seed's.
+ * Wait a minute between runs: two back to back exceed the API's per-client
+ * rate limit, and the app (rightly) answers "Demasiados intentos".
  */
 import { mkdirSync } from 'node:fs';
 import puppeteer from 'puppeteer-core';
@@ -58,62 +62,63 @@ const gone = (unwanted) =>
   page.waitForFunction((t) => !document.body.innerText.includes(t), { timeout: 15_000 }, unwanted);
 
 // Only what a person could tap: on the web, stacks and inactive tabs keep
-// their screens laid out underneath, so an element must be on top at its
-// own centre.
-const onTop = (n) => {
+// their screens laid out underneath, and sheets slide in and out. A target
+// counts once it is on top at its own centre and has stopped moving — and,
+// while a modal is open (or still closing, when it traps focus), only if it
+// is inside that modal.
+const settledOnTop = (n) => {
+  const modals = [...document.querySelectorAll('[aria-modal="true"]')];
+  if (modals.length > 0 && !modals.some((modal) => modal.contains(n))) return false;
   const box = n.getBoundingClientRect();
   const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
-  return box.width > 0 && hit !== null && n.contains(hit);
+  if (!(box.width > 0 && hit !== null && n.contains(hit))) return false;
+  const where = `${box.x},${box.y},${box.width}`;
+  const settled = n.dataset.e2eWhere === where;
+  n.dataset.e2eWhere = where;
+  return settled;
 };
 
+/** Waits for the first element matching `selector` and `match` that a finger could tap. */
+const tappable = (selector, match, arg) =>
+  page
+    .waitForFunction(
+      (selector, matchSource, arg, settledSource) => {
+        const match = new Function(`return ${matchSource}`)();
+        const settledOnTop = new Function(`return ${settledSource}`)();
+        return [...document.querySelectorAll(selector)].find((n) => match(n, arg) && settledOnTop(n)) ?? null;
+      },
+      { timeout: 15_000, polling: 100 },
+      selector,
+      match.toString(),
+      arg,
+      settledOnTop.toString(),
+    )
+    .then((handle) => handle.asElement());
+
 const press = async (label) => {
-  const handle = await page.waitForFunction(
-    (label, onTopSource) => {
-      const onTop = new Function(`return ${onTopSource}`)();
-      return [...document.querySelectorAll('[role=button],[role=tab],[role=switch],a,button')]
-        .filter(onTop)
-        .find(
-          (n) =>
-            n.getAttribute('aria-label') === label ||
-            n.innerText.trim() === label ||
-            n.innerText.trim().endsWith(`\n${label}`),
-        );
-    },
-    { timeout: 15_000 },
+  const target = await tappable(
+    '[role=button],[role=tab],[role=switch],a,button',
+    (n, label) =>
+      n.getAttribute('aria-label') === label ||
+      n.innerText.trim() === label ||
+      n.innerText.trim().endsWith(`\n${label}`),
     label,
-    onTop.toString(),
   );
-  await handle.asElement().click();
+  await target.click();
 };
+
+/** Text a person can actually see: in a leaf element that is on top. */
+const shown = (wanted) =>
+  tappable('div,span', (n, wanted) => n.children.length === 0 && n.innerText.trim() === wanted, wanted);
 
 // Rows whose accessible name is long are found by what they show.
 const pressContaining = async (shown) => {
-  const handle = await page.waitForFunction(
-    (shown, onTopSource) => {
-      const onTop = new Function(`return ${onTopSource}`)();
-      return [...document.querySelectorAll('[role=button]')]
-        .filter((n) => n.innerText.includes(shown))
-        .find(onTop);
-    },
-    { timeout: 15_000 },
-    shown,
-    onTop.toString(),
-  );
-  await handle.asElement().click();
+  const target = await tappable('[role=button]', (n, shown) => n.innerText.includes(shown), shown);
+  await target.click();
 };
 
 const typeInto = async (label, value) => {
-  const handle = await page.waitForFunction(
-    (label) => {
-      const visible = (n) => n.offsetParent !== null && n.getClientRects().length > 0;
-      return [...document.querySelectorAll('input')]
-        .filter(visible)
-        .find((n) => n.getAttribute('aria-label') === label);
-    },
-    { timeout: 15_000 },
-    label,
-  );
-  const input = handle.asElement();
+  const input = await tappable('input', (n, label) => n.getAttribute('aria-label') === label, label);
   await input.click({ clickCount: 3 });
   await input.type(value);
 };
@@ -248,6 +253,79 @@ await step('"A la lista" adds one more to a list that already has it', async () 
   await press('Volver');
 });
 
+// --- Checkpoint 4: the Listas tab ------------------------------------------
+
+await step('Listas shows the shopper\'s lists with their estimate', async () => {
+  await press('Listas');
+  await text('Tus listas');
+  await text('Compra semanal');
+  await text('estimado');
+});
+await step('a list opens with its items and total', async () => {
+  await pressContaining('Compra semanal');
+  await text('Total estimado');
+  await text('Leche Entera La Serenísima 1L');
+  await text('4 productos');
+  await page.screenshot({ path: `${SHOTS}checkpoint-4-list.png` });
+});
+await step('a product is added from the list, priced at the cheapest nearby', async () => {
+  await typeInto('Agregar producto', 'galletitas');
+  await press('Agregar Galletitas Surtidas Arcor 400g');
+  await shown('Agregado: Galletitas Surtidas Arcor 400g.');
+  await text('5 productos');
+  await shown('$ 1.490');
+});
+await step('quantities go up and down, and down from one removes the item', async () => {
+  await press('Uno más de Galletitas Surtidas Arcor 400g');
+  await shown('$ 2.980');
+  await press('Uno menos de Galletitas Surtidas Arcor 400g');
+  await shown('$ 1.490');
+  await press('Quitar Galletitas Surtidas Arcor 400g');
+  await text('4 productos');
+});
+await step('a list can be renamed', async () => {
+  await press('Más opciones');
+  await press('Cambiar el nombre');
+  await typeInto('Nombre', 'Compra del mes');
+  await press('Guardar');
+  await text('Compra del mes');
+  await press('Más opciones');
+  await press('Cambiar el nombre');
+  await typeInto('Nombre', 'Compra semanal');
+  await press('Guardar');
+  await gone('Compra del mes');
+});
+await step('a list can be duplicated, and the copy deleted after asking', async () => {
+  await press('Más opciones');
+  await press('Duplicar la lista');
+  await text('Compra semanal (copia)');
+  await press('Más opciones');
+  await press('Eliminar la lista');
+  await text('No se puede deshacer.');
+  await press('Sí, eliminar');
+  await press('Volver');
+  await text('Tus listas');
+  await gone('Compra semanal (copia)');
+});
+await step('a new list is created in the local currency', async () => {
+  await press('Nueva lista');
+  await typeInto('Nombre', 'Asado del sábado');
+  await press('Crear lista');
+  await text('Asado del sábado');
+  await text('La lista está vacía.');
+  await typeInto('Agregar producto', 'agua');
+  await press('Agregar Agua Mineral 2L');
+  await shown('Agregado: Agua Mineral 2L.');
+  await shown('$ 890');
+  await page.screenshot({ path: `${SHOTS}checkpoint-4-new-list.png` });
+  // Leave the shopper's lists as the seed made them.
+  await press('Más opciones');
+  await press('Eliminar la lista');
+  await press('Sí, eliminar');
+  await text('Tus listas');
+  await gone('Asado del sábado');
+});
+
 for (const [tab, wanted] of [
   ['Buscar', 'Bebidas'],
   ['Listas', 'Tus listas'],
@@ -320,6 +398,23 @@ await step('a product in Vienna compares Vienna stores in euros', async () => {
   await text('Últimos 30 días');
   await gone('Coto Centro');
   await page.screenshot({ path: `${SHOTS}vienna-product.png` });
+  await press('Volver');
+});
+await step('a new list in Vienna is in euros', async () => {
+  await press('Listas');
+  await press('Nueva lista');
+  await shown('La de los súper cerca tuyo. No se puede cambiar después.');
+  await typeInto('Nombre', 'Einkauf');
+  await press('Crear lista');
+  await typeInto('Agregar producto', 'leche');
+  await press('Agregar Leche Entera La Serenísima 1L');
+  await shown('Agregado: Leche Entera La Serenísima 1L.');
+  await shown('€ 1,15');
+  await page.screenshot({ path: `${SHOTS}vienna-list.png` });
+  await press('Más opciones');
+  await press('Eliminar la lista');
+  await press('Sí, eliminar');
+  await gone('Einkauf');
 });
 
 await browser.close();

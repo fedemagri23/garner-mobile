@@ -95,3 +95,21 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** The app was started on SDK 58 and moved back to SDK 57 (React Native 0.86, React 19.2, expo-router 57, jest 29). The only code change was the native tabs import, `expo-router/unstable-native-tabs` on 57.
 - **Why:** SDK 58 shipped on 2026-10-15, and Expo said its Expo Go would reach the App Store and Play Store "within a few weeks". The developer's iPhone has Expo Go 57.0.9, which refuses an SDK 58 project, and a development build on iOS needs a paid Apple developer account. Nothing the app uses is new in 58.
 - **Revisit when:** Expo Go for SDK 58 is in the App Store — then upgrade (`npx expo install expo@~58.0.0 --fix`, the import back to `expo-router/native-tabs`, `jest`/`jest-expo` to their 58 versions), run expo-doctor and every check, and mark this resolved. Store Expo Go supports only the latest SDK, so waiting too long breaks Expo Go again.
+
+### MCON-016 — A list item's price is set when it is added
+- **Phase:** 3 · **Area:** lists · **Status:** accepted
+- **What:** A product added to a list gets, as its expected unit price, the cheapest price near the shopper in the list's currency at that moment; none if nobody near has reported one. The list's "Total estimado" adds those up and says how many items have no price. Prices are not refreshed afterwards.
+- **Why:** The backend keeps the expected price on the item, and the real answer to "what will this cost" is the optimization in checkpoint 5, which reads current prices at real stores. A cheap, stable estimate is enough for the list screen.
+- **Revisit when:** Checkpoint 5 lands — the list can then show the latest optimization's total instead, or refresh expected prices when it runs.
+
+### MCON-017 — No manual reordering yet, and whole quantities only
+- **Phase:** 3 · **Area:** lists · **Status:** deferred
+- **What:** Items appear in the order they were added; − and + change the quantity by one, and − at one removes the item. The backend supports a manual order (`PUT …/items/order`) and fractional quantities, but the app offers neither.
+- **Why:** Drag to reorder needs gesture work out of proportion to its value before shopping mode exists; and weighed products (0,5 kg) need a different input, not a stepper.
+- **Revisit when:** Shopping mode (phase 4) — the order of a trip matters there, by store aisle, and weighed products are bought there.
+
+### MCON-018 — The web dev server can serve stale screens after edits
+- **Phase:** 3 · **Area:** tooling · **Status:** accepted
+- **What:** With `npm run web` running, Metro sometimes keeps serving a screen's previous code after the file changed (screens load lazily on the web). Restarting with `npx expo start --web --clear` fixes it.
+- **Why:** A development-server quirk, not app behaviour; it cost two debugging detours before being recognised.
+- **Revisit when:** A newer SDK fixes lazy route invalidation — until then, restart with `--clear` before trusting what the web build shows, and before `npm run e2e:web`.

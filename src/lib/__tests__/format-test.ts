@@ -1,4 +1,4 @@
-import { formatDistance, formatPrice, initials } from '../format';
+import { formatDay, formatDistance, formatPrice, initials, productCount } from '../format';
 
 describe('formatPrice', () => {
   it('writes pesos with dots for thousands', () => {
@@ -47,5 +47,25 @@ describe('initials', () => {
 
   it('copes with a single word', () => {
     expect(initials('Yerba')).toBe('YE');
+  });
+});
+
+describe('formatDay', () => {
+  const now = new Date(2026, 9, 20, 15, 0);
+
+  it('says today and yesterday in words', () => {
+    expect(formatDay(new Date(2026, 9, 20, 0, 5).toISOString(), now)).toBe('hoy');
+    expect(formatDay(new Date(2026, 9, 19, 23, 50).toISOString(), now)).toBe('ayer');
+  });
+
+  it('gives the day and month otherwise', () => {
+    expect(formatDay(new Date(2026, 8, 3, 12).toISOString(), now)).toBe('3 sep');
+  });
+});
+
+describe('productCount', () => {
+  it('agrees in number', () => {
+    expect(productCount(1)).toBe('1 producto');
+    expect(productCount(0)).toBe('0 productos');
   });
 });

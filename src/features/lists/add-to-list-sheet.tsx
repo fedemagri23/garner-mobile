@@ -1,14 +1,16 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/button';
+import { Sheet } from '@/components/sheet';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
+import { useLocalCurrency } from '@/features/location/use-local-currency';
 import { errorMessage } from '@/lib/error-message';
 import { colors, radii, space } from '@/theme/tokens';
 
+import { CurrencyPicker } from './currency-picker';
 import { useAddToList, useCreateList, useListDetails, useLists, type ListDetail } from './use-lists';
 
 const FIRST_LIST_NAME = 'Mi lista';
@@ -27,20 +29,23 @@ export function AddToListSheet({
 }: {
   productId: string;
   productName: string;
-  /** For a first list: the currency of the prices near the shopper. */
-  currency: string;
+  /** For a first list: the currency of this product's prices nearby, if any. */
+  currency: string | null;
   visible: boolean;
   onClose: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const lists = useLists();
   const details = useListDetails(lists.data?.map((list) => list.id) ?? []);
   const add = useAddToList();
   const create = useCreateList();
   const [done, setDone] = useState<string | null>(null);
+  const { currency: local, looking } = useLocalCurrency();
+  const [picked, setPicked] = useState<string | null>(null);
+  const firstListCurrency = picked ?? currency ?? local;
 
   const close = () => {
     setDone(null);
+    setPicked(null);
     add.reset();
     create.reset();
     onClose();
@@ -57,7 +62,10 @@ export function AddToListSheet({
   };
 
   const createAndAdd = async () => {
-    const list = await create.mutateAsync({ name: FIRST_LIST_NAME, currency });
+    if (!firstListCurrency) {
+      return;
+    }
+    const list = await create.mutateAsync({ name: FIRST_LIST_NAME, currency: firstListCurrency });
     await addTo({ ...list, items: [] });
   };
 
@@ -70,8 +78,15 @@ export function AddToListSheet({
     body = (
       <View style={styles.empty}>
         <Text tone="muted">Todavía no tenés listas.</Text>
+        <CurrencyPicker
+          value={firstListCurrency}
+          local={local}
+          looking={looking && !currency}
+          onChange={setPicked}
+        />
         <Button
           label={`Crear “${FIRST_LIST_NAME}” y agregar`}
+          disabled={!firstListCurrency}
           loading={create.isPending || add.isPending}
           onPress={() => createAndAdd().catch(() => undefined)}
         />
@@ -110,44 +125,26 @@ export function AddToListSheet({
   const failure = add.error ?? create.error;
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
-      <Pressable style={styles.backdrop} accessibilityLabel="Cerrar" onPress={close} />
-      <View style={[styles.sheet, { paddingBottom: space.xl + insets.bottom }]}>
-        <Text variant="heading" accessibilityRole="header">
-          Agregar a una lista
+    <Sheet title="Agregar a una lista" subtitle={productName} visible={visible} onClose={close}>
+      <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
+        {body}
+      </ScrollView>
+      {done ? (
+        <Text tone="accent" variant="bodyStrong" accessibilityLiveRegion="polite">
+          {done}
         </Text>
-        <Text variant="caption" tone="muted" numberOfLines={1}>
-          {productName}
+      ) : null}
+      {failure ? (
+        <Text tone="danger" accessibilityLiveRegion="polite">
+          {errorMessage(failure, { 422: 'Esa lista ya está llena.' })}
         </Text>
-        <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
-          {body}
-        </ScrollView>
-        {done ? (
-          <Text tone="accent" variant="bodyStrong" accessibilityLiveRegion="polite">
-            {done}
-          </Text>
-        ) : null}
-        {failure ? (
-          <Text tone="danger" accessibilityLiveRegion="polite">
-            {errorMessage(failure, { 422: 'Esa lista ya está llena.' })}
-          </Text>
-        ) : null}
-        <Button label="Listo" variant="secondary" onPress={close} />
-      </View>
-    </Modal>
+      ) : null}
+      <Button label="Listo" variant="secondary" onPress={close} />
+    </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(16,22,18,0.4)' },
-  sheet: {
-    backgroundColor: colors.ground,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: space.xl,
-    gap: space.md,
-    maxHeight: '75%',
-  },
   list: { flexGrow: 0 },
   listContent: {
     backgroundColor: colors.surface,

@@ -42,3 +42,14 @@ export async function unwrap<T>(
 
   return data;
 }
+
+/** For calls answered with 204 No Content: nothing to return, but failures still throw. */
+export async function noContent(
+  call: Promise<{ error?: unknown; response: Response }>,
+): Promise<void> {
+  const { error, response } = await call;
+
+  if (!response.ok) {
+    throw new ApiError(response.status, error as Partial<ApiErrorBody> | undefined);
+  }
+}
