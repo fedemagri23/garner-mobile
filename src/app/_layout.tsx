@@ -76,6 +76,7 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ground } }}>
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="(app)" />
+          <Stack.Screen name="scan" options={{ presentation: 'fullScreenModal' }} />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="sign-in" />

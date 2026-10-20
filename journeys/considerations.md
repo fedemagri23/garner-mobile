@@ -71,3 +71,21 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** Every amount is formatted with its own currency — "$ 1.390" for pesos (centavos only when there are some), "€ 1,15" for euros (always with cents), the ISO code for anything else — in the Spanish style the app is written in. The product screen compares each price only with the cheapest in the same currency, and its chart asks for the history in the currency of the prices near the shopper. Nothing is converted.
 - **Why:** The demo data now has a Vienna neighbourhood in euros beside the Buenos Aires one in pesos. A comparison across currencies would need exchange rates, and a shopper compares the shelves in front of them, which share one currency.
 - **Revisit when:** Number formatting follows the device's locale rather than the app's language, or a list or plan spans countries.
+
+### MCON-012 — The scanner reads retail codes, matched as scanned
+- **Phase:** 2 · **Area:** scanner · **Status:** deferred
+- **What:** The camera looks for EAN-13, EAN-8, UPC-A and UPC-E, and the code goes to `GET /v1/products/barcode/{code}` exactly as read. A code can also be typed, which is how the web build and a phone without camera access use it.
+- **Why:** These are the codes on supermarket shelves; QR and the rest are noise there. The catalog's codes are EAN-13.
+- **Revisit when:** Products are catalogued from UPC-A codes. iOS reports a UPC-A as a 13-digit EAN with a leading zero and UPC-E arrives compressed, so the same product can read as two different strings — the backend should store and look up GTINs in one normalized form.
+
+### MCON-013 — "A la lista" adds one at a time, and lists open in phase 3
+- **Phase:** 2 · **Area:** lists · **Status:** accepted
+- **What:** From a product, "A la lista" shows the shopper's lists with their item counts and how many of this product each already has. A tap adds one: a new line the first time, one more on the existing line after that. With no lists, it offers to create "Mi lista" in the currency of the prices nearby. The Listas tab, where lists are seen and edited, is phase 3.
+- **Why:** Adding from where you find a product is the habit the mockups design for, and the counts in the sheet are enough to see that it worked. One line per product keeps the list readable and the optimizer's input simple.
+- **Revisit when:** Phase 3 builds the Listas tab — quantities, notes and removal belong there.
+
+### MCON-014 — A scanned product always opens in Buscar
+- **Phase:** 2 · **Area:** navigation · **Status:** accepted
+- **What:** Whichever tab the scanner was opened from, the product it finds opens on Buscar's stack.
+- **Why:** Scanning is a way of searching, and a single destination keeps the scanner from needing to know who opened it.
+- **Revisit when:** Shopping mode (phase 4) scans during a trip — there the product belongs on the trip, not in Buscar.

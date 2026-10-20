@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/button';
+import { ScanButton } from '@/components/scan-button';
 import { Screen } from '@/components/screen';
 import { SearchBox } from '@/components/search-box';
 import { Text } from '@/components/text';
@@ -34,7 +35,12 @@ export default function HomeScreen() {
         <LocationChip />
       </View>
 
-      <SearchBox onPress={() => router.navigate('/search')} />
+      <View style={styles.searchRow}>
+        <View style={styles.search}>
+          <SearchBox onPress={() => router.navigate('/search')} />
+        </View>
+        <ScanButton />
+      </View>
 
       <View style={styles.card}>
         <Text variant="label" tone="accent">
@@ -61,6 +67,8 @@ const styles = StyleSheet.create({
     paddingTop: space.xl,
   },
   greeting: { flex: 1, gap: space.xs },
+  searchRow: { flexDirection: 'row', gap: space.sm + 2 },
+  search: { flex: 1 },
   spinner: { alignSelf: 'flex-start' },
   card: {
     padding: space.xl,

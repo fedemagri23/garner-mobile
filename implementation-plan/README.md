@@ -29,14 +29,15 @@ Expo SDK 58 + Expo Router + TypeScript, in Spanish (es-AR).
 | `POST /v1/auth/register`, `/login`, `/refresh`, `/logout` | session |
 | `GET /v1/users/me` | home greeting |
 
-## Phase 2 — Find a price (checkpoint 2 ✅, checkpoint 3 next)
+## Phase 2 — Find a price ✅ (checkpoints 2 and 3)
 
 Search, barcode lookup, a product's prices near me, price history.
 
 - **Checkpoint 2 ✅:** location with its fallback, search with category
   chips and paging, the product screen (prices near me with confidence,
   30-day history), and Inicio's "Bajaron cerca tuyo".
-- **Checkpoint 3:** barcode scanning and add to list.
+- **Checkpoint 3 ✅:** barcode scanning (or typing the code), and "A la
+  lista" from a product.
 
 - Location: permission, current position (`expo-location`), falling back to
   the saved one from preferences.

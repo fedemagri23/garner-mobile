@@ -5,6 +5,7 @@ import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, View } 
 
 import { Chip } from '@/components/chip';
 import { ProductTile } from '@/components/product-tile';
+import { ScanButton } from '@/components/scan-button';
 import { Screen } from '@/components/screen';
 import { SearchBox } from '@/components/search-box';
 import { StateMessage } from '@/components/state-message';
@@ -27,13 +28,18 @@ export default function SearchScreen() {
 
   const header = (
     <View style={styles.header}>
-      <SearchBox
-        value={query}
-        onChangeText={setQuery}
-        focused={focused}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-      />
+      <View style={styles.searchRow}>
+        <View style={styles.search}>
+          <SearchBox
+            value={query}
+            onChangeText={setQuery}
+            focused={focused}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+          />
+        </View>
+        <ScanButton variant="outlined" />
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -118,6 +124,8 @@ const styles = StyleSheet.create({
   list: { padding: space.xl, gap: space.md - 2 },
   header: { gap: space.lg, paddingTop: space.sm, paddingBottom: space.xs },
   chips: { gap: space.sm },
+  searchRow: { flexDirection: 'row', gap: space.sm + 2 },
+  search: { flex: 1 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

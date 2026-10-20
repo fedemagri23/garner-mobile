@@ -161,3 +161,59 @@ Pull both repos, then in `garner-app` run `pnpm run prisma:migrate:deploy`
   ("Garner usa tu ubicación…") shows in a development build.
 - On the web, the browser asks for location instead; `npm run e2e:web` places
   it at the Obelisco.
+
+---
+
+## Checkpoint 3 — Scan a barcode, add to a list
+
+_Phase 2 · 2026-10-20 · backend `4d857fb`, app: this commit._
+
+What a person can do: point the camera at a product's barcode and land on its
+prices, or type the code; and add a product to a list from its screen.
+
+Pull both repos, run `pnpm run seed` in `garner-app` (every product now has
+a barcode) and `npm install` in `garner-mobile` (the camera is new).
+
+**Something to scan:** open `garner-mobile/docs/barcodes.svg` on your
+computer — seven barcodes: the six products, and one that is not in the
+catalog. Real products in a Vienna or Buenos Aires supermarket are not in
+the demo catalog, so they all give the "no lo tenemos" answer.
+
+**Check by hand**
+
+1. Sign in as `shopper@garner.test`. On Inicio, the green barcode button
+   next to the search field opens **Escaneá el código**. The app asks for the
+   camera — allow it.
+2. Point the phone at **Arroz Largo Fino 1kg** on the barcode sheet. Without
+   tapping anything, the scanner closes and the rice opens in the Buscar tab,
+   with its prices near you. Its back arrow returns to the search.
+3. Open the scanner again (also from the button beside Buscar's search
+   field) and point it at **Fuera del catálogo**: _"Todavía no tenemos este
+   producto en el catálogo."_ with its code. Tap **Escanear otro**.
+4. Type `7791234000028` in the field under the camera and tap **Buscar**:
+   _"Ese código no parece un código de barras válido."_ (the last digit is
+   wrong). Type `7790070410122`: the milk opens.
+5. On the milk, tap **A la lista**. The sheet lists **Compra semanal — 4
+   productos · ya tiene 2**. Tap it: _"Ahora hay 3 en Compra semanal."_, and
+   the row says _ya tiene 3_. Tap **Listo**.
+6. Open **Pan Lactal 500g** from Buscar, **A la lista**, tap Compra
+   semanal: _"Ahora hay 2…"_ — it was already on the list once.
+7. Create a new account, open any product and tap **A la lista**: _"Todavía
+   no tenés listas."_ Tap **Crear “Mi lista” y agregar**: _"Agregado a Mi
+   lista."_ In Vienna, that list is in euros; near the Obelisco, in pesos.
+8. Deny the camera (or use the web build): the scanner says it needs the
+   camera, with a button to allow it (or to open Settings once denied for
+   good), and the typed code still works.
+
+**Known limits**
+
+- The Listas tab, where you see and edit a list, is phase 3; until then the
+  item counts in the "A la lista" sheet show what changed.
+- A scanned product opens in Buscar, whichever tab you scanned from
+  (MCON-014).
+- After **Escanear otro**, a code still in front of the camera is read
+  again straight away.
+- Reporting the price on the shelf after a scan (the mockup's form) is
+  phase 5.
+- In Expo Go the camera prompt is Expo Go's own; the app's Spanish text
+  shows in a development build.

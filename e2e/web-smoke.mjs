@@ -57,13 +57,21 @@ const text = (wanted) =>
 const gone = (unwanted) =>
   page.waitForFunction((t) => !document.body.innerText.includes(t), { timeout: 15_000 }, unwanted);
 
-// Only what a person could see: on the web a stack keeps earlier screens mounted.
+// Only what a person could tap: on the web, stacks and inactive tabs keep
+// their screens laid out underneath, so an element must be on top at its
+// own centre.
+const onTop = (n) => {
+  const box = n.getBoundingClientRect();
+  const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+  return box.width > 0 && hit !== null && n.contains(hit);
+};
+
 const press = async (label) => {
   const handle = await page.waitForFunction(
-    (label) => {
-      const visible = (n) => n.offsetParent !== null && n.getClientRects().length > 0;
-      return [...document.querySelectorAll('[role=button],[role=tab],a,button')]
-        .filter(visible)
+    (label, onTopSource) => {
+      const onTop = new Function(`return ${onTopSource}`)();
+      return [...document.querySelectorAll('[role=button],[role=tab],[role=switch],a,button')]
+        .filter(onTop)
         .find(
           (n) =>
             n.getAttribute('aria-label') === label ||
@@ -73,26 +81,23 @@ const press = async (label) => {
     },
     { timeout: 15_000 },
     label,
+    onTop.toString(),
   );
   await handle.asElement().click();
 };
 
-// Rows whose accessible name is long are found by what they show. Hidden
-// tabs stay laid out on the web, so only a row actually on top counts.
+// Rows whose accessible name is long are found by what they show.
 const pressContaining = async (shown) => {
   const handle = await page.waitForFunction(
-    (shown) => {
-      const onTop = (n) => {
-        const box = n.getBoundingClientRect();
-        const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
-        return box.width > 0 && hit !== null && n.contains(hit);
-      };
+    (shown, onTopSource) => {
+      const onTop = new Function(`return ${onTopSource}`)();
       return [...document.querySelectorAll('[role=button]')]
         .filter((n) => n.innerText.includes(shown))
         .find(onTop);
     },
     { timeout: 15_000 },
     shown,
+    onTop.toString(),
   );
   await handle.asElement().click();
 };
@@ -201,6 +206,48 @@ await step('a search result opens the product', async () => {
   await press('Todo');
 });
 
+// --- Checkpoint 3: barcodes and "add to list" -----------------------------
+// Headless Chrome has no camera, so codes are typed, as on a laptop.
+
+await step('the scanner opens from Inicio, with a field to type the code', async () => {
+  await press('Inicio');
+  await press('Escanear código de barras');
+  await text('Escaneá el código');
+});
+await step('a code not in the catalog says so, and lets you scan again', async () => {
+  await typeInto('Código de barras', '4006381333931');
+  await press('Buscar');
+  await text('Todavía no tenemos este producto en el catálogo.');
+  await text('Código 4006381333931');
+  await press('Escanear otro');
+  await gone('Código 4006381333931');
+});
+await step('a mistyped code is called out', async () => {
+  await typeInto('Código de barras', '7791234000028');
+  await press('Buscar');
+  await text('Ese código no parece un código de barras válido.');
+  await press('Escanear otro');
+});
+await step('a known code lands on the product', async () => {
+  await typeInto('Código de barras', '7791234000029');
+  await press('Buscar');
+  await text('Arroz Largo Fino 1kg');
+  await text('Cerca tuyo');
+  await page.screenshot({ path: `${SHOTS}checkpoint-3-scanned.png` });
+});
+await step('"A la lista" adds one more to a list that already has it', async () => {
+  await press('Agregar a la lista');
+  await text('Agregar a una lista');
+  await text('Compra semanal');
+  await text('ya tiene');
+  await pressContaining('Compra semanal');
+  await text('en Compra semanal.');
+  await page.screenshot({ path: `${SHOTS}checkpoint-3-added.png` });
+  await press('Listo');
+  await gone('Agregar a una lista');
+  await press('Volver');
+});
+
 for (const [tab, wanted] of [
   ['Buscar', 'Bebidas'],
   ['Listas', 'Tus listas'],
@@ -240,6 +287,15 @@ await step('a new account can sign up and lands signed in', async () => {
   await typeInto('Contraseña', 'correct-horse-battery');
   await press('Crear cuenta');
   await text('Hola, Prueba Web');
+});
+await step('a new account makes its first list from "A la lista"', async () => {
+  await pressContaining('Agua Mineral 2L');
+  await press('Agregar a la lista');
+  await text('Todavía no tenés listas.');
+  await press('Crear “Mi lista” y agregar');
+  await text('Agregado a Mi lista.');
+  await text('1 producto · ya tiene 1');
+  await press('Listo');
 });
 
 // --- Vienna: the same app, in euros, on Vienna's clocks -------------------

@@ -1112,7 +1112,7 @@ export interface components {
             /** @example 7790070410122 */
             code: string;
             /** @default false */
-            isPrimary: boolean;
+            isPrimary?: boolean;
         };
         CreateCategoryRequest: {
             name: string;
@@ -1245,7 +1245,7 @@ export interface components {
              * @default America/Argentina/Buenos_Aires
              * @example Europe/Vienna
              */
-            timeZone: string;
+            timeZone?: string;
             openingHours?: components["schemas"]["OpeningHoursRequest"][];
         };
         CreateShoppingListRequest: {
@@ -1266,7 +1266,7 @@ export interface components {
              * @default MANUAL
              * @enum {string}
              */
-            sortMode: "MANUAL" | "NAME" | "CATEGORY" | "STORE";
+            sortMode?: "MANUAL" | "NAME" | "CATEGORY" | "STORE";
         };
         ShoppingListTotalsResponse: {
             /** @description Minor units (cents) */
@@ -1690,7 +1690,7 @@ export interface components {
             /** @example json-http */
             adapterKey: string;
             /** @default 8 */
-            scheduleHourUtc: number;
+            scheduleHourUtc?: number;
             /** @description Adapter configuration. Never put credentials here. */
             config?: Record<string, never>;
         };
@@ -1770,7 +1770,7 @@ export interface components {
              * @description Stores considered within
              * @default 10
              */
-            radiusKm: number;
+            radiusKm?: number;
             maxStores?: number;
             maxAdditionalDistanceKm?: number;
             maxAdditionalMinutes?: number;

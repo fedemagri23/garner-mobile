@@ -39,6 +39,13 @@
         {
           "locationWhenInUsePermission": "Garner usa tu ubicación para mostrarte precios en los supermercados cercanos."
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Garner usa la cámara para leer el código de barras de los productos.",
+          "recordAudioAndroid": false
+        }
       ]
     ],
     "experiments": {

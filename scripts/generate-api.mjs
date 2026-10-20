@@ -39,6 +39,9 @@ try {
       '--output', target,
       '--root-types',
       '--root-types-no-schema-prefix',
+      // A request field with a server-side default is optional to send;
+      // without this the generated type demands it (MBUG-005).
+      '--default-non-nullable=false',
     ],
     { stdio: ['ignore', 'ignore', 'inherit'] },
   );

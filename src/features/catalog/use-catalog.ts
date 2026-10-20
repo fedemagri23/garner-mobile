@@ -1,4 +1,4 @@
-import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 
 import { unwrap } from '@/api/client';
 import type { components } from '@/api/types';
@@ -55,5 +55,15 @@ export function useProduct(id: string) {
   return useQuery({
     queryKey: ['product', id],
     queryFn: () => unwrap(api.GET('/v1/products/{id}', { params: { path: { id } } })),
+  });
+}
+
+/** The product a barcode identifies; a 404 means it is not in the catalog. */
+export function useBarcodeLookup() {
+  const { api } = useSession();
+
+  return useMutation({
+    mutationFn: (code: string) =>
+      unwrap(api.GET('/v1/products/barcode/{code}', { params: { path: { code } } })),
   });
 }

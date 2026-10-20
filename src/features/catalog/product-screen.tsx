@@ -1,11 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation, useSegments } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ProductTile } from '@/components/product-tile';
 import { Screen } from '@/components/screen';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
+import { AddToListSheet } from '@/features/lists/add-to-list-sheet';
 import { useShopperLocation } from '@/features/location/location-provider';
 import { usePriceHistory, useProductPrices, type StorePrice } from '@/features/prices/use-prices';
 import { errorMessage } from '@/lib/error-message';
@@ -26,16 +28,52 @@ const shortDate = (day: string) => {
 export function ProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const product = useProduct(id);
+  const prices = useProductPrices(id);
+  const [adding, setAdding] = useState(false);
+  const navigation = useNavigation();
+  const inSearch = (useSegments() as string[]).includes('search');
+
+  // Back means the screen beneath this one in the tab. A product opened by
+  // the scanner has none, and the router's own back would fall through to
+  // whichever tab was open before — so it goes to the tab's first screen.
+  const back = () => {
+    if (navigation.getState()?.index) {
+      router.back();
+    } else {
+      router.replace(inSearch ? '/search' : '/');
+    }
+  };
 
   return (
     <Screen>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Volver"
-        onPress={() => (router.canGoBack() ? router.back() : router.navigate('/search'))}
-        style={({ pressed }) => [styles.back, pressed && styles.pressed]}>
-        <Ionicons name="chevron-back" size={20} color={colors.ink} />
-      </Pressable>
+      <View style={styles.topBar}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Volver"
+          onPress={back}
+          style={({ pressed }) => [styles.back, pressed && styles.pressed]}>
+          <Ionicons name="chevron-back" size={20} color={colors.ink} />
+        </Pressable>
+        {product.data ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Agregar a la lista"
+            onPress={() => setAdding(true)}
+            style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
+            <Ionicons name="add" size={18} color={colors.ink} />
+            <Text variant="label">A la lista</Text>
+          </Pressable>
+        ) : null}
+      </View>
+      {product.data ? (
+        <AddToListSheet
+          productId={id}
+          productName={product.data.name}
+          currency={prices.data?.prices[0]?.currency ?? 'ARS'}
+          visible={adding}
+          onClose={() => setAdding(false)}
+        />
+      ) : null}
 
       {product.isPending ? (
         <StateMessage loading />
@@ -264,6 +302,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pressed: { backgroundColor: colors.surfaceMuted },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  addButton: {
+    height: MIN_TOUCH,
+    paddingHorizontal: space.lg,
+    borderRadius: MIN_TOUCH / 2,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   identity: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   identityText: { flex: 1, gap: space.xs },
   name: { fontSize: 24, lineHeight: 27 },
