@@ -79,7 +79,7 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Fix:** Both look for those elements too.
 
 ### MBUG-013 — The two-stop trip step could not reach the tabs or read the stop
-- **Phase:** 4 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** this commit
+- **Phase:** 4 · **Area:** e2e · **Scope:** test · **Found by:** web smoke test · **Fixed in:** 3e080eb
 - **Symptom:** "A trip can follow a plan stop by stop" timed out, although the plan and the two-stop trip were right on screen.
 - **Cause:** Three test assumptions. The plan's tabs had scrolled under the map, and the helper only scrolled targets that were off screen, not ones covered on screen. "Parada 1 de 2" is uppercased by CSS, and `innerText` returns the uppercased text. And the step expected the rice's name without the "× 2" the screen rightly shows.
 - **Fix:** A covered target is scrolled to the middle and looked at again; `shown()` compares `textContent`, the text as written; the expectation includes the quantity.

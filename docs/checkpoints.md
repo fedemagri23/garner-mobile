@@ -321,7 +321,7 @@ Viena", a euro list), and `npm install` in `garner-mobile` (the map is new).
 
 ## Checkpoint 6 — Shopping
 
-_Phase 4 · 2026-10-20 · backend `0076b98`, app: this commit._
+_Phase 4 · 2026-10-20 · backend `0076b98`, app `3e080eb`._
 
 What a person can do: start a trip from a list, or from a plan so each
 product is waiting at the store the plan chose; go one stop at a time, tick
