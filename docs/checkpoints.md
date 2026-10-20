@@ -40,10 +40,16 @@ set the address explicitly: `EXPO_PUBLIC_API_URL=http://<your-ip>:3000 npm start
 **Accounts** (from the seed, password `correct-horse-battery`):
 `shopper@garner.test` (Fede, a shopper) and `admin@garner.test`.
 
-**The demo world** sits around the Obelisco in central Buenos Aires: three
-stores within 5 km (Coto Centro, Carrefour Almagro, Día Caballito), six
-products, and the shopper's saved location, "Centro", at the Obelisco. If you
-are elsewhere, nothing is "near you" — switch to Centro (checkpoint 2, step 2).
+**The demo world** has six products sold in two neighbourhoods:
+
+- **Buenos Aires**, around the Obelisco, in pesos: Coto Centro, Carrefour
+  Almagro, Día Caballito. The shopper's saved location, "Centro", is here.
+- **Vienna**, around Stephansplatz, in euros: Billa Rotenturmstraße, Spar
+  Mariahilfer Straße, Hofer Landstraße, with Austrian opening hours read on
+  Vienna's clock.
+
+"Near you" means within 5 km. With your phone in central Vienna you see the
+Vienna stores; anywhere else, switch to Centro (checkpoint 2, step 2).
 
 Running the backend's e2e tests (`pnpm run test:e2e`) wipes the development
 databases; run `pnpm run seed` again afterwards.
@@ -134,6 +140,14 @@ Pull both repos, then in `garner-app` run `pnpm run prisma:migrate:deploy`
 7. Sign out and in again as a new account (Crear cuenta): with the location
    allowed, Inicio shows the drops near you; denied, it says to allow it,
    since a new account has no saved place.
+8. **In Vienna** (phone location within 5 km of Stephansplatz), with the
+   chip on **Tu ubicación**: Inicio shows **Agua Mineral 2L** at Spar
+   **€ 0,69 −12%**, the milk at Hofer **€ 1,15 −10%**, and the rice at Billa
+   **−8%**. The milk's screen lists Hofer **€ 1,15** _el más barato_, Spar
+   **€ 1,29** _+ € 0,14_, Billa **€ 1,39** _+ € 0,24_, and its chart is in
+   euros. After 20:00 on a weekday, 18:00 on Saturday or on Sunday, each
+   store also says _cerrado ahora_. Tap the chip to flip to Centro and back:
+   prices switch between pesos and euros, never mixed.
 
 **Known limits**
 

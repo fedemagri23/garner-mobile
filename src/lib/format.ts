@@ -5,17 +5,31 @@ type ConfidenceLevel = components['schemas']['StorePriceResponse']['confidence']
 const thousands = (whole: number) => String(whole).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
 /**
- * A price as shoppers in Argentina write it: "$ 1.390", or "$ 1.390,50" when
- * there are centavos. Money arrives in minor units (the backend's client
- * guide) and is formatted here without floating-point arithmetic on it.
+ * How each currency is written. Pesos hide centavos when there are none
+ * ("$ 1.390"), since prices in Argentina rarely have them; euros always show
+ * cents ("€ 1,15"), since nearly every price there does.
  */
-export function formatPrice(cents: number): string {
+const CURRENCIES: Record<string, { symbol: string; alwaysCents: boolean }> = {
+  ARS: { symbol: '$', alwaysCents: false },
+  EUR: { symbol: '€', alwaysCents: true },
+  USD: { symbol: 'US$', alwaysCents: true },
+};
+
+/**
+ * A price the way a Spanish-speaking shopper writes it: symbol first, dots
+ * for thousands, a comma for cents. Money arrives in minor units (the
+ * backend's client guide) and is formatted without floating-point arithmetic.
+ * An unknown currency shows its ISO code instead of a symbol.
+ */
+export function formatPrice(cents: number, currency = 'ARS'): string {
+  const { symbol, alwaysCents } = CURRENCIES[currency] ?? { symbol: currency, alwaysCents: true };
   const sign = cents < 0 ? '−' : '';
   const absolute = Math.abs(Math.round(cents));
   const whole = Math.floor(absolute / 100);
   const fraction = absolute % 100;
+  const showCents = alwaysCents || fraction !== 0;
 
-  return `${sign}$ ${thousands(whole)}${fraction ? `,${String(fraction).padStart(2, '0')}` : ''}`;
+  return `${sign}${symbol} ${thousands(whole)}${showCents ? `,${String(fraction).padStart(2, '0')}` : ''}`;
 }
 
 /** "600 m" under a kilometre, "1,4 km" above it. */

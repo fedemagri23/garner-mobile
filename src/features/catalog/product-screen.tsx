@@ -68,7 +68,14 @@ export function ProductScreen() {
 }
 
 function PriceHistoryCard({ productId }: { productId: string }) {
-  const history = usePriceHistory(productId);
+  // The chart speaks the currency of the prices below it; it waits for them,
+  // and asks for the backend's pick when there are none.
+  const prices = useProductPrices(productId);
+  const history = usePriceHistory(
+    productId,
+    prices.data?.prices[0]?.currency,
+    !prices.isPending,
+  );
 
   if (history.isPending) {
     return (
@@ -85,8 +92,8 @@ function PriceHistoryCard({ productId }: { productId: string }) {
     );
   }
 
-  const { points, trend } = history.data;
-  if (points.length === 0 || !trend) {
+  const { points, trend, currency } = history.data;
+  if (points.length === 0 || !trend || !currency) {
     return (
       <View style={styles.card}>
         <Text variant="bodyStrong">Últimos 30 días</Text>
@@ -97,6 +104,9 @@ function PriceHistoryCard({ productId }: { productId: string }) {
     );
   }
 
+  const price = (cents: number) => formatPrice(cents, currency);
+  // A peso average to the centavo is false precision; euro cents are real.
+  const average = currency === 'ARS' ? Math.round(trend.averageCents / 100) * 100 : trend.averageCents;
   const values = points.map((point) => point.averageCents);
   const low = Math.min(...values);
   const span = Math.max(...values) - low || 1;
@@ -112,14 +122,14 @@ function PriceHistoryCard({ productId }: { productId: string }) {
       <View style={styles.cardHeader}>
         <Text variant="bodyStrong">Últimos 30 días</Text>
         <Text variant="caption" tone="muted">
-          promedio <Text variant="caption" style={styles.strong}>{formatPrice(Math.round(trend.averageCents / 100) * 100)}</Text>
+          promedio <Text variant="caption" style={styles.strong}>{price(average)}</Text>
         </Text>
       </View>
       <View
         style={styles.bars}
         accessible
         accessibilityRole="image"
-        accessibilityLabel={`Precio promedio por día: de ${formatPrice(first.averageCents)} el ${shortDate(first.date)} a ${formatPrice(last.averageCents)} el ${shortDate(last.date)}; ${movement}.`}>
+        accessibilityLabel={`Precio promedio por día: de ${price(first.averageCents)} el ${shortDate(first.date)} a ${price(last.averageCents)} el ${shortDate(last.date)}; ${movement}.`}>
         {points.map((point, index) => (
           <View
             key={point.date}
@@ -169,12 +179,17 @@ function StorePrices({ productId }: { productId: string }) {
       />
     );
   } else {
-    const cheapest = prices.data.prices[0].priceCents;
+    // Without a location the list can span countries; each price is compared
+    // with the cheapest in its own currency, never across.
+    const cheapest = new Map<string, number>();
+    for (const price of prices.data.prices) {
+      cheapest.set(price.currency, Math.min(cheapest.get(price.currency) ?? Infinity, price.priceCents));
+    }
     body = prices.data.prices.map((price, index) => (
       <StorePriceRow
         key={price.storeId}
         price={price}
-        cheapest={cheapest}
+        cheapest={cheapest.get(price.currency)!}
         last={index === prices.data.prices.length - 1}
       />
     ));
@@ -202,13 +217,13 @@ function StorePrices({ productId }: { productId: string }) {
 
 function StorePriceRow({ price, cheapest, last }: { price: StorePrice; cheapest: number; last: boolean }) {
   const difference = price.priceCents - cheapest;
-  const delta = difference === 0 ? 'el más barato' : `+ ${formatPrice(difference)}`;
+  const delta = difference === 0 ? 'el más barato' : `+ ${formatPrice(difference, price.currency)}`;
 
   return (
     <View
       style={[styles.row, !last && styles.divider]}
       accessible
-      accessibilityLabel={`${price.storeName}, ${formatPrice(price.priceCents)}, ${delta}. ${confidenceLabel[price.confidence]}${price.distanceKm !== null ? `, a ${formatDistance(price.distanceKm)}` : ''}${price.isOpenNow ? '' : ', cerrado ahora'}`}>
+      accessibilityLabel={`${price.storeName}, ${formatPrice(price.priceCents, price.currency)}, ${delta}. ${confidenceLabel[price.confidence]}${price.distanceKm !== null ? `, a ${formatDistance(price.distanceKm)}` : ''}${price.isOpenNow ? '' : ', cerrado ahora'}`}>
       <View style={styles.rowText}>
         <Text variant="bodyStrong">{price.storeName}</Text>
         <View style={styles.meta}>
@@ -228,7 +243,7 @@ function StorePriceRow({ price, cheapest, last }: { price: StorePrice; cheapest:
         </View>
       </View>
       <View style={styles.right}>
-        <Text style={styles.price}>{formatPrice(price.priceCents)}</Text>
+        <Text style={styles.price}>{formatPrice(price.priceCents, price.currency)}</Text>
         <Text variant="caption" tone="muted">
           {delta}
         </Text>

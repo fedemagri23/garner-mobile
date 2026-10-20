@@ -15,6 +15,16 @@ describe('formatPrice', () => {
   it('marks a negative amount', () => {
     expect(formatPrice(-6000)).toBe('−$ 60');
   });
+
+  it('writes euros with their symbol and always with cents', () => {
+    expect(formatPrice(115, 'EUR')).toBe('€ 1,15');
+    expect(formatPrice(200, 'EUR')).toBe('€ 2,00');
+    expect(formatPrice(123456, 'EUR')).toBe('€ 1.234,56');
+  });
+
+  it('falls back to the ISO code for a currency it does not know', () => {
+    expect(formatPrice(5000, 'BRL')).toBe('BRL 50,00');
+  });
 });
 
 describe('formatDistance', () => {

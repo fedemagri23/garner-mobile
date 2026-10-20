@@ -49,7 +49,7 @@ function PriceDropRow({ drop, last }: { drop: PriceDrop; last: boolean }) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${drop.productName}, ${formatPrice(drop.priceCents)}, bajó ${drop.dropPercent}%, en ${where}`}
+      accessibilityLabel={`${drop.productName}, ${formatPrice(drop.priceCents, drop.currency)}, bajó ${drop.dropPercent}%, en ${where}`}
       onPress={() => router.push(`/product/${drop.productId}`)}
       style={({ pressed }) => [styles.row, !last && styles.divider, pressed && styles.pressed]}>
       <ProductTile name={drop.productName} imageUrl={drop.imageUrl} />
@@ -62,7 +62,7 @@ function PriceDropRow({ drop, last }: { drop: PriceDrop; last: boolean }) {
         </Text>
       </View>
       <View style={styles.right}>
-        <Text style={styles.price}>{formatPrice(drop.priceCents)}</Text>
+        <Text style={styles.price}>{formatPrice(drop.priceCents, drop.currency)}</Text>
         <Text style={styles.badge} tone="signal">
           −{drop.dropPercent}%
         </Text>

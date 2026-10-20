@@ -65,3 +65,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** `(home)/product/[id]` and `search/product/[id]` both render the same `ProductScreen`, so a product opens on top of the tab it was tapped in and back returns there.
 - **Why:** Each tab has its own stack; one shared route outside the tabs would hide the tab bar and lose the tab's place.
 - **Revisit when:** A third tab needs it (lists, in phase 3) — consider Expo Router's shared groups, `(home,search,lists)`, instead of another file.
+
+### MCON-011 — Prices are shown in their own currency, never converted
+- **Phase:** 2 · **Area:** prices · **Status:** accepted
+- **What:** Every amount is formatted with its own currency — "$ 1.390" for pesos (centavos only when there are some), "€ 1,15" for euros (always with cents), the ISO code for anything else — in the Spanish style the app is written in. The product screen compares each price only with the cheapest in the same currency, and its chart asks for the history in the currency of the prices near the shopper. Nothing is converted.
+- **Why:** The demo data now has a Vienna neighbourhood in euros beside the Buenos Aires one in pesos. A comparison across currencies would need exchange rates, and a shopper compares the shelves in front of them, which share one currency.
+- **Revisit when:** Number formatting follows the device's locale rather than the app's language, or a list or plan spans countries.

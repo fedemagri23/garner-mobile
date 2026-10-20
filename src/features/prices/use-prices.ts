@@ -33,16 +33,21 @@ export function useProductPrices(productId: string) {
   });
 }
 
-/** The last 30 days across every store, oldest first. */
-export function usePriceHistory(productId: string) {
+/**
+ * The last 30 days across every store, oldest first, in one currency: the
+ * one of the prices near the shopper when known (a product sold in Buenos
+ * Aires and Vienna has a peso and a euro history), else the backend's pick.
+ */
+export function usePriceHistory(productId: string, currency: string | undefined, enabled = true) {
   const { api } = useSession();
 
   return useQuery({
-    queryKey: ['price-history', productId],
+    queryKey: ['price-history', productId, currency],
+    enabled,
     queryFn: () =>
       unwrap(
         api.GET('/v1/products/{id}/prices/history', {
-          params: { path: { id: productId }, query: { range: '30d' } },
+          params: { path: { id: productId }, query: { range: '30d', currency } },
         }),
       ),
   });

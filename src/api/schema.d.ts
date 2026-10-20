@@ -1184,6 +1184,8 @@ export interface components {
             latitude: number;
             longitude: number;
             phone: string | null;
+            /** @example America/Argentina/Buenos_Aires */
+            timeZone: string;
             isActive: boolean;
             openingHours: components["schemas"]["OpeningHoursResponse"][];
         };
@@ -1206,6 +1208,8 @@ export interface components {
             latitude: number;
             longitude: number;
             phone: string | null;
+            /** @example America/Argentina/Buenos_Aires */
+            timeZone: string;
             isActive: boolean;
             openingHours: components["schemas"]["OpeningHoursResponse"][];
             /** @description Great-circle distance from the searched point */
@@ -1236,6 +1240,12 @@ export interface components {
             /** @example -58.3816 */
             longitude: number;
             phone?: string;
+            /**
+             * @description IANA time zone the opening hours are written in
+             * @default America/Argentina/Buenos_Aires
+             * @example Europe/Vienna
+             */
+            timeZone: string;
             openingHours?: components["schemas"]["OpeningHoursRequest"][];
         };
         CreateShoppingListRequest: {
@@ -1603,6 +1613,11 @@ export interface components {
             storeId: string | null;
             /** @enum {string} */
             range: "30d" | "90d" | "6m" | "1y";
+            /**
+             * @description What every amount is in; null when there are no points
+             * @example ARS
+             */
+            currency: string | null;
             /** @description Oldest first */
             points: components["schemas"]["DailyPricePointResponse"][];
             trend: components["schemas"]["PriceTrendResponse"] | null;
@@ -3380,6 +3395,8 @@ export interface operations {
                 range?: "30d" | "90d" | "6m" | "1y";
                 /** @description One store; omitted, the history covers every store */
                 storeId?: string;
+                /** @description ISO 4217. Omitted, the currency with the most observations in the range */
+                currency?: string;
             };
             header?: never;
             path: {

@@ -25,23 +25,32 @@ const browser = await puppeteer.launch({
   headless: true,
   args: ['--no-sandbox'],
 });
-const page = await browser.newPage();
-await page.setViewport({ width: 390, height: 844 });
+const OBELISCO = { latitude: -34.6037, longitude: -58.3816 };
+const STEPHANSPLATZ = { latitude: 48.2085, longitude: 16.3721 };
 
-// The browser stands where the seed's shopper does, by the Obelisco.
 await browser.defaultBrowserContext().overridePermissions(BASE_URL, ['geolocation']);
-await page.setGeolocation({ latitude: -34.6037, longitude: -58.3816 });
 
 const errors = [];
-page.on('pageerror', (error) => errors.push(`page error: ${error.message}`));
-page.on('console', (message) => {
-  // The checks provoke refusals on purpose (wrong password, taken email,
-  // short password); the browser logs each 4xx. Anything else is a failure.
-  const expectedRefusal = /status of 4\d\d/.test(message.text());
-  if (message.type() === 'error' && !expectedRefusal) {
-    errors.push(message.text());
-  }
-});
+
+/** A phone-sized tab standing at `position`, with its errors collected. */
+async function openPage(position) {
+  const tab = await browser.newPage();
+  await tab.setViewport({ width: 390, height: 844 });
+  await tab.setGeolocation(position);
+  tab.on('pageerror', (error) => errors.push(`page error: ${error.message}`));
+  tab.on('console', (message) => {
+    // The checks provoke refusals on purpose (wrong password, taken email,
+    // short password); the browser logs each 4xx. Anything else is a failure.
+    const expectedRefusal = /status of 4\d\d/.test(message.text());
+    if (message.type() === 'error' && !expectedRefusal) {
+      errors.push(message.text());
+    }
+  });
+  return tab;
+}
+
+// The browser stands where the seed's shopper does, by the Obelisco.
+let page = await openPage(OBELISCO);
 
 const text = (wanted) =>
   page.waitForFunction((t) => document.body.innerText.includes(t), { timeout: 15_000 }, wanted);
@@ -231,6 +240,30 @@ await step('a new account can sign up and lands signed in', async () => {
   await typeInto('Contraseña', 'correct-horse-battery');
   await press('Crear cuenta');
   await text('Hola, Prueba Web');
+});
+
+// --- Vienna: the same app, in euros, on Vienna's clocks -------------------
+
+await step('in Vienna, Inicio shows what dropped nearby, in euros', async () => {
+  page = await openPage(STEPHANSPLATZ);
+  await page.goto(BASE_URL, { waitUntil: 'networkidle0' });
+  await typeInto('Email', 'shopper@garner.test');
+  await typeInto('Contraseña', 'correct-horse-battery');
+  await press('Ingresar');
+  await text('Tu ubicación');
+  await text('Agua Mineral 2L');
+  await text('€ 0,69');
+  await text('−12%');
+  await page.screenshot({ path: `${SHOTS}vienna-home.png` });
+});
+await step('a product in Vienna compares Vienna stores in euros', async () => {
+  await pressContaining('Leche Entera La Serenísima 1L');
+  await text('Hofer Landstraße');
+  await text('€ 1,15');
+  await text('+ € 0,14');
+  await text('Últimos 30 días');
+  await gone('Coto Centro');
+  await page.screenshot({ path: `${SHOTS}vienna-product.png` });
 });
 
 await browser.close();
