@@ -151,6 +151,44 @@ contribution (garner-app `ab5da96`, CON-047).
 (`POST|DELETE /v1/devices`) and an Expo push channel beside in-app and email —
 one more `NotificationChannel`.
 
+## Phase 7 — Internationalization
+
+Spanish (es-AR) stays the default; English and German are added. The app
+follows the phone's language, with a manual choice in settings.
+
+- **Checkpoint 11:** the app's strings move into per-language catalogs
+  (`i18n-js` or `i18next` with `expo-localization`); dates, numbers and
+  money format by locale; a language picker. Messages built from facts
+  (alerts, push) are composed from the catalog.
+- **Checkpoint 12:** the backend learns the user's language
+  (`users.locale`, sent by the app) and writes push/email text in it;
+  product and category names get translations where they exist.
+
+## Phase 8 — Crowdsourced products and shops
+
+Rules decided with the user:
+
+- **Products:** visible to everyone from the moment they are added, marked
+  *Sin verificar*. Search and recommendations weigh them by **user
+  confirmations and price updates**, so a well-confirmed one outranks a
+  fresh one. Garner's team can mark a product **verified** (also the way
+  duplicates are merged or bad entries hidden).
+- **Shops:** visible only to their creator until **at least 10 products have
+  a price at that shop**; then they appear for everyone, still *Sin
+  verificar* until the team verifies them.
+- Integrity: rate limits per user, duplicate detection (barcode, normalized
+  name, distance to an existing store), validated input, flags that hide an
+  entry from search pending review, an admin review queue.
+
+- **Checkpoint 13:** backend — `origin` (VERIFIED | COMMUNITY), `createdById`,
+  weight inputs on products; store `visibility` driven by a priced-product
+  count; create endpoints, confirm/flag endpoints, duplicate checks, admin
+  review queue. Seed and tests.
+- **Checkpoint 14:** app — add a product (scan a barcode, photo, name,
+  brand, category, size), add a shop (pick on map, name, chain), confirm or
+  flag, *Sin verificar* badges, "your shop is private until N more
+  products" progress.
+
 ## Later
 
 Dark theme, profile and account settings, password reset (needs backend),
