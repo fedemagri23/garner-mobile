@@ -127,6 +127,15 @@ export default function ScanScreen() {
             <Text variant="caption" tone="muted">
               {t('browse.scan.code', { code: outcome.code })}
             </Text>
+            {outcome.kind === 'notFound' ? (
+              <Button
+                label={t('community.entry.addFromScan')}
+                onPress={() => {
+                  // In place of the scanner, so closing the form goes back to where scanning began.
+                  router.replace({ pathname: '/add-product', params: { barcode: outcome.code } });
+                }}
+              />
+            ) : null}
             <Button label={t('browse.scan.again')} variant="secondary" onPress={() => setOutcome(null)} />
           </View>
         ) : (

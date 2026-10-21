@@ -163,7 +163,7 @@ between. The order:
 | --- | --- | --- |
 | 11 ✅ | App translatable: catalogs, locale formatting, language picker | mobile |
 | 12 ✅ | Crowdsourcing backend: origin, visibility, weight, create/confirm/flag, review queue | backend |
-| 13 | Crowdsourcing app: add product, add shop, confirm, flag, badges, progress | mobile |
+| 13 ✅ | Crowdsourcing app: add product, add shop, confirm, flag, badges, progress | both |
 | 14 | Server-side language: user locale, push/email text, translated names | both |
 
 ## Phase 7 — Internationalization
@@ -282,12 +282,13 @@ counts toward its own weight (the creator is excluded from confirmations).
 - **Privacy:** the creator's identity is never exposed to other users;
   deleting an account keeps the content, drops `createdById`.
 
-### App (checkpoint 13)
+### App (checkpoint 13 ✅, garner-app `34cc3b4` `b118016`)
 
 - **Add a product** (from a failed search or barcode scan: "No lo
   encuentro — agregarlo"): barcode prefilled from the scan, name, brand
-  (search or add), category, size and unit, optional photo. Duplicate
-  suggestions shown first ("¿Es este?").
+  (search or add), category, size and unit. Duplicate suggestions shown
+  first ("¿Es este?"). No photo: the server takes no pictures from
+  shoppers yet (MCON-041).
 - **Add a shop**: choose chain (or add), place a pin on the map (starting at
   the user's location), name and address, opening hours optional.
   Afterwards a card shows *"Solo vos lo ves: faltan 7 productos con
@@ -304,12 +305,15 @@ counts toward its own weight (the creator is excluded from confirmations).
 
 ### Tests and checkpoint
 
-Backend: unit (weight, publication rule, duplicate detection, quotas),
-e2e (creator-only visibility switches at 10 products from 3 users, a flag
-threshold hides, a merge moves everything). App: tests for the form
-validation and badges, the web e2e covers add-product and add-shop. The
-seed gets one community product and a private shop at 6 of 10.
-Checkpoint steps in `docs/checkpoints.md`.
+Backend: unit (weight, publication rule, duplicate detection, quotas,
+addition status), e2e (creator-only visibility switches at 10 priced
+products, a flag threshold pulls an entry, offline ids, unlisted brands,
+chains hidden until a shop is public). Merging is not built (CON-054).
+App: tests for form validation, badges, the progress card and sending a
+product added offline; the web e2e adds a product, confirms and reports
+one, adds a shop, adds a product offline and checks Mis aportes, then has a
+moderator hide what it added. The seed has one community product and two
+private shops (6 and 9 of 10). Checkpoint steps in `docs/checkpoints.md`.
 
 ### Risks to decide later
 

@@ -10,7 +10,7 @@ export const contributions: Catalog<typeof es> = {
     some_other: '{{count}} gemeldete Preise oder aus deinen Einkäufen',
   },
   list: {
-    intro: 'Die Preise, die du gemeldet hast, und die aus deinen Einkäufen. Jeder hilft anderen, weniger zu zahlen.',
+    intro: 'Was du zum Katalog hinzugefügt hast, die Preise, die du gemeldet hast, und die aus deinen Einkäufen. Jeder Beitrag hilft anderen, weniger zu zahlen.',
     empty: 'Du hast noch keinen Preis gemeldet. Öffne ein Produkt und tippe auf „Preis melden“.',
     waitingLabel: '{{product}}, {{price}} bei {{store}}, wartet aufs Senden',
     waiting: 'Wartet aufs Senden',
@@ -33,7 +33,7 @@ export const contributions: Catalog<typeof es> = {
   report: {
     title: 'Preis melden',
     needLocation: 'Wir brauchen deinen Standort, um zu wissen, in welchem Supermarkt du bist.',
-    noStores: 'In deiner Nähe sind keine Supermärkte bekannt. Wir können den Preis noch nicht annehmen.',
+    noStores: 'Wir kennen keinen Supermarkt in deiner Nähe. Wenn du in einem bist, füg ihn unten hinzu.',
     whichStore: 'In welchem Supermarkt bist du?',
     shelfPrice: 'Regalpreis',
     invalid: 'Dieser Preis ist nicht verständlich. Versuche 1.150 oder 1,15.',

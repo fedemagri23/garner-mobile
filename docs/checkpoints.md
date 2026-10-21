@@ -578,3 +578,49 @@ Avisos → Preferencias → Idioma. The choice is remembered.
 - After changing language the screens restart; on a phone you may land on Inicio rather than staying in Preferencias (MCON-038).
 - Push notifications are in Spanish, emails in English, product names are not
   translated (MCON-040, checkpoint 14).
+
+## Checkpoint 13 — Adding products and shops
+
+**What works:** anyone can add a product the catalog lacks, and a shop the app
+does not know. A product is visible to everyone at once, marked _Sin
+verificar_; others can say _Existe y está bien_ or _Reportar_ it. A shop is
+seen only by whoever added it until 10 different products have a price there;
+a card says how many are left. _Mis aportes_ lists what you added and where
+each stands. A product added with no connection waits on the phone and is
+added when it returns.
+
+**Check** (signed in as `shopper@garner.test`, by the Obelisco)
+
+1. Buscar → type _alfajor santafesino_ → _No lo encuentro — agregarlo_. Change
+   the name to _Alfajor_: _¿Es alguno de estos?_ lists _Alfajor Artesanal de
+   Maicena_. Type a full name back, a new brand (_Usar “…” como marca nueva_),
+   pick _Almacén_, a size, _Agregar producto_ → _¡Agregado!_ → _Ver el
+   producto_: _Sin verificar_, _Lo agregaste vos._
+2. Escanear → type `4006381333931` → _Agregarlo al catálogo_: the form opens
+   with the barcode filled in.
+3. Open _Alfajor Artesanal de Maicena_ (the neighbour's): _Existe y está bien_
+   → _1 persona confirmó que existe._; tap again to take it back. _Reportar_ →
+   pick a reason → _Enviar reporte_ → _Lo reportaste_.
+4. Open any product → _Informar precio_ → _¿No está tu súper? Agregalo_. Pick a
+   chain or _Otra_, a name, move the pin on the map (a phone; the web uses
+   where you are), address, city, country → _¡Tienda agregada!_ with _Faltan
+   10 productos con precio…_. Back in _Informar precio_ the shop is listed with
+   _Solo vos · faltan 10 productos_.
+5. In Vienna, _Nah&Frisch Singerstraße_ is at 9 of 10: report one more
+   product's price there and it becomes public (its _Solo vos_ mark goes).
+6. Inicio → _Mis aportes_ → _Lo que agregaste_: your products (_La ven todos ·
+   Sin verificar_) and shops (_Solo vos la ves · faltan N productos_); tap a shop
+   for its card.
+7. Airplane mode → add a product → _Guardado en el teléfono_; _Mis aportes_
+   shows it _Por enviar_. Back online, it turns into a normal entry.
+8. A tap on a shop under a product's prices opens its card (chain, address,
+   _Verificado_ or _Sin verificar_, and _Reportar esta tienda_ for someone
+   else's).
+
+**Known limits**
+
+- No photo for a product yet: the server does not take shoppers' pictures
+  (MCON-041).
+- A product waiting offline cannot be opened or priced until it is sent.
+- Moderation (verify, hide) is through the API only; merging duplicates is
+  not built (CON-054).

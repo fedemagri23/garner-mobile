@@ -7,7 +7,7 @@ export const contributions = {
     some_other: '{{count}} precios informados o de tus compras',
   },
   list: {
-    intro: 'Los precios que informaste y los de tus compras. Cada uno ayuda a otros a pagar menos.',
+    intro: 'Lo que agregaste al catálogo, los precios que informaste y los de tus compras. Cada aporte ayuda a otros a pagar menos.',
     empty: 'Todavía no informaste ningún precio. Abrí un producto y tocá “Informar precio”.',
     waitingLabel: '{{product}}, {{price}} en {{store}}, por enviar',
     waiting: 'Por enviar',
@@ -30,7 +30,7 @@ export const contributions = {
   report: {
     title: 'Informar precio',
     needLocation: 'Necesitamos tu ubicación para saber en qué súper estás.',
-    noStores: 'No hay súper conocidos cerca tuyo. Todavía no podemos aceptar el precio.',
+    noStores: 'No conocemos ningún súper cerca tuyo. Si estás en uno, agregalo abajo.',
     whichStore: '¿En qué súper estás?',
     shelfPrice: 'Precio en góndola',
     invalid: 'Ese precio no se entiende. Probá con 1.150 o 1,15.',

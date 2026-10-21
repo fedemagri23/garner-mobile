@@ -1,6 +1,7 @@
 import { alerts } from './alerts';
 import { browse } from './browse';
 import { common } from './common';
+import { community } from './community';
 import { contributions } from './contributions';
 import { lists } from './lists';
 import { plan } from './plan';
@@ -15,5 +16,6 @@ export const es = {
   lists,
   plan,
   contributions,
+  community,
   trip,
 };

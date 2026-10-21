@@ -9,6 +9,9 @@ import { Screen } from '@/components/screen';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { NewAlertSheet } from '@/features/alerts/new-alert-sheet';
+import { OriginBadge } from '@/features/community/badges';
+import { StandingCard } from '@/features/community/standing-card';
+import { StoreSheet } from '@/features/community/store-sheet';
 import { AddToListSheet } from '@/features/lists/add-to-list-sheet';
 import { useShopperLocation } from '@/features/location/location-provider';
 import { usePriceHistory, useProductPrices, type StorePrice } from '@/features/prices/use-prices';
@@ -102,8 +105,16 @@ export function ProductScreen() {
                   .filter(Boolean)
                   .join(' · ')}
               </Text>
+              <OriginBadge origin={product.data.origin} />
             </View>
           </View>
+          {product.data.origin === 'COMMUNITY' ? (
+            <StandingCard
+              productId={id}
+              productName={product.data.name}
+              confirmations={product.data.confirmationCount}
+            />
+          ) : null}
           <PriceHistoryCard productId={id} />
           <StorePrices productId={id} />
           <View style={styles.actions}>
@@ -217,6 +228,7 @@ function PriceHistoryCard({ productId }: { productId: string }) {
 function StorePrices({ productId }: { productId: string }) {
   const { location } = useShopperLocation();
   const prices = useProductPrices(productId);
+  const [storeId, setStoreId] = useState<string | null>(null);
   const nearby = location.status === 'ready';
 
   let body;
@@ -247,6 +259,7 @@ function StorePrices({ productId }: { productId: string }) {
         price={price}
         cheapest={cheapest.get(price.currency)!}
         last={index === prices.data.prices.length - 1}
+        onPress={() => setStoreId(price.storeId)}
       />
     ));
   }
@@ -267,18 +280,30 @@ function StorePrices({ productId }: { productId: string }) {
         </Text>
       ) : null}
       <View style={styles.list}>{body}</View>
+      <StoreSheet storeId={storeId} onClose={() => setStoreId(null)} />
     </View>
   );
 }
 
-function StorePriceRow({ price, cheapest, last }: { price: StorePrice; cheapest: number; last: boolean }) {
+function StorePriceRow({
+  price,
+  cheapest,
+  last,
+  onPress,
+}: {
+  price: StorePrice;
+  cheapest: number;
+  last: boolean;
+  onPress: () => void;
+}) {
   const difference = price.priceCents - cheapest;
   const delta = difference === 0 ? t('browse.product.stores.cheapest') : `+ ${formatPrice(difference, price.currency)}`;
 
   return (
-    <View
-      style={[styles.row, !last && styles.divider]}
-      accessible
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.row, !last && styles.divider, pressed && styles.pressed]}
+      accessibilityRole="button"
       accessibilityLabel={t('browse.product.stores.rowLabel', {
         store: price.storeName,
         price: formatPrice(price.priceCents, price.currency),
@@ -311,7 +336,7 @@ function StorePriceRow({ price, cheapest, last }: { price: StorePrice; cheapest:
           {delta}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

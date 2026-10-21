@@ -2,7 +2,7 @@ import type { Api } from '@/api/client';
 import { discardPhoto, photoStillThere } from '@/features/contributions/photo-store';
 import { photoFormData } from '@/features/contributions/photo';
 
-import type { Change, ReportChange, SendResult } from './changes';
+import type { Change, ProductChange, ReportChange, SendResult } from './changes';
 
 /** Answers worth another try later: the server is busy, limiting us, or we were not let in yet. */
 const worthRetrying = (status: number) =>
@@ -13,6 +13,9 @@ export async function send(api: Api, change: Change): Promise<SendResult> {
   try {
     if (change.kind === 'report') {
       return await sendReport(api, change);
+    }
+    if (change.kind === 'product') {
+      return await sendProduct(api, change);
     }
 
     const path = { params: { path: { id: change.tripId } } };
@@ -84,4 +87,19 @@ async function sendReport(api: Api, change: ReportChange): Promise<SendResult> {
   }
   if (change.photoUri) discardPhoto(change.photoUri);
   return { result: 'drop' };
+}
+
+/**
+ * A product added offline. A 429 with no Retry-After is the daily limit on
+ * new products, not the rate limiter: it will not pass by retrying today,
+ * so the shopper is told rather than left waiting.
+ */
+async function sendProduct(api: Api, change: ProductChange): Promise<SendResult> {
+  const { response } = await api.POST('/v1/products', { body: change.product });
+
+  if (response.ok) {
+    return { result: 'ok' };
+  }
+  const dailyLimit = response.status === 429 && !response.headers.get('Retry-After');
+  return worthRetrying(response.status) && !dailyLimit ? { result: 'retry' } : { result: 'drop' };
 }

@@ -119,3 +119,9 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Symptom:** A price alert would have read "Leche Entera is now 13.20" — English, and without a currency symbol, so € 1,15 and $ 1.150 were both just a number.
 - **Cause:** The backend writes `title` and `body` itself, with a plain two-decimal price (garner-app CON-048); the app has no way to translate a sentence it did not write.
 - **Fix:** The backend now stores why an alert fired and the price and currency beside the text, and returns the product and store names; the app writes the message from those (`composeMessage`) and uses the server's words only for a message that carries no facts. Alerts also gained a currency and a place (garner-app BUG-022), found on the way: a peso alert would have fired on euro prices.
+
+### MBUG-020 — Adding a product with no connection spun forever instead of saving it on the phone
+- **Phase:** 8 (checkpoint 13) · **Area:** community, offline · **Scope:** production code (caught before release) · **Found by:** the web e2e's offline add-product step · **Fixed in:** "feat(community): add products and shops, confirm and report, Mis aportes"
+- **Symptom:** With the phone offline, "Agregar producto" showed a spinner and never reached "Guardado en el teléfono"; the product was added only when the connection came back, with the shopper never told.
+- **Cause:** React Query pauses mutations while it thinks the device is offline (`networkMode: 'online'`), so the code that puts the product on the outbox never ran.
+- **Fix:** The mutation runs with `networkMode: 'always'`, as the trip's already did: it decides itself whether to send or queue.

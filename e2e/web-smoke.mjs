@@ -41,6 +41,16 @@ const API_URL = process.env.E2E_API_URL ?? 'http://localhost:3000';
 const NEW_ACCOUNT = { email: `web-${Date.now()}@garner.test`, password: 'correct-horse-battery' };
 const LABEL_PHOTO = new URL('./fixtures/label.jpg', import.meta.url).pathname;
 
+/** Signs in to the API directly, for checks and clean-up behind the app's back. */
+async function apiToken({ email, password }) {
+  const login = await fetch(`${API_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  return (await login.json()).accessToken;
+}
+
 /** The prices an account has contributed, as the server lists them. */
 async function serverContributions({ email, password }) {
   const login = await fetch(`${API_URL}/v1/auth/login`, {
@@ -152,7 +162,7 @@ const tappable = (selector, match, arg) =>
 
 const press = async (label) => {
   const target = await tappable(
-    '[role=button],[role=tab],[role=switch],[role=checkbox],a,button',
+    '[role=button],[role=tab],[role=switch],[role=checkbox],[role=radio],a,button',
     (n, label) =>
       n.getAttribute('aria-label') === label ||
       n.innerText.trim() === label ||
@@ -244,8 +254,10 @@ await step('back returns to Inicio', async () => {
   await text('Bajaron cerca tuyo');
 });
 await step('search finds a product as you type', async () => {
+  const token = await apiToken({ email: 'shopper@garner.test', password: 'correct-horse-battery' });
+  const all = await (await fetch(`${API_URL}/v1/products?pageSize=1`, { headers: { authorization: `Bearer ${token}` } })).json();
   await press('Buscar');
-  await text('6 productos');
+  await text(`${all.meta.totalItems} productos`);
   await typeInto('Buscar productos', 'arroz');
   await text('1 producto');
   await text('Arroz Largo Fino 1kg');
@@ -284,6 +296,7 @@ await step('a code not in the catalog says so, and lets you scan again', async (
   await press('Buscar');
   await text('Todavía no tenemos este producto en el catálogo.');
   await text('Código 4006381333931');
+  await shown('Agregarlo al catálogo');
   await press('Escanear otro');
   await gone('Código 4006381333931');
 });
@@ -766,6 +779,133 @@ await step('a price reported offline waits, with its photo, and is sent on recon
 await step('Inicio counts the prices reported', async () => {
   await press('Inicio');
   await shown('2 precios informados o de tus compras');
+});
+
+// --- Checkpoint 13: what shoppers add to the catalog -----------------------
+// Still the throwaway account. Names carry the run, since a product or chain
+// is shared by everyone and a second run would otherwise be a duplicate.
+
+const RUN = String(Date.now()).slice(-6);
+const NEW_PRODUCT = `Alfajor Santafesino ${RUN}`;
+const OFFLINE_PRODUCT = `Pastafrola de Membrillo ${RUN}`;
+const NEW_CHAIN = `Almacén Prueba ${RUN}`;
+
+await step('a search with no match offers to add it, and shows what is already there first', async () => {
+  // Buscar still has the bread open from the offline report.
+  await press('Buscar');
+  await shown('Pan Lactal 500g');
+  await press('Volver');
+  await typeInto('Buscar productos', NEW_PRODUCT);
+  await text(`No encontramos productos para “${NEW_PRODUCT}”.`);
+  await press('No lo encuentro — agregarlo');
+  await shown('Agregar producto');
+  await typeInto('Nombre', 'Alfajor');
+  await shown('¿Es alguno de estos?');
+  await shown('Alfajor Artesanal de Maicena');
+});
+await step('a product is added with a brand that is not listed, and opens marked "Sin verificar"', async () => {
+  await typeInto('Nombre', NEW_PRODUCT);
+  await press('Agregar producto');
+  await text('Elegí una opción.');
+  await typeInto('Marca', `Doña Prueba ${RUN}`);
+  await text(`Usar “Doña Prueba ${RUN}” como marca nueva`);
+  await press('Almacén');
+  await typeInto('Tamaño', '70');
+  await press('g');
+  await press('Agregar producto');
+  await shown('¡Agregado!');
+  await press('Ver el producto');
+  await shown(NEW_PRODUCT);
+  await shown('Sin verificar');
+  await text('Lo agregaste vos.');
+  await page.screenshot({ path: `${SHOTS}checkpoint-13-product.png` });
+});
+await step('a neighbour\'s product can be confirmed, taken back and reported', async () => {
+  await press('Volver');
+  await typeInto('Buscar productos', 'alfajor artesanal');
+  await pressContaining('Alfajor Artesanal de Maicena');
+  await text('Lo agregó alguien de la comunidad.');
+  await text('Todavía nadie lo confirmó.');
+  await press('Existe y está bien');
+  await text('1 persona confirmó que existe.');
+  await press('Quitar mi confirmación');
+  await text('Todavía nadie lo confirmó.');
+  await press('Reportar');
+  await shown('Reportar producto');
+  await press('Los datos están mal');
+  await press('Enviar reporte');
+  await text('Gracias. Si otros también lo reportan, el equipo lo revisa.');
+  await press('Cerrar');
+  await shown('Lo reportaste');
+  await press('Volver');
+});
+await step('a shop is added from Informar precio, seen only by its creator until priced', async () => {
+  await typeInto('Buscar productos', 'pan lactal');
+  await pressContaining('Pan Lactal 500g');
+  await press('Informar precio');
+  await press('¿No está tu súper? Agregalo');
+  await shown('Agregar tienda');
+  await press('Otra');
+  await typeInto('Nombre de la cadena', NEW_CHAIN);
+  await typeInto('Nombre de la tienda', `${NEW_CHAIN} Obelisco`);
+  await typeInto('Dirección', 'Av. Corrientes 1000');
+  await typeInto('Ciudad', 'Buenos Aires');
+  await press('AR');
+  await press('Agregar tienda');
+  await shown('¡Tienda agregada!');
+  await text('Faltan 10 productos con precio para que la vean todos.');
+  await page.screenshot({ path: `${SHOTS}checkpoint-13-shop.png` });
+  await press('Listo');
+  await shown('¿En qué súper estás?');
+  await text(`${NEW_CHAIN} Obelisco`);
+  await text('faltan 10 productos');
+  await press('Cerrar');
+});
+await step('a product added offline waits on the phone and is added on reconnecting', async () => {
+  await press('Volver');
+  await typeInto('Buscar productos', OFFLINE_PRODUCT);
+  await text(`No encontramos productos para “${OFFLINE_PRODUCT}”.`);
+  await page.setOfflineMode(true);
+  await press('No lo encuentro — agregarlo');
+  await shown('Agregar producto');
+  await press('Almacén');
+  await press('Agregar producto');
+  await shown('Guardado en el teléfono');
+  await press('Listo');
+  await press('Inicio');
+  await pressContaining('Mis aportes');
+  await shown('Lo que agregaste');
+  await shown('Por enviar');
+  await page.setOfflineMode(false);
+  await gone('Por enviar');
+});
+await step('Mis aportes lists what was added, with where each stands', async () => {
+  await shown(OFFLINE_PRODUCT);
+  await shown(NEW_PRODUCT);
+  await text('La ven todos · Sin verificar');
+  await shown(`${NEW_CHAIN} Obelisco`);
+  await text('Solo vos la ves · faltan 10 productos');
+  await page.screenshot({ path: `${SHOTS}checkpoint-13-mine.png` });
+  await pressContaining(`${NEW_CHAIN} Obelisco`);
+  await text('Cadena: ' + NEW_CHAIN);
+  await text('La agregaste vos.');
+  await press('Cerrar');
+  await press('Volver');
+});
+await step('what the run added is hidden again by a moderator, so the catalog stays as seeded', async () => {
+  const mine = await (
+    await fetch(`${API_URL}/v1/community/mine`, { headers: { authorization: `Bearer ${await apiToken(NEW_ACCOUNT)}` } })
+  ).json();
+  const moderator = await apiToken({ email: 'moderator@garner.test', password: 'correct-horse-battery' });
+  const hide = (target, id) =>
+    fetch(`${API_URL}/v1/moderation/${target}/${id}/hide`, { method: 'POST', headers: { authorization: `Bearer ${moderator}` } });
+  const answers = await Promise.all([
+    ...mine.products.map((product) => hide('products', product.id)),
+    ...mine.stores.map((store) => hide('stores', store.id)),
+  ]);
+  if (answers.length !== 3 || answers.some((answer) => answer.status !== 204)) {
+    throw new Error(`hid ${answers.map((answer) => answer.status)}`);
+  }
 });
 
 // --- Vienna: the same app, in euros, on Vienna's clocks -------------------

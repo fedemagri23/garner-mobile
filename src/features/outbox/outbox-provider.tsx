@@ -113,6 +113,11 @@ export function OutboxProvider({ children }: { children: ReactNode }) {
 
       if (unreachable) setReachable(false);
       if (outcome.dropped.length > 0) setRejected((list) => [...list, ...outcome.dropped]);
+      if (outcome.sentKinds.has('product')) {
+        // A product added offline is now in the catalog for everyone.
+        void queryClient.invalidateQueries({ queryKey: ['community-mine'] });
+        void queryClient.invalidateQueries({ queryKey: ['products'] });
+      }
       if (outcome.sentKinds.has('report')) {
         // A price just reached the server: history and prices have news.
         void queryClient.invalidateQueries({ queryKey: ['contributions'] });

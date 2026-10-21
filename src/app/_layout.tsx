@@ -81,6 +81,8 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
         <Stack.Screen name="(app)" />
         <Stack.Screen name="scan" options={{ presentation: 'fullScreenModal' }} />
         <Stack.Screen name="report-price" options={{ presentation: 'fullScreenModal' }} />
+        <Stack.Screen name="add-product" options={{ presentation: 'fullScreenModal' }} />
+        <Stack.Screen name="add-store" options={{ presentation: 'fullScreenModal' }} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" />

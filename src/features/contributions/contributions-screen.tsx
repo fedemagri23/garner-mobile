@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
+import { MyAdditionsSection } from '@/features/community/my-additions';
 import { pendingReports, type ReportChange } from '@/features/outbox/changes';
 import { useOutbox } from '@/features/outbox/outbox-provider';
 import { SyncBanner } from '@/features/outbox/sync-banner';
@@ -55,6 +56,7 @@ export function ContributionsScreen() {
             </Text>
             <Text tone="muted">{t('contributions.list.intro')}</Text>
             <SyncBanner />
+            <MyAdditionsSection />
             {waiting.map((report) => (
               <Waiting key={report.id} report={report} />
             ))}

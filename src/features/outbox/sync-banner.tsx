@@ -19,10 +19,12 @@ export function SyncBanner() {
 
   if (rejected.length > 0) {
     const prices = rejected.filter((change) => change.kind === 'report').length;
-    const trip = rejected.length - prices;
+    const products = rejected.filter((change) => change.kind === 'product').length;
+    const trip = rejected.length - prices - products;
     const parts = [
       trip > 0 ? t('shell.sync.tripRejected', { changes: changes(trip) }) : null,
       prices > 0 ? t('shell.sync.priceRejected', { prices: t('shell.sync.prices', { count: prices }) }) : null,
+      products > 0 ? t('shell.sync.productRejected', { products: t('shell.sync.products', { count: products }) }) : null,
     ].filter(Boolean);
 
     return (

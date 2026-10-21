@@ -10,7 +10,7 @@ export const contributions: Catalog<typeof es> = {
     some_other: '{{count}} prices reported or from your shopping',
   },
   list: {
-    intro: 'The prices you reported and those from your shopping. Each one helps others pay less.',
+    intro: 'What you added to the catalog, the prices you reported and those from your shopping. Each one helps others pay less.',
     empty: 'You have not reported any price yet. Open a product and tap “Report a price”.',
     waitingLabel: '{{product}}, {{price}} at {{store}}, waiting to be sent',
     waiting: 'Waiting to be sent',
@@ -33,7 +33,7 @@ export const contributions: Catalog<typeof es> = {
   report: {
     title: 'Report a price',
     needLocation: 'We need your location to know which supermarket you are in.',
-    noStores: 'There are no known supermarkets near you. We cannot accept the price yet.',
+    noStores: 'We do not know any supermarket near you. If you are in one, add it below.',
     whichStore: 'Which supermarket are you in?',
     shelfPrice: 'Shelf price',
     invalid: "That price isn't clear. Try 1,150 or 1.15.",

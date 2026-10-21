@@ -246,3 +246,15 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** Alerts in the inbox are written in the chosen language from facts, but push notifications are Spanish only (CON-049), emails are English, API error messages other than the ones screens map by status are English, and product, brand and category names are not translated.
 - **Why:** The server does not know the user's language yet.
 - **Revisit when:** Checkpoint 14 sends the locale and the backend writes push and email text in it.
+
+### MCON-041 — Adding products and shops: online first, queued offline, no photos
+- **Phase:** 8 (checkpoint 13) · **Area:** community · **Status:** accepted
+- **What:** "Agregar producto" opens from a search with no match (and a link under the results), and from a scanned code the catalog does not know, with that code filled in. It shows `/v1/product-suggestions` matches first. A brand typed that matches a listed one (ignoring accents and case) is sent as its id, otherwise as `brandName`. With a connection the product is sent at once, so a duplicate (409) or the daily limit (429) is answered on the form; with none, or when the request does not get through, it goes on the outbox as a `product` change carrying an id chosen on the phone, which the server keeps (CON-055). The outbox drops it on a 4xx, including a 429 without Retry-After (the daily limit, not the rate limiter), and the banner says so. "Agregar tienda" opens from Informar precio; the pin starts at the shopper's location and moves by tap or drag on a phone, address, city and country are prefilled from reverse geocoding where the phone can, and the time zone is the phone's. There is no product photo: the server ignores shoppers' image links and has no reviewed upload for products.
+- **Why:** Answering refusals on the spot is better than a queue entry that fails later; offline adding matters in a shop's aisle. A shop is added in person and rarely offline, so it is not queued.
+- **Revisit when:** Product photos get a reviewed upload path, or shops need adding offline.
+
+### MCON-042 — Badges, confirm and report, and where shops show their card
+- **Phase:** 8 (checkpoint 13) · **Area:** community · **Status:** accepted
+- **What:** _Sin verificar_ marks community products in search and on their screen, and community shops in Informar precio; the team's entries carry nothing in lists and a _Verificado_ tick only on a shop's card. A community product shows a card with its confirmations and, for anyone but its creator, _Existe y está bien_ (a toggle) and _Reportar_, from `/v1/products/:id/viewer-say`. A shop's card opens from a price row under a product and from Mis aportes; reporting a shop happens inside that card, since a second modal over a sheet is unreliable on iOS. Price rows do not carry the badge: the pricing API does not return a shop's origin.
+- **Why:** The badge is information about others' entries; marking the team's everywhere would be noise.
+- **Revisit when:** Shoppers want the badge on price rows, which needs `origin` in `StorePriceResponse`.

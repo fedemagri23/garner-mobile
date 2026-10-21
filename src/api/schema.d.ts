@@ -101,7 +101,10 @@ export interface paths {
         /** Search products by text, category or brand */
         get: operations["productsSearch"];
         put?: never;
-        /** Add a product to the canonical catalog */
+        /**
+         * Add a product to the catalog
+         * @description Moderators and admins add VERIFIED products. Anyone else adds a COMMUNITY one: shown to everyone, ranked by confirmations and prices, a few a day. Check `/v1/product-suggestions` first.
+         */
         post: operations["productsCreate"];
         delete?: never;
         options?: never;
@@ -191,6 +194,166 @@ export interface paths {
         put?: never;
         /** Create a brand */
         post: operations["catalogCreateBrand"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/product-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Products already in the catalog with a name like this one, before adding a new one */
+        get: operations["productSuggestionsSuggest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/products/{id}/viewer-say": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether you added, confirmed or reported this product */
+        get: operations["productCommunityViewerSay"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/products/{id}/confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Say a product exists and is described right
+         * @description Once per person; not for your own.
+         */
+        post: operations["productCommunityConfirm"];
+        /** Take back your confirmation */
+        delete: operations["productCommunityWithdraw"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/products/{id}/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Report a product as a duplicate, wrong, made up or inappropriate */
+        post: operations["productCommunityFlag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/stores/{id}/viewer-say": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether you added or reported this shop */
+        get: operations["storeCommunityViewerSay"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/stores/{id}/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Report a shop as a duplicate, wrong, made up or inappropriate */
+        post: operations["storeCommunityFlag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/moderation/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Entries pulled by flags, then the most flagged */
+        get: operations["moderationQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/moderation/{target}/{id}/{action}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify, hide or restore a product or shop */
+        post: operations["moderationAct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The products and shops you added, newest first
+         * @description Hidden and private ones included, each with a status for you to read.
+         */
+        get: operations["myAdditionsMine"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -310,7 +473,10 @@ export interface paths {
         /** List stores, optionally by chain or city */
         get: operations["storesList"];
         put?: never;
-        /** Add a store location to a chain */
+        /**
+         * Add a shop
+         * @description Moderators and admins add VERIFIED shops, public at once. Anyone else adds a COMMUNITY one, visible only to them until ten products have an accepted price there; a few a day.
+         */
         post: operations["storesCreate"];
         delete?: never;
         options?: never;
@@ -1119,6 +1285,13 @@ export interface components {
             imageUrl: string | null;
             isActive: boolean;
             barcodes: components["schemas"]["ProductBarcodeResponse"][];
+            /**
+             * @description The team’s, or added by a shopper and not yet verified
+             * @enum {string}
+             */
+            origin: "VERIFIED" | "COMMUNITY";
+            /** @description People other than its creator who confirmed it */
+            confirmationCount: number;
             /** Format: date-time */
             createdAt: string;
         };
@@ -1133,17 +1306,27 @@ export interface components {
             meta: components["schemas"]["PaginationMeta"];
         };
         CreateProductRequest: {
+            /**
+             * Format: uuid
+             * @description Chosen by the client when it adds one offline; sending the same id again returns that product
+             */
+            id?: string;
             name: string;
             description?: string;
             /** Format: uuid */
             categoryId: string;
             /** Format: uuid */
             brandId?: string;
+            /** @description A brand that is not listed; ignored when `brandId` is given */
+            brandName?: string;
             /** @description Package size expressed in `unit` */
             packageSize?: number;
             /** @enum {string} */
             unit: "GRAM" | "KILOGRAM" | "MILLILITER" | "LITER" | "UNIT";
-            /** Format: uri */
+            /**
+             * Format: uri
+             * @description Taken from the team only; ignored for shoppers
+             */
             imageUrl?: string;
             barcodes?: string[];
         };
@@ -1175,6 +1358,75 @@ export interface components {
         };
         CreateBrandRequest: {
             name: string;
+        };
+        ProductSuggestionResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: uuid */
+            brandId: string | null;
+            brandName: string | null;
+            packageSize: number | null;
+            unit: string;
+        };
+        ViewerSayResponse: {
+            /** @description You added it: you cannot confirm or report it */
+            addedByYou: boolean;
+            /** @description You said it exists and is right (always false for shops) */
+            confirmed: boolean;
+            /** @description You reported it */
+            flagged: boolean;
+        };
+        ConfirmationsResponse: {
+            /** @description People other than its creator who confirmed it */
+            confirmations: number;
+        };
+        FlagRequest: {
+            /** @enum {string} */
+            reason: "DUPLICATE" | "WRONG_INFO" | "NOT_EXIST" | "INAPPROPRIATE";
+        };
+        ReviewItemResponse: {
+            /** @enum {string} */
+            targetType: "PRODUCT" | "STORE";
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            moderationStatus: "ACTIVE" | "UNDER_REVIEW" | "HIDDEN" | "MERGED";
+            flagCount: number;
+            confirmationCount: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AddedProductResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            brandName: string | null;
+            /** @enum {string} */
+            status: "PRIVATE" | "PUBLIC" | "VERIFIED" | "UNDER_REVIEW" | "HIDDEN";
+            confirmationCount: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AddedStoreResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            supermarketName: string;
+            addressLine: string;
+            /** @enum {string} */
+            status: "PRIVATE" | "PUBLIC" | "VERIFIED" | "UNDER_REVIEW" | "HIDDEN";
+            /** @description Distinct products with an accepted price here */
+            pricedProducts: number;
+            /** @description Still to price before everyone sees it; 0 once public */
+            productsRemaining: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        MyAdditionsResponse: {
+            products: components["schemas"]["AddedProductResponse"][];
+            stores: components["schemas"]["AddedStoreResponse"][];
         };
         RegisterRequest: {
             /** Format: email */
@@ -1223,6 +1475,12 @@ export interface components {
             /** @example 21:00 */
             closesAt: string;
         };
+        PublicationResponse: {
+            /** @description Distinct products with an accepted price here */
+            pricedProducts: number;
+            productsNeeded: number;
+            productsRemaining: number;
+        };
         StoreResponse: {
             /** Format: uuid */
             id: string;
@@ -1242,6 +1500,18 @@ export interface components {
             timeZone: string;
             isActive: boolean;
             openingHours: components["schemas"]["OpeningHoursResponse"][];
+            /**
+             * @description The team’s, or added by a shopper and not yet verified
+             * @enum {string}
+             */
+            origin: "VERIFIED" | "COMMUNITY";
+            /**
+             * @description PRIVATE: only its creator sees it, until enough products are priced there
+             * @enum {string}
+             */
+            visibility: "PUBLIC" | "PRIVATE";
+            /** @description How far a private shop is from being shown to everyone; null once public */
+            publication: components["schemas"]["PublicationResponse"] | null;
         };
         StorePageResponse: {
             data: components["schemas"]["StoreResponse"][];
@@ -1266,6 +1536,18 @@ export interface components {
             timeZone: string;
             isActive: boolean;
             openingHours: components["schemas"]["OpeningHoursResponse"][];
+            /**
+             * @description The team’s, or added by a shopper and not yet verified
+             * @enum {string}
+             */
+            origin: "VERIFIED" | "COMMUNITY";
+            /**
+             * @description PRIVATE: only its creator sees it, until enough products are priced there
+             * @enum {string}
+             */
+            visibility: "PUBLIC" | "PRIVATE";
+            /** @description How far a private shop is from being shown to everyone; null once public */
+            publication: components["schemas"]["PublicationResponse"] | null;
             /** @description Great-circle distance from the searched point */
             distanceKm: number;
             /** @description Evaluated against the store opening hours */
@@ -1280,8 +1562,13 @@ export interface components {
             closesAt: string;
         };
         CreateStoreRequest: {
-            /** Format: uuid */
-            supermarketId: string;
+            /**
+             * Format: uuid
+             * @description The chain; or give `supermarketName` for one not listed
+             */
+            supermarketId?: string;
+            /** @description A chain not listed yet (shoppers only); reused if one by that name exists */
+            supermarketName?: string;
             name: string;
             addressLine: string;
             city: string;
@@ -2146,6 +2433,14 @@ export type UpdateProductRequest = components['schemas']['UpdateProductRequest']
 export type AddBarcodeRequest = components['schemas']['AddBarcodeRequest'];
 export type CreateCategoryRequest = components['schemas']['CreateCategoryRequest'];
 export type CreateBrandRequest = components['schemas']['CreateBrandRequest'];
+export type ProductSuggestionResponse = components['schemas']['ProductSuggestionResponse'];
+export type ViewerSayResponse = components['schemas']['ViewerSayResponse'];
+export type ConfirmationsResponse = components['schemas']['ConfirmationsResponse'];
+export type FlagRequest = components['schemas']['FlagRequest'];
+export type ReviewItemResponse = components['schemas']['ReviewItemResponse'];
+export type AddedProductResponse = components['schemas']['AddedProductResponse'];
+export type AddedStoreResponse = components['schemas']['AddedStoreResponse'];
+export type MyAdditionsResponse = components['schemas']['MyAdditionsResponse'];
 export type RegisterRequest = components['schemas']['RegisterRequest'];
 export type TokenPairResponse = components['schemas']['TokenPairResponse'];
 export type LoginRequest = components['schemas']['LoginRequest'];
@@ -2153,6 +2448,7 @@ export type RefreshRequest = components['schemas']['RefreshRequest'];
 export type SupermarketResponse = components['schemas']['SupermarketResponse'];
 export type CreateSupermarketRequest = components['schemas']['CreateSupermarketRequest'];
 export type OpeningHoursResponse = components['schemas']['OpeningHoursResponse'];
+export type PublicationResponse = components['schemas']['PublicationResponse'];
 export type StoreResponse = components['schemas']['StoreResponse'];
 export type StorePageResponse = components['schemas']['StorePageResponse'];
 export type NearbyStoreResponse = components['schemas']['NearbyStoreResponse'];
@@ -2414,8 +2710,15 @@ export interface operations {
                     "application/json": components["schemas"]["ProductResponse"];
                 };
             };
-            /** @description A barcode already belongs elsewhere */
+            /** @description A barcode already belongs elsewhere, or the same product is already there */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description As many products as allowed today */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2638,6 +2941,280 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    productSuggestionsSuggest: {
+        parameters: {
+            query: {
+                name: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductSuggestionResponse"][];
+                };
+            };
+        };
+    };
+    productCommunityViewerSay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ViewerSayResponse"];
+                };
+            };
+            /** @description Product not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    productCommunityConfirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfirmationsResponse"];
+                };
+            };
+            /** @description You added it yourself */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Product not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    productCommunityWithdraw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfirmationsResponse"];
+                };
+            };
+        };
+    };
+    productCommunityFlag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FlagRequest"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description You added it yourself */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too many reports today */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    storeCommunityViewerSay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ViewerSayResponse"];
+                };
+            };
+            /** @description Store not found, or someone else’s private shop */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    storeCommunityFlag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FlagRequest"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description You added it yourself */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too many reports today */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    moderationQueue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewItemResponse"][];
+                };
+            };
+        };
+    };
+    moderationAct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                action: "verify" | "hide" | "restore";
+                target: "products" | "stores";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No such product or shop */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    myAdditionsMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyAdditionsResponse"];
+                };
             };
         };
     };
@@ -2873,6 +3450,20 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["StoreResponse"];
                 };
+            };
+            /** @description The same chain already has a shop at this spot */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description As many shops as allowed today */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

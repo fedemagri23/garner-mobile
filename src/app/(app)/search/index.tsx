@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
 import { ProductTile } from '@/components/product-tile';
 import { ScanButton } from '@/components/scan-button';
@@ -11,6 +12,7 @@ import { SearchBox } from '@/components/search-box';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useProductSearch, useTopCategories, type Product } from '@/features/catalog/use-catalog';
+import { OriginBadge } from '@/features/community/badges';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { productCount } from '@/lib/format';
@@ -77,13 +79,34 @@ export default function SearchScreen() {
           ) : results.isError ? (
             <StateMessage tone="danger" message={errorMessage(results.error)} />
           ) : (
-            <StateMessage
-              message={search ? t('browse.search.noResults', { search }) : t('browse.search.emptyCategory')}
-            />
+            <View>
+              <StateMessage
+                message={search ? t('browse.search.noResults', { search }) : t('browse.search.emptyCategory')}
+              />
+              {search ? (
+                <Button
+                  label={t('community.entry.notFound')}
+                  variant="secondary"
+                  onPress={() => router.push({ pathname: '/add-product', params: { name: search } })}
+                />
+              ) : null}
+            </View>
           )
         }
         ListFooterComponent={
-          results.isFetchingNextPage ? <ActivityIndicator color={colors.accent} /> : undefined
+          results.isFetchingNextPage ? (
+            <ActivityIndicator color={colors.accent} />
+          ) : search && products.length > 0 && !results.hasNextPage ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push({ pathname: '/add-product', params: { name: search } })}
+              style={styles.notListed}>
+              <Ionicons name="add-circle-outline" size={18} color={colors.accent} />
+              <Text variant="label" tone="accent">
+                {t('community.entry.notListed')}
+              </Text>
+            </Pressable>
+          ) : undefined
         }
         onEndReached={() => {
           if (results.hasNextPage && !results.isFetchingNextPage) {
@@ -106,7 +129,9 @@ function ProductRow({ product }: { product: Product }) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={meta ? `${product.name}, ${meta}` : product.name}
+      accessibilityLabel={[product.name, meta, product.origin === 'COMMUNITY' ? t('community.badge.unverified') : '']
+        .filter(Boolean)
+        .join(', ')}
       onPress={() => router.push(`/search/product/${product.id}`)}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
       <ProductTile name={product.name} imageUrl={product.imageUrl} size={48} />
@@ -117,6 +142,7 @@ function ProductRow({ product }: { product: Product }) {
         <Text variant="caption" tone="muted" numberOfLines={1}>
           {meta || product.category.name}
         </Text>
+        <OriginBadge origin={product.origin} />
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.muted} />
     </Pressable>
@@ -142,4 +168,11 @@ const styles = StyleSheet.create({
   },
   pressed: { backgroundColor: colors.surfaceMuted },
   rowText: { flex: 1, minWidth: 0, gap: 3 },
+  notListed: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.xs,
+    minHeight: 44,
+  },
 });

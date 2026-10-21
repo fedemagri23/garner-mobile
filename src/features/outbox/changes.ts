@@ -3,7 +3,8 @@ import type { Trip, TripItem } from '@/features/trip/stops';
 
 /**
  * What a shopper does that the server has to hear about, kept until it has:
- * changes during a trip, and prices reported from a shelf.
+ * changes during a trip, prices reported from a shelf, and products added to
+ * the catalog.
  *
  * The outbox is a list of these in the order they happened. Replaying them
  * in that order is safe because each one is absolute — "this line is bought
@@ -39,11 +40,24 @@ export type ReportChange = {
   photoKey?: string;
 };
 
-export type Change = ItemChange | StatusChange | ReportChange;
+/**
+ * A product added to the catalog with no connection. Its `id` becomes the
+ * product's id on the server, so sending it twice adds it once.
+ */
+export type ProductChange = {
+  kind: 'product';
+  id: string;
+  addedAt: string;
+  product: components['schemas']['CreateProductRequest'] & { id: string };
+  /** For showing it while it waits. */
+  brandLabel: string | null;
+};
+
+export type Change = ItemChange | StatusChange | ReportChange | ProductChange;
 
 /** The changes that belong to a trip. */
 export const isTripChange = (change: Change): change is ItemChange | StatusChange =>
-  change.kind !== 'report';
+  change.kind === 'item' || change.kind === 'status';
 
 /** How one change ended when it was sent. */
 export type SendResult =
@@ -148,6 +162,10 @@ export function pendingItemIds(queue: Change[], tripId: string): Set<string> {
 /** Prices reported and not yet sent, oldest first. */
 export const pendingReports = (queue: Change[]): ReportChange[] =>
   queue.filter((change): change is ReportChange => change.kind === 'report');
+
+/** Products added and not yet sent, oldest first. */
+export const pendingProducts = (queue: Change[]): ProductChange[] =>
+  queue.filter((change): change is ProductChange => change.kind === 'product');
 
 const STATUS_AFTER: Record<StatusAction, Trip['status']> = {
   pause: 'PAUSED',

@@ -10,6 +10,7 @@ import { ProductTile } from '@/components/product-tile';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useProduct } from '@/features/catalog/use-catalog';
+import { OriginBadge, PrivateBadge } from '@/features/community/badges';
 import { useShopperLocation } from '@/features/location/location-provider';
 import { CURRENCY_BY_COUNTRY } from '@/features/location/use-local-currency';
 import { useOutbox } from '@/features/outbox/outbox-provider';
@@ -144,6 +145,17 @@ export function ReportScreen() {
         <View style={styles.group}>
           <Text variant="label">{t('contributions.report.whichStore')}</Text>
           <View style={styles.card}>{storesBody}</View>
+          {location.status === 'ready' ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/add-store')}
+              style={styles.addStore}>
+              <Ionicons name="add-circle-outline" size={18} color={colors.accent} />
+              <Text variant="label" tone="accent">
+                {t('community.entry.addStore')}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
 
         <View style={styles.group}>
@@ -233,7 +245,13 @@ function StoreRow({
     <Pressable
       accessibilityRole="radio"
       accessibilityState={{ selected }}
-      accessibilityLabel={t('contributions.report.storeLabel', { store: store.name, distance: formatDistance(store.distanceKm) })}
+      accessibilityLabel={[
+        t('contributions.report.storeLabel', { store: store.name, distance: formatDistance(store.distanceKm) }),
+        store.publication ? t('community.progress.remaining', { count: store.publication.productsRemaining }) : '',
+        store.origin === 'COMMUNITY' ? t('community.badge.unverified') : '',
+      ]
+        .filter(Boolean)
+        .join('. ')}
       onPress={onPress}
       style={[styles.storeRow, !last && styles.divider, selected && styles.storeRowSelected]}>
       <Ionicons
@@ -247,6 +265,16 @@ function StoreRow({
           {formatDistance(store.distanceKm)}
           {lastPrice ? t('contributions.report.lastPrice', { price: formatPrice(lastPrice.priceCents, lastPrice.currency) }) : ''}
         </Text>
+        {store.publication ? (
+          <View style={styles.badges}>
+            <PrivateBadge />
+            <Text variant="caption" tone="signal">
+              {t('community.mine.remaining', { count: store.publication.productsRemaining })}
+            </Text>
+          </View>
+        ) : store.origin === 'COMMUNITY' ? (
+          <OriginBadge origin={store.origin} />
+        ) : null}
       </View>
     </Pressable>
   );
@@ -331,6 +359,8 @@ const styles = StyleSheet.create({
   storeRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56, padding: space.md, paddingHorizontal: space.lg },
   storeRowSelected: { backgroundColor: colors.accentSoft },
   storeText: { flex: 1, gap: 2 },
+  badges: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  addStore: { flexDirection: 'row', alignItems: 'center', gap: space.xs, minHeight: MIN_TOUCH },
   divider: { borderBottomWidth: 1, borderBottomColor: colors.surfaceMuted },
   priceField: {
     height: 64,
