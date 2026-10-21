@@ -161,8 +161,8 @@ between. The order:
 
 | Checkpoint | What | Repo |
 | --- | --- | --- |
-| 11 | App translatable: catalogs, locale formatting, language picker | mobile |
-| 12 | Crowdsourcing backend: origin, visibility, weight, create/confirm/flag, review queue | backend |
+| 11 ✅ | App translatable: catalogs, locale formatting, language picker | mobile |
+| 12 ✅ | Crowdsourcing backend: origin, visibility, weight, create/confirm/flag, review queue | backend |
 | 13 | Crowdsourcing app: add product, add shop, confirm, flag, badges, progress | mobile |
 | 14 | Server-side language: user locale, push/email text, translated names | both |
 
@@ -210,11 +210,9 @@ follows the phone's language, with a manual choice in settings.
   reason (`DUPLICATE` | `WRONG_INFO` | `NOT_EXIST` | `INAPPROPRIATE`).
 - Prices live in a different database (no foreign keys across them), so
   `pricedProductCount` is a **counter in core**, updated when a price
-  observation is accepted for a (product, store) pair seen there for the
-  first time; a nightly sweep recounts from the pricing database and
-  repairs drift. The pair is recorded in a small `StoreProduct` table in
-  core (store, product, first accepted at), which also makes the count
-  exact and idempotent (distinct products, not distinct prices).
+  observation is accepted (the `PriceObservationAccepted` event): each
+  (store, product, person) is a row in `StorePriceContributor`, which makes
+  the count exact and idempotent (distinct products, not distinct prices).
 
 ### Weight (ranking)
 
@@ -231,24 +229,24 @@ Search orders by text relevance first, then weight; recommendations and
 the plan's store/product choices read it too. One user's own entry never
 counts toward its own weight (the creator is excluded from confirmations).
 
-### Backend API (checkpoint 12)
+### Backend API (checkpoint 12 ✅, garner-app `f968005`)
 
-- `POST /v1/products` open to any signed-in user (today moderator/admin
-  only): creates a `COMMUNITY` product. Name, category, optional brand,
-  size/unit, optional barcode and photo. Same endpoint for the team,
-  which creates `VERIFIED`.
-- `POST /v1/store-locations` likewise, with the chain given by id or as a
-  new chain name; created private.
-- `POST /v1/products/:id/confirmations`, `DELETE` to take it back.
-- `POST /v1/products/:id/flags`, and the same for stores.
-- `GET /v1/products` and store listings return only what the caller may
-  see; each item carries `origin`, `verified`, `weight` is internal.
-  `GET /v1/store-locations/:id` returns `publication` progress to the
-  creator (`pricedProducts: 6, needed: 10`).
-- Admin/moderator: `GET /v1/moderation/queue` (sorted by flags, then by
-  confirmations), `POST /v1/moderation/:type/:id/verify | hide | restore`,
-  `POST /v1/products/:id/merge` (moves barcodes, list items, prices to the
-  target; leaves a redirect so old ids still resolve).
+- `POST /v1/products` is open to any signed-in user: a shopper's product is
+  COMMUNITY (the team's stay VERIFIED). Name, category, optional brand,
+  size/unit, barcodes; a shopper's image link is ignored.
+- `GET /v1/product-suggestions?name=` — "is it one of these?" before adding.
+- `POST /v1/stores` likewise: chain by `supermarketId`, or a new one by
+  `supermarketName`; a shopper's shop is created private.
+- `POST|DELETE /v1/products/:id/confirmations` → `{ confirmations }`.
+- `POST /v1/products/:id/flags`, `POST /v1/stores/:id/flags` with a reason.
+- Products carry `origin` and `confirmationCount`; shops carry `origin`,
+  `visibility` (PUBLIC | PRIVATE) and, while private, `publication`
+  (`pricedProducts`, `productsNeeded`, `productsRemaining`). Search ranks by
+  weight; hidden and flag-pulled entries leave it. A private shop is only in
+  its creator's `/v1/stores/nearby` and `GET /v1/stores/:id`.
+- Moderators: `GET /v1/moderation/queue`,
+  `POST /v1/moderation/{products|stores}/:id/{verify|hide|restore}`.
+  Merging duplicates is deferred (CON-054).
 
 ### Integrity and abuse protection
 
@@ -267,10 +265,12 @@ counts toward its own weight (the creator is excluded from confirmations).
   coordinates validated and a store must be on land inside a plausible
   country range.
 - **Anti-self-dealing:** the creator's own confirmations and prices don't
-  count toward publishing a shop or toward a product's weight. A shop's 10
-  products must be accepted by the price pipeline (its existing fraud
-  heuristics and review statuses apply), from **at least 3 different
-  users** so one person cannot publish their own fake shop alone.
+  count toward a product's weight. A shop's 10 products must be accepted by
+  the price pipeline (its existing fraud heuristics and review statuses
+  apply). *(An earlier draft also required prices from 3 different people;
+  dropped, since nobody but the creator can see a private shop to price it —
+  CON-051.)* A private shop's prices stay out of comparisons, plans, drops and
+  other people's alerts until it is public (CON-052).
 - **Auto-hide:** flags from N distinct users (e.g. 3, weighted by the
   flagger's own trust) set `UNDER_REVIEW` and drop the entry from search
   until a moderator restores it.

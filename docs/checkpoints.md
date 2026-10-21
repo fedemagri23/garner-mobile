@@ -442,8 +442,9 @@ usual account's history stays clean — your reports are real data.
    from the gallery instead.
 3. **Enviar precio**: **¡Gracias!** — "Tu precio ya llegó" once it has.
 4. **Ver mis aportes** (also on Inicio, above Cerrar sesión): the price with
-   its store, the day, **Con foto**, and a status — for a new account usually
-   **En revisión · No cambia los precios hasta que otros lo confirmen**.
+   its store, the day, **Con foto**, and a status: **Ya cuenta** for the seeded
+   shopper (an established account); a brand-new account would see **En
+   revisión · No cambia los precios hasta que otros lo confirmen**.
 5. **Offline:** open another product, **Informar precio**, put the phone in
    airplane mode, type a price, add a photo and **Enviar precio**: **¡Gracias!
    Tu precio se envía cuando vuelva la conexión**. **Ver mis aportes** shows it
