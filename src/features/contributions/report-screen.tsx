@@ -11,6 +11,7 @@ import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useProduct } from '@/features/catalog/use-catalog';
 import { OriginBadge, PrivateBadge } from '@/features/community/badges';
+import { HERE_KM } from '@/features/trip/detect-store';
 import { useShopperLocation } from '@/features/location/location-provider';
 import { CURRENCY_BY_COUNTRY } from '@/features/location/use-local-currency';
 import { useOutbox } from '@/features/outbox/outbox-provider';
@@ -45,8 +46,13 @@ export function ReportScreen() {
   const [sent, setSent] = useState<string | null>(null);
 
   const list = stores.data ?? [];
-  // The nearest store is where you most likely are.
+  // The nearest store is where you most likely are; with the phone's own
+  // position that close, it is where you are.
   const chosen = list.find((store) => store.id === storeId) ?? list[0] ?? null;
+  const detectedId =
+    location.status === 'ready' && location.source === 'device' && list[0] && list[0].distanceKm <= HERE_KM
+      ? list[0].id
+      : null;
   const currency = chosen ? CURRENCY_BY_COUNTRY[chosen.country] : undefined;
   const cents = parsePrice(text);
   const invalid = text.trim() !== '' && cents === null;
@@ -98,6 +104,7 @@ export function ReportScreen() {
         store={store}
         selected={store.id === chosen?.id}
         lastPrice={lastHere(store.id)}
+        detected={store.id === detectedId}
         last={index === list.length - 1}
         onPress={() => setStoreId(store.id)}
       />
@@ -232,11 +239,13 @@ function StoreRow({
   store,
   selected,
   lastPrice,
+  detected,
   last,
   onPress,
 }: {
   store: NearbyStore;
   selected: boolean;
+  detected: boolean;
   lastPrice: { priceCents: number; currency: string } | undefined;
   last: boolean;
   onPress: () => void;
@@ -265,6 +274,11 @@ function StoreRow({
           {formatDistance(store.distanceKm)}
           {lastPrice ? t('contributions.report.lastPrice', { price: formatPrice(lastPrice.priceCents, lastPrice.currency) }) : ''}
         </Text>
+        {detected ? (
+          <Text variant="caption" tone="accent">
+            {t('contributions.report.detectedHere')}
+          </Text>
+        ) : null}
         {store.publication ? (
           <View style={styles.badges}>
             <PrivateBadge />

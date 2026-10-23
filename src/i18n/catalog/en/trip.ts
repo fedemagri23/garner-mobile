@@ -3,6 +3,28 @@ import type { Catalog } from '../types';
 
 export const trip: Catalog<typeof es> = {
   tabs: { home: 'Home', search: 'Search', lists: 'Lists', shop: 'Shop', inbox: 'Alerts' },
+  where: {
+    title: 'Where are you shopping?',
+    looking: 'Finding the supermarket you are in…',
+    detected: 'You are at {{store}}',
+    detectedNote: 'Detected from your location · {{distance}} away',
+    chosen: 'Shopping at {{store}}',
+    chosenNote: 'Chosen by you',
+    none: 'No set supermarket',
+    noneNote: 'Each product stays at the supermarket it had on the list.',
+    notDetected: 'We could not detect a supermarket where you are. Choose it if you are in one.',
+    noLocation: 'Without your location we cannot detect the supermarket. You can choose it.',
+    change: 'Change',
+    choose: 'Choose supermarket',
+    changeLabel: 'Change the supermarket you are shopping at',
+    sheetTitle: 'Which supermarket are you in?',
+    auto: 'Detect from my location',
+    noneOption: 'No set supermarket',
+    storeLabel: '{{store}}, {{distance}} away',
+    noStoresNear: 'There are no known supermarkets near you.',
+    atStore: 'At {{store}}, with its prices',
+    otherCurrency: '{{store}} charges in a different currency from this list',
+  },
   start: {
     title: 'Shop',
     intro: 'Tick what you put in the trolley and note what you pay. To follow a plan across several supermarkets, start from “Where is it best to buy?” on your list.',

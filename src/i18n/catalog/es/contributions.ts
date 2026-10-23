@@ -45,6 +45,7 @@ export const contributions = {
     submit: 'Enviar precio',
     summary: '{{price}} en {{store}}',
     storeLabel: '{{store}}, a {{distance}}',
+    detectedHere: 'Detectado por tu ubicación',
     lastPrice: ' · último precio acá {{price}}',
     thanks: '¡Gracias!',
     sending: 'Estamos enviando tu precio.',

@@ -20,6 +20,11 @@ interface LocationContextValue {
   radiusKm: number;
   /** Whether both a phone position and a saved place exist to choose between. */
   canSwitch: boolean;
+  /**
+   * Where the phone itself is, whatever the chip says: what tells which shop
+   * the shopper is standing in. Undefined while asking; null when unknown.
+   */
+  device: Point | null | undefined;
   mode: LocationMode;
   setMode: (mode: LocationMode) => void;
 }
@@ -81,6 +86,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         location: resolveLocation({ mode, device: devicePoint, saved }),
         radiusKm: prefs?.searchRadiusKm ?? 5,
         canSwitch: !!devicePoint && !!saved,
+        device: devicePoint,
         mode,
         setMode,
       }}>

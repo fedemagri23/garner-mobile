@@ -264,3 +264,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** Once signed in, `LanguageSync` compares the account's stored `locale` with the language showing and sends `PATCH /v1/users/me { locale }` when they differ: after choosing a language, or signing in on a phone in another one. A failure is ignored and retried on the next start. `categoryName` shows a category's translation for the app's language, else its Spanish name. The web e2e checks the server's language after switching to German and back, and the German category chips.
 - **Why:** What reaches the shopper with the app closed must be in the language they use the app in (CON-056); the server only learns it from the app.
 - **Revisit when:** Signing up should carry the language from the first request (today the first message could arrive before the app sends it, only in the seconds after signing up).
+
+### MCON-044 — Compra detects the shop from the phone's position
+- **Phase:** post-plan (asked by the user) · **Area:** trip, location · **Status:** accepted
+- **What:** `WhereCard` on the start of Compra lists shops within 2 km of the phone's own position (not the location chip's place) and recommends the nearest within 300 m (`detectStore`, `HERE_KM`). The recommendation is preselected; _Cambiar_ offers the nearby shops, _Sin súper fijo_ and back to automatic. Starting passes `storeId` only when the shop prices in the list's currency (`pricesIn`). Informar precio labels its preselected nearest shop _Detectado_ when it is that close to the phone.
+- **Why:** The user wants starting to be faster: the shop is almost always the one they are standing in, and choosing it by hand was not offered at all.
+- **Revisit when:** 300 m proves too wide in dense streets (two shops on one block) or too narrow for hypermarkets with big car parks; or when the phone's position should refresh while Compra is open.

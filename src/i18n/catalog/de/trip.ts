@@ -3,6 +3,28 @@ import type { Catalog } from '../types';
 
 export const trip: Catalog<typeof es> = {
   tabs: { home: 'Start', search: 'Suchen', lists: 'Listen', shop: 'Einkauf', inbox: 'Hinweise' },
+  where: {
+    title: 'Wo kaufst du ein?',
+    looking: 'Wir suchen den Supermarkt, in dem du bist…',
+    detected: 'Du bist bei {{store}}',
+    detectedNote: 'Über deinen Standort erkannt · {{distance}} entfernt',
+    chosen: 'Einkauf bei {{store}}',
+    chosenNote: 'Von dir gewählt',
+    none: 'Kein fester Supermarkt',
+    noneNote: 'Jedes Produkt bleibt beim Supermarkt, den es in der Liste hatte.',
+    notDetected: 'Wir haben keinen Supermarkt an deinem Standort erkannt. Wähl ihn, wenn du in einem bist.',
+    noLocation: 'Ohne deinen Standort können wir den Supermarkt nicht erkennen. Du kannst ihn wählen.',
+    change: 'Ändern',
+    choose: 'Supermarkt wählen',
+    changeLabel: 'Supermarkt ändern, in dem du einkaufst',
+    sheetTitle: 'In welchem Supermarkt bist du?',
+    auto: 'Über meinen Standort erkennen',
+    noneOption: 'Kein fester Supermarkt',
+    storeLabel: '{{store}}, {{distance}} entfernt',
+    noStoresNear: 'In deiner Nähe sind keine Supermärkte bekannt.',
+    atStore: 'Bei {{store}}, mit seinen Preisen',
+    otherCurrency: '{{store}} verlangt eine andere Währung als diese Liste',
+  },
   start: {
     title: 'Einkauf',
     intro: 'Hake ab, was du in den Wagen legst, und notiere, was du zahlst. Um einem Plan über mehrere Supermärkte zu folgen, starte bei „Wo kaufe ich am besten?“ in deiner Liste.',

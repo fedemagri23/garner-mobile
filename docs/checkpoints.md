@@ -652,3 +652,36 @@ shop front.
 - API error messages the app does not map to its own words stay English.
 - Messages already stored before the change keep their text when they have
   no price facts (reminders).
+
+## Checkpoint 15 — Compra knows which shop you are in
+
+**What works:** opening Compra, the app looks where the phone is and, when it
+is within about 300 m of a shop it knows, says _Estás en …_ (_Lo detectamos
+por tu ubicación · a 120 m_). Starting a list then shops at that store: every
+line is bought there and the expected price is that store's own, where it has
+one. _Cambiar_ picks another shop nearby or _Sin súper fijo_ (each product at
+the store it had on the list, as before); _Detectar por mi ubicación_ goes
+back to automatic. A shop that charges in another currency is not used for a
+list in a different one. Informar precio marks the shop it preselects
+_Detectado por tu ubicación_ in the same case.
+
+**Check**
+
+1. Stand in (or next to) a seeded shop — or set the phone's location near
+   one, e.g. Stephansplatz for _Billa Rotenturmstraße_. Compra: _Estás en
+   Billa Rotenturmstraße_, and under _Compra en Viena_: _En Billa
+   Rotenturmstraße, con sus precios_. _Compra semanal_ (pesos) says that shop
+   charges in another currency.
+2. _Empezar_: the trip has one stop, the shop, with its prices.
+3. _Cambiar_ → another shop: _Comprás en …_, _Lo elegiste vos_. _Cambiar_ →
+   _Sin súper fijo_, or _Detectar por mi ubicación_.
+4. Away from any shop (the Obelisco is 600 m from Coto Centro): _No detectamos
+   un súper donde estás._ — starting works as before.
+
+**Known limits**
+
+- The phone's position is asked once and kept 5 minutes; walking into a shop
+  right after opening the app may take that long to be noticed (or reopen the
+  app).
+- Detection uses the phone's position even when the location chip is on the
+  saved place, since it is about where you are standing.

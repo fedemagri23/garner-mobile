@@ -48,6 +48,7 @@ export const contributions: Catalog<typeof es> = {
     submit: 'Preis senden',
     summary: '{{price}} bei {{store}}',
     storeLabel: '{{store}}, {{distance}} entfernt',
+    detectedHere: 'Über deinen Standort erkannt',
     lastPrice: ' · letzter Preis hier {{price}}',
     thanks: 'Danke!',
     sending: 'Wir senden deinen Preis.',

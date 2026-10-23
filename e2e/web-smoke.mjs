@@ -469,6 +469,8 @@ await step('Inicio shows the list\'s savings from its plan', async () => {
 await step('Compra starts a trip from a list', async () => {
   await press('Compra');
   await shown('Compra');
+  // By the Obelisco the nearest shop is 600 m away: not one the phone is in.
+  await text('No detectamos un súper donde estás.');
   await press('Empezar la compra de Compra semanal');
   await shown('0 / 4');
   await shown('Esperado $ 1.400 c/u');
@@ -967,6 +969,38 @@ await step('in Vienna, the euro list is planned at the Vienna stores', async () 
   await pressContaining('Hofer Landstraße');
   await shown('Landstraßer Hauptstraße 70');
   await page.screenshot({ path: `${SHOTS}vienna-plan.png` });
+});
+await step('in a Vienna shop, Compra detects it, and the trip is at that shop', async () => {
+  // Stephansplatz is some 200 m from Billa Rotenturmstraße.
+  await press('Compra');
+  await shown('Estás en Billa Rotenturmstraße');
+  await text('Lo detectamos por tu ubicación');
+  await text('En Billa Rotenturmstraße, con sus precios');
+  // The peso list cannot be priced at a shop that charges in euros.
+  await text('Billa Rotenturmstraße cobra en otra moneda que esta lista');
+  await page.screenshot({ path: `${SHOTS}trip-detected.png` });
+  await press('Empezar la compra de Compra en Viena');
+  await shown('Billa Rotenturmstraße');
+  const [trip] = await serverTrips('ACTIVE');
+  if (trip?.store?.name !== 'Billa Rotenturmstraße') throw new Error(`the trip is at ${trip?.store?.name}`);
+  await press('Opciones de la compra');
+  await press('Abandonar');
+  await press('Sí, abandonar');
+  await text('Marcá lo que vas poniendo');
+});
+await step('the shop can be changed by hand, set to none, and detected again', async () => {
+  await press('Cambiar el súper donde comprás');
+  await shown('¿En qué súper estás?');
+  await press('Hofer Landstraße, a 1,7 km');
+  await shown('Comprás en Hofer Landstraße');
+  await text('Lo elegiste vos');
+  await press('Cambiar el súper donde comprás');
+  await press('Sin súper fijo');
+  await text('Cada producto queda en el súper que tenía en la lista.');
+  await press('Cambiar el súper donde comprás');
+  await press('Detectar por mi ubicación');
+  await shown('Estás en Billa Rotenturmstraße');
+  await press('Inicio');
 });
 
 // --- Checkpoint 11: the app in three languages ----------------------------
