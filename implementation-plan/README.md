@@ -164,9 +164,9 @@ between. The order:
 | 11 ✅ | App translatable: catalogs, locale formatting, language picker | mobile |
 | 12 ✅ | Crowdsourcing backend: origin, visibility, weight, create/confirm/flag, review queue | backend |
 | 13 ✅ | Crowdsourcing app: add product, add shop, confirm, flag, badges, progress | both |
-| 14 | Server-side language: user locale, push/email text, translated names | both |
+| 14 ✅ | Server-side language: user locale, push/email text, translated names | both |
 
-## Phase 7 — Internationalization
+## Phase 7 — Internationalization ✅ (checkpoints 11 and 14)
 
 Spanish (es-AR) stays the default; English and German are added. The app
 follows the phone's language, with a manual choice in settings.
@@ -177,11 +177,12 @@ follows the phone's language, with a manual choice in settings.
   `formatMoney`, which moves onto `Intl`); a language picker; a test that
   fails when a key exists in one language and not in the others. Messages
   built from facts (alerts, push) compose from the catalog.
-- **Checkpoint 14:** the backend learns the user's language (`users.locale`,
-  sent by the app) so push and email text are written in it (replacing the
-  Spanish-only `pushText`, CON-048/049); category names get translations.
+- **Checkpoint 14 ✅ (garner-app `ffeda68`):** the backend learns the user's
+  language (`users.locale`, sent by the app) so push and email text are
+  written in it (`messageText` replaces the Spanish-only `pushText`,
+  CON-056); categories carry `translations`, which the app shows.
 
-## Phase 8 — Crowdsourced products and shops
+## Phase 8 — Crowdsourced products and shops ✅ (checkpoints 12 and 13)
 
 ### Rules (decided with the user)
 

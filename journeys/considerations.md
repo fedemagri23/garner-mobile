@@ -242,7 +242,7 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **Revisit when:** More languages or currencies make the tables unwieldy; then lean on `Intl` and test per platform.
 
 ### MCON-040 — Words from the server are still Spanish or English
-- **Phase:** 7 (checkpoint 11) · **Area:** i18n · **Status:** open
+- **Phase:** 7 (checkpoint 11) · **Area:** i18n · **Status:** resolved in checkpoint 14 (MCON-043), except API error messages and product names
 - **What:** Alerts in the inbox are written in the chosen language from facts, but push notifications are Spanish only (CON-049), emails are English, API error messages other than the ones screens map by status are English, and product, brand and category names are not translated.
 - **Why:** The server does not know the user's language yet.
 - **Revisit when:** Checkpoint 14 sends the locale and the backend writes push and email text in it.
@@ -258,3 +258,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** _Sin verificar_ marks community products in search and on their screen, and community shops in Informar precio; the team's entries carry nothing in lists and a _Verificado_ tick only on a shop's card. A community product shows a card with its confirmations and, for anyone but its creator, _Existe y está bien_ (a toggle) and _Reportar_, from `/v1/products/:id/viewer-say`. A shop's card opens from a price row under a product and from Mis aportes; reporting a shop happens inside that card, since a second modal over a sheet is unreliable on iOS. Price rows do not carry the badge: the pricing API does not return a shop's origin.
 - **Why:** The badge is information about others' entries; marking the team's everywhere would be noise.
 - **Revisit when:** Shoppers want the badge on price rows, which needs `origin` in `StorePriceResponse`.
+
+### MCON-043 — The app tells the server its language; categories show translated
+- **Phase:** 7 (checkpoint 14) · **Area:** i18n · **Status:** accepted
+- **What:** Once signed in, `LanguageSync` compares the account's stored `locale` with the language showing and sends `PATCH /v1/users/me { locale }` when they differ: after choosing a language, or signing in on a phone in another one. A failure is ignored and retried on the next start. `categoryName` shows a category's translation for the app's language, else its Spanish name. The web e2e checks the server's language after switching to German and back, and the German category chips.
+- **Why:** What reaches the shopper with the app closed must be in the language they use the app in (CON-056); the server only learns it from the app.
+- **Revisit when:** Signing up should carry the language from the first request (today the first message could arrive before the app sends it, only in the seconds after signing up).

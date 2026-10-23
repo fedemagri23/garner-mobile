@@ -51,6 +51,17 @@ async function apiToken({ email, password }) {
   return (await login.json()).accessToken;
 }
 
+/** Waits until the server has the shopper's language as the app last sent it. */
+async function serverLocaleBecomes(wanted) {
+  const token = await apiToken({ email: 'shopper@garner.test', password: 'correct-horse-battery' });
+  for (let tries = 0; tries < 20; tries += 1) {
+    const me = await (await fetch(`${API_URL}/v1/users/me`, { headers: { authorization: `Bearer ${token}` } })).json();
+    if (me.locale === wanted) return;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error(`the server never had the language ${wanted}`);
+}
+
 /** The prices an account has contributed, as the server lists them. */
 async function serverContributions({ email, password }) {
   const login = await fetch(`${API_URL}/v1/auth/login`, {
@@ -995,6 +1006,13 @@ await step('German: dates, plurals and prices follow', async () => {
   await text('0,69\u00a0€');
   await page.screenshot({ path: `${SHOTS}language-de-home.png` });
 });
+await step('German reaches the server, for push and email, and categories are translated', async () => {
+  await serverLocaleBecomes('de');
+  await press('Suchen');
+  await shown('Milchprodukte');
+  await shown('Getränke');
+  await press('Start');
+});
 await step('Español comes back, and a signed-out phone can pick a language too', async () => {
   // The Hinweise tab remembers it was on its preferences screen.
   await press('Hinweise');
@@ -1003,6 +1021,7 @@ await step('Español comes back, and a signed-out phone can pick a language too'
   await text('Preferencias');
   await press('Inicio');
   await text('Hola, Fede');
+  await serverLocaleBecomes('es');
   await press('Cerrar sesión');
   await text('Pagá menos por la misma compra.');
   await press('English');

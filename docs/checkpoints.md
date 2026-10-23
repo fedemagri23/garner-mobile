@@ -576,8 +576,8 @@ Avisos → Preferencias → Idioma. The choice is remembered.
 **Known limits**
 
 - After changing language the screens restart; on a phone you may land on Inicio rather than staying in Preferencias (MCON-038).
-- Push notifications are in Spanish, emails in English, product names are not
-  translated (MCON-040, checkpoint 14).
+- Push and email followed the language from checkpoint 14 on; product names
+  are not translated (MCON-040).
 
 ## Checkpoint 13 — Adding products and shops
 
@@ -624,3 +624,31 @@ added when it returns.
 - A product waiting offline cannot be opened or priced until it is sent.
 - Moderation (verify, hide) is through the API only; merging duplicates is
   not built (CON-054).
+
+## Checkpoint 14 — Push, email and categories in your language
+
+**What works:** the server knows the language the app is showing and writes
+what reaches you with the app closed in it: push notifications (the test
+push too) and alert emails, with prices written that language's way. Category
+names are translated: _Lácteos_ is _Dairy_ in English and _Milchprodukte_ in
+German. Product, brand and shop names stay as printed on the package or the
+shop front.
+
+**Check**
+
+1. Avisos → Preferencias → Idioma → Deutsch. In Suchen the category chips read
+   _Vorrat, Milchprodukte, Getränke_.
+2. With a development build and push on: _Enviar una prueba_ (now _Test
+   senden_) arrives as _Wenn du das siehst, funktionieren Benachrichtigungen
+   auf diesem Handy._
+3. With email alerts on (Mailpit at http://localhost:8025): set an alert,
+   report a lower price from another account; the email's subject is in
+   German, e.g. _Leche Entera La Serenísima 1L ist auf 1.150 ARS gefallen_, and
+   its footer too.
+4. Back to Español: the next message is in Spanish again.
+
+**Known limits**
+
+- API error messages the app does not map to its own words stay English.
+- Messages already stored before the change keep their text when they have
+  no price facts (reminders).

@@ -14,6 +14,7 @@ import { Text } from '@/components/text';
 import { useProductSearch, useTopCategories, type Product } from '@/features/catalog/use-catalog';
 import { OriginBadge } from '@/features/community/badges';
 import { t } from '@/i18n';
+import { categoryName } from '@/lib/category-name';
 import { errorMessage } from '@/lib/error-message';
 import { productCount } from '@/lib/format';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
@@ -52,7 +53,7 @@ export default function SearchScreen() {
         {categories.data?.map((category) => (
           <Chip
             key={category.id}
-            label={category.name}
+            label={categoryName(category)}
             selected={categoryId === category.id}
             onPress={() => setCategoryId(category.id)}
           />
@@ -140,7 +141,7 @@ function ProductRow({ product }: { product: Product }) {
           {product.name}
         </Text>
         <Text variant="caption" tone="muted" numberOfLines={1}>
-          {meta || product.category.name}
+          {meta || categoryName(product.category)}
         </Text>
         <OriginBadge origin={product.origin} />
       </View>

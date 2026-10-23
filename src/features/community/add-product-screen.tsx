@@ -11,6 +11,7 @@ import { Text } from '@/components/text';
 import { TextField } from '@/components/text-field';
 import { SyncBanner } from '@/features/outbox/sync-banner';
 import { t } from '@/i18n';
+import { categoryName } from '@/lib/category-name';
 import { errorMessage } from '@/lib/error-message';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
@@ -186,7 +187,7 @@ export function AddProductScreen() {
             {sortedCategories.map((category) => (
               <Chip
                 key={category.id}
-                label={category.name}
+                label={categoryName(category)}
                 selected={category.id === categoryId}
                 onPress={() => setCategoryId(category.id)}
               />

@@ -1228,11 +1228,21 @@ export interface components {
             /** @enum {string} */
             role: "USER" | "MODERATOR" | "ADMIN";
             isActive: boolean;
+            /**
+             * @description What push and email are written in
+             * @enum {string}
+             */
+            locale: "es" | "en" | "de";
             /** Format: date-time */
             createdAt: string;
         };
         UpdateUserProfileRequest: {
             displayName?: string;
+            /**
+             * @description The app’s language; push and email follow it
+             * @enum {string}
+             */
+            locale?: "es" | "en" | "de";
         };
         UserPreferencesResponse: {
             latitude: number | null;
@@ -1258,10 +1268,19 @@ export interface components {
             name: string;
             slug: string;
         };
+        CategoryTranslations: {
+            /** @example Dairy */
+            en?: string;
+            /** @example Milchprodukte */
+            de?: string;
+        };
         CategoryResponse: {
             /** Format: uuid */
             id: string;
+            /** @description In Spanish */
             name: string;
+            /** @description The name in English and German, where written */
+            translations: components["schemas"]["CategoryTranslations"];
             slug: string;
             /** Format: uuid */
             parentId: string | null;
@@ -1355,6 +1374,7 @@ export interface components {
             name: string;
             /** Format: uuid */
             parentId?: string;
+            translations?: components["schemas"]["CategoryTranslations"];
         };
         CreateBrandRequest: {
             name: string;
@@ -2423,6 +2443,7 @@ export type UpdateUserProfileRequest = components['schemas']['UpdateUserProfileR
 export type UserPreferencesResponse = components['schemas']['UserPreferencesResponse'];
 export type UpdateUserPreferencesRequest = components['schemas']['UpdateUserPreferencesRequest'];
 export type BrandResponse = components['schemas']['BrandResponse'];
+export type CategoryTranslations = components['schemas']['CategoryTranslations'];
 export type CategoryResponse = components['schemas']['CategoryResponse'];
 export type ProductBarcodeResponse = components['schemas']['ProductBarcodeResponse'];
 export type ProductResponse = components['schemas']['ProductResponse'];

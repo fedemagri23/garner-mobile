@@ -16,6 +16,7 @@ import { AddToListSheet } from '@/features/lists/add-to-list-sheet';
 import { useShopperLocation } from '@/features/location/location-provider';
 import { usePriceHistory, useProductPrices, type StorePrice } from '@/features/prices/use-prices';
 import { t } from '@/i18n';
+import { categoryName } from '@/lib/category-name';
 import { errorMessage } from '@/lib/error-message';
 import { confidenceLabel, confidenceTone, formatDistance, formatPrice, shortDay } from '@/lib/format';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
@@ -101,7 +102,7 @@ export function ProductScreen() {
                 {product.data.name}
               </Text>
               <Text tone="muted" variant="caption">
-                {[product.data.brand?.name, product.data.packageLabel, product.data.category.name]
+                {[product.data.brand?.name, product.data.packageLabel, categoryName(product.data.category)]
                   .filter(Boolean)
                   .join(' · ')}
               </Text>
