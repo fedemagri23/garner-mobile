@@ -200,6 +200,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/product-lookup/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What a barcode is: in our catalog, or what Open Food Facts knows of it
+         * @description For filling in "Agregar producto". CATALOG: open that product instead. OPEN_FOOD_FACTS: suggested fields, to be checked by the shopper; credit the source. NONE also when the outside service failed.
+         */
+        get: operations["productLookupLookup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/product-suggestions": {
         parameters: {
             query?: never;
@@ -1232,7 +1252,7 @@ export interface components {
              * @description What push and email are written in
              * @enum {string}
              */
-            locale: "es" | "en" | "de";
+            locale: "es" | "en" | "de" | "pt";
             /** Format: date-time */
             createdAt: string;
         };
@@ -1242,7 +1262,7 @@ export interface components {
              * @description The app’s language; push and email follow it
              * @enum {string}
              */
-            locale?: "es" | "en" | "de";
+            locale?: "es" | "en" | "de" | "pt";
         };
         UserPreferencesResponse: {
             latitude: number | null;
@@ -1273,13 +1293,15 @@ export interface components {
             en?: string;
             /** @example Milchprodukte */
             de?: string;
+            /** @example Laticínios */
+            pt?: string;
         };
         CategoryResponse: {
             /** Format: uuid */
             id: string;
             /** @description In Spanish */
             name: string;
-            /** @description The name in English and German, where written */
+            /** @description The name in English, German and Portuguese, where written */
             translations: components["schemas"]["CategoryTranslations"];
             slug: string;
             /** Format: uuid */
@@ -1302,6 +1324,11 @@ export interface components {
             /** @example 1 L */
             packageLabel: string | null;
             imageUrl: string | null;
+            /**
+             * @description Where the picture comes from when not the team’s: credit it (CC BY-SA)
+             * @enum {string|null}
+             */
+            imageSource: "OPEN_FOOD_FACTS" | null;
             isActive: boolean;
             barcodes: components["schemas"]["ProductBarcodeResponse"][];
             /**
@@ -1342,6 +1369,8 @@ export interface components {
             packageSize?: number;
             /** @enum {string} */
             unit: "GRAM" | "KILOGRAM" | "MILLILITER" | "LITER" | "UNIT";
+            /** @description Use the photo of the first barcode found by `/v1/product-lookup` (Open Food Facts), credited; the server takes it from its own lookup, never from a link */
+            photoFromLookup?: boolean;
             /**
              * Format: uri
              * @description Taken from the team only; ignored for shoppers
@@ -1378,6 +1407,29 @@ export interface components {
         };
         CreateBrandRequest: {
             name: string;
+        };
+        BarcodeLookupResponse: {
+            /** @enum {string} */
+            match: "CATALOG" | "OPEN_FOOD_FACTS" | "NONE";
+            /**
+             * Format: uuid
+             * @description CATALOG only
+             */
+            productId: string | null;
+            name: string | null;
+            brandName: string | null;
+            packageSize: number | null;
+            /** @enum {string|null} */
+            unit: "GRAM" | "KILOGRAM" | "MILLILITER" | "LITER" | "UNIT" | null;
+            /**
+             * Format: uuid
+             * @description Ours, mapped from their categories
+             */
+            categoryId: string | null;
+            /** @description Their front photo (CC BY-SA): credit it */
+            imageUrl: string | null;
+            /** @description The product’s page there, for the credit */
+            sourceUrl: string | null;
         };
         ProductSuggestionResponse: {
             /** Format: uuid */
@@ -2454,6 +2506,7 @@ export type UpdateProductRequest = components['schemas']['UpdateProductRequest']
 export type AddBarcodeRequest = components['schemas']['AddBarcodeRequest'];
 export type CreateCategoryRequest = components['schemas']['CreateCategoryRequest'];
 export type CreateBrandRequest = components['schemas']['CreateBrandRequest'];
+export type BarcodeLookupResponse = components['schemas']['BarcodeLookupResponse'];
 export type ProductSuggestionResponse = components['schemas']['ProductSuggestionResponse'];
 export type ViewerSayResponse = components['schemas']['ViewerSayResponse'];
 export type ConfirmationsResponse = components['schemas']['ConfirmationsResponse'];
@@ -2958,6 +3011,37 @@ export interface operations {
             };
             /** @description Brand name already in use */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    productLookupLookup: {
+        parameters: {
+            query?: {
+                /** @description Which of the product’s names to prefer */
+                language?: "es" | "en" | "de" | "pt";
+            };
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BarcodeLookupResponse"];
+                };
+            };
+            /** @description Not a valid barcode */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

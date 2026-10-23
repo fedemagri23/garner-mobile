@@ -14,7 +14,7 @@ const placeholders = (text: string) => [...text.matchAll(/{{\s*(\w+)\s*}}/g)].ma
 
 const spanish = leaves(catalogs.es as unknown as Tree);
 
-describe.each(['en', 'de'] as const)('the %s catalog', (language) => {
+describe.each(['en', 'de', 'pt'] as const)('the %s catalog', (language) => {
   const other = leaves(catalogs[language] as unknown as Tree);
 
   it('has every phrase the Spanish one has, and no others', () => {
@@ -39,7 +39,7 @@ describe.each(['en', 'de'] as const)('the %s catalog', (language) => {
 
 describe('plural phrases', () => {
   it('come in pairs in every language', () => {
-    for (const language of ['es', 'en', 'de'] as const) {
+    for (const language of ['es', 'en', 'de', 'pt'] as const) {
       const keys = Object.keys(leaves(catalogs[language] as unknown as Tree));
       for (const key of keys.filter((name) => name.endsWith('_one'))) {
         expect(keys).toContain(key.replace(/_one$/, '_other'));

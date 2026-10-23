@@ -78,6 +78,10 @@ export const shell: Catalog<typeof es> = {
       failed: 'Wir konnten sie nicht aktivieren. Versuche es später erneut.',
     },
   },
+  about: {
+    title: 'Produktdaten',
+    openFoodFacts: 'Einige Produktangaben und Fotos stammen von Open Food Facts (openfoodfacts.org), unter den Lizenzen ODbL und CC BY-SA.',
+  },
   language: {
     title: 'Sprache',
     note: 'Die Sprache der App. Namen von Produkten und Supermärkten werden nicht übersetzt.',

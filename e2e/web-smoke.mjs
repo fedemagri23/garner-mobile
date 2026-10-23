@@ -4,7 +4,9 @@
  *
  * Needs, already running:
  *   - the backend on :3000, freshly seeded (`pnpm run seed`), with
- *     CORS_ORIGINS=http://localhost:8081
+ *     CORS_ORIGINS=http://localhost:8081 and
+ *     OPEN_FOOD_FACTS_URL=http://localhost:3999 (this script serves a
+ *     stand-in for Open Food Facts there, e2e/open-food-facts-stub.mjs)
  *   - the app's web build on :8081 (`npm run web`)
  *   - Google Chrome (CHROME_PATH to override /usr/bin/google-chrome)
  *
@@ -21,6 +23,10 @@
  */
 import { mkdirSync } from 'node:fs';
 import puppeteer from 'puppeteer-core';
+
+import { ean13, startOpenFoodFactsStub } from './open-food-facts-stub.mjs';
+
+const offStub = await startOpenFoodFactsStub();
 
 const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:8081';
 const SHOTS = new URL('./screenshots/', import.meta.url).pathname;
@@ -802,6 +808,9 @@ const RUN = String(Date.now()).slice(-6);
 const NEW_PRODUCT = `Alfajor Santafesino ${RUN}`;
 const OFFLINE_PRODUCT = `Pastafrola de Membrillo ${RUN}`;
 const NEW_CHAIN = `Almacén Prueba ${RUN}`;
+// The stand-in knows codes starting with 20 and names them after digits 3 to 8.
+const SCANNED = ean13(`20${RUN}0000`);
+const SCANNED_NAME = `Alfajor Triple de Chocolate ${RUN}`;
 
 await step('a search with no match offers to add it, and shows what is already there first', async () => {
   // Buscar still has the bread open from the offline report.
@@ -850,6 +859,39 @@ await step('a neighbour\'s product can be confirmed, taken back and reported', a
   await text('Gracias. Si otros también lo reportan, el equipo lo revisa.');
   await press('Cerrar');
   await shown('Lo reportaste');
+  await press('Volver');
+});
+await step('a code Garner knows points at its product instead of adding it again', async () => {
+  await typeInto('Buscar productos', 'alfajor triple');
+  await text('No encontramos productos para “alfajor triple”.');
+  await press('No lo encuentro — agregarlo');
+  await shown('Agregar producto');
+  await typeInto('Código de barras', '7791234000029');
+  await shown('Ya está en Garner: Arroz Largo Fino 1kg');
+});
+await step('a scanned code fills the form from Open Food Facts, and adds the product', async () => {
+  await press('Escanear el código');
+  await shown('Escaneá el código del producto');
+  await typeInto('Código de barras', SCANNED);
+  await press('Usar este código');
+  await text('Lo encontramos en Open Food Facts. Revisá los datos antes de agregarlo.');
+  const values = await page.evaluate(() =>
+    Object.fromEntries(
+      ['Nombre', 'Marca', 'Tamaño', 'Código de barras'].map((label) => [
+        label,
+        document.querySelector(`input[aria-label="${label}"]`)?.value,
+      ]),
+    ),
+  );
+  const wanted = { Nombre: SCANNED_NAME, Marca: 'Havanna', Tamaño: '70', 'Código de barras': SCANNED };
+  if (JSON.stringify(values) !== JSON.stringify(wanted)) throw new Error(`the form has ${JSON.stringify(values)}`);
+  // Unit and category chips are prefilled too (prefill-test); the web build marks no selection to read.
+  await page.screenshot({ path: `${SHOTS}checkpoint-17-prefilled.png` });
+  await press('Agregar producto');
+  await shown('¡Agregado!');
+  await press('Ver el producto');
+  await shown(SCANNED_NAME);
+  await shown('Sin verificar');
   await press('Volver');
 });
 await step('a shop is added from Informar precio, seen only by its creator until priced', async () => {
@@ -916,7 +958,7 @@ await step('what the run added is hidden again by a moderator, so the catalog st
     ...mine.products.map((product) => hide('products', product.id)),
     ...mine.stores.map((store) => hide('stores', store.id)),
   ]);
-  if (answers.length !== 3 || answers.some((answer) => answer.status !== 204)) {
+  if (answers.length !== 4 || answers.some((answer) => answer.status !== 204)) {
     throw new Error(`hid ${answers.map((answer) => answer.status)}`);
   }
 });
@@ -1047,10 +1089,26 @@ await step('German reaches the server, for push and email, and categories are tr
   await shown('Getränke');
   await press('Start');
 });
-await step('Español comes back, and a signed-out phone can pick a language too', async () => {
+await step('Português: the app, prices and categories follow, and the server learns it', async () => {
   // The Hinweise tab remembers it was on its preferences screen.
   await press('Hinweise');
   await shown('Sprache');
+  await press('Português');
+  await text('Preferências');
+  await press('Início');
+  await text('Olá, Fede');
+  await text('O que vamos comprar hoje?');
+  await text('€ 0,69');
+  await serverLocaleBecomes('pt');
+  await press('Buscar');
+  await shown('Mercearia');
+  await shown('Laticínios');
+  await page.screenshot({ path: `${SHOTS}language-pt-search.png` });
+  await press('Início');
+});
+await step('Español comes back, and a signed-out phone can pick a language too', async () => {
+  await press('Avisos');
+  await shown('Idioma');
   await press('Español');
   await text('Preferencias');
   await press('Inicio');
@@ -1065,6 +1123,7 @@ await step('Español comes back, and a signed-out phone can pick a language too'
 });
 
 await browser.close();
+offStub.close();
 
 if (errors.length > 0) {
   console.log(`\nErrors in the page:\n${errors.join('\n')}`);

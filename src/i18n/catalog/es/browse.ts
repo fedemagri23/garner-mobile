@@ -5,6 +5,7 @@ export const browse = {
     toList: 'A la lista',
     reportPrice: 'Informar precio',
     watch: 'Avisame si baja',
+    photoCredit: 'Foto: Open Food Facts',
     history: {
       title: 'Últimos 30 días',
       empty: 'Todavía no hay historial de precios de este producto.',

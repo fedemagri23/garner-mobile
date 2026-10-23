@@ -107,6 +107,11 @@ export function ProductScreen() {
                   .join(' · ')}
               </Text>
               <OriginBadge origin={product.data.origin} />
+              {product.data.imageSource === 'OPEN_FOOD_FACTS' ? (
+                <Text variant="caption" tone="muted">
+                  {t('browse.product.photoCredit')}
+                </Text>
+              ) : null}
             </View>
           </View>
           {product.data.origin === 'COMMUNITY' ? (

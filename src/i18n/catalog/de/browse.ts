@@ -8,6 +8,7 @@ export const browse: Catalog<typeof es> = {
     toList: 'Zur Liste',
     reportPrice: 'Preis melden',
     watch: 'Sag mir, wenn es günstiger wird',
+    photoCredit: 'Foto: Open Food Facts',
     history: {
       title: 'Letzte 30 Tage',
       empty: 'Für dieses Produkt gibt es noch keinen Preisverlauf.',

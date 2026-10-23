@@ -21,6 +21,7 @@ void i18n.use(initReactI18next).init({
     es: { translation: catalogs.es },
     en: { translation: catalogs.en },
     de: { translation: catalogs.de },
+    pt: { translation: catalogs.pt },
   },
   lng: DEFAULT_LANGUAGE,
   fallbackLng: DEFAULT_LANGUAGE,

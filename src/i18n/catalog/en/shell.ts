@@ -78,6 +78,10 @@ export const shell: Catalog<typeof es> = {
       failed: "We couldn't turn them on. Try again in a while.",
     },
   },
+  about: {
+    title: 'Product data',
+    openFoodFacts: 'Some product details and photos come from Open Food Facts (openfoodfacts.org), under the ODbL and CC BY-SA licences.',
+  },
   language: {
     title: 'Language',
     note: 'The language of the app. Product and supermarket names are not translated.',

@@ -270,3 +270,15 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** `WhereCard` on the start of Compra lists shops within 2 km of the phone's own position (not the location chip's place) and recommends the nearest within 300 m (`detectStore`, `HERE_KM`). The recommendation is preselected; _Cambiar_ offers the nearby shops, _Sin súper fijo_ and back to automatic. Starting passes `storeId` only when the shop prices in the list's currency (`pricesIn`). Informar precio labels its preselected nearest shop _Detectado_ when it is that close to the phone.
 - **Why:** The user wants starting to be faster: the shop is almost always the one they are standing in, and choosing it by hand was not offered at all.
 - **Revisit when:** 300 m proves too wide in dense streets (two shops on one block) or too narrow for hypermarkets with big car parks; or when the phone's position should refresh while Compra is open.
+
+### MCON-045 — Scan to add: barcode first, prefilled from the lookup, never over the shopper's typing
+- **Phase:** 9 (checkpoint 17) · **Area:** community, catalog · **Status:** accepted
+- **What:** "Agregar producto" puts the barcode field first, with a button opening `ScanCodeSheet` (camera, or a typed code) that returns the code to the form. Any code of a shelf barcode's length is looked up (`useProductLookup`, `/v1/product-lookup`, CON-058): CATALOG shows "Ya está en Garner" with a link; OPEN_FOOD_FACTS fills fields through `prefillFrom`, once per code, skipping every field the shopper edited by hand; the photo is shown with its credit and sent as `photoFromLookup` unless removed. The product screen credits an Open Food Facts photo; Preferencias names the source and licences.
+- **Why:** Typing name, brand and size in an aisle is the slowest part of adding a product; scanning is how people already identify products.
+- **Revisit when:** The lookup should also run from the scanner itself before opening the form, or shoppers want to correct a wrong Open Food Facts entry upstream.
+
+### MCON-046 — Portuguese
+- **Phase:** 9 · **Area:** i18n · **Status:** accepted
+- **What:** `pt` (Brazilian Portuguese) joins the app's languages: every catalog, money as `AR$ 1.390`, `€ 1,15`, `R$ 19,90`, dates "21 de set", categories from the server's `pt` translations, and the server writes push and email in it (CON-059). The catalog parity test covers it.
+- **Why:** Asked for by the user.
+- **Revisit when:** European Portuguese is wanted.

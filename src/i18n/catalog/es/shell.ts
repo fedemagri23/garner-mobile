@@ -75,6 +75,10 @@ export const shell = {
       failed: 'No pudimos activarlos. Probá de nuevo en un rato.',
     },
   },
+  about: {
+    title: 'Datos de productos',
+    openFoodFacts: 'Algunos datos y fotos de productos vienen de Open Food Facts (openfoodfacts.org), con licencias ODbL y CC BY-SA.',
+  },
   language: {
     title: 'Idioma',
     note: 'El idioma de la app. Los nombres de productos y súpers no se traducen.',

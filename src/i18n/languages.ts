@@ -1,5 +1,5 @@
 /** The languages the app is written in. Spanish is the original and the fallback. */
-export const LANGUAGES = ['es', 'en', 'de'] as const;
+export const LANGUAGES = ['es', 'en', 'de', 'pt'] as const;
 export type Language = (typeof LANGUAGES)[number];
 
 export const DEFAULT_LANGUAGE: Language = 'es';
@@ -12,6 +12,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   es: 'Español',
   en: 'English',
   de: 'Deutsch',
+  pt: 'Português',
 };
 
 export const isLanguage = (value: unknown): value is Language =>

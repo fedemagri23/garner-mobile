@@ -22,6 +22,13 @@ describe('formatPrice by language', () => {
       '1,15 €',
       '1.234,56 €',
     ]);
+
+    await switchLanguage('pt');
+    expect([formatPrice(139000), formatPrice(115, 'EUR'), formatPrice(1990, 'BRL')]).toEqual([
+      'AR$ 1.390',
+      '€ 1,15',
+      'R$ 19,90',
+    ]);
   });
 
   it('marks a negative amount and shows an unknown currency by its code', async () => {

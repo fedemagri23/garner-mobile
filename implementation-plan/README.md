@@ -332,8 +332,9 @@ lacks.
 | Checkpoint | What | Repo |
 | --- | --- | --- |
 | 15 ✅ | Compra detects the shop from the phone's position; a single-store trip expects that store's prices | both |
-| 16 | Barcode lookup: our catalog first, then Open Food Facts, through the backend | backend |
-| 17 | Add product by scanning: scan button in the form, fields and photo prefilled from the lookup | mobile |
+| 16 ✅ | Barcode lookup: our catalog first, then Open Food Facts, through the backend | backend |
+| 17 ✅ | Add product by scanning: scan button in the form, fields and photo prefilled from the lookup | mobile |
+| with 17 ✅ | Portuguese (pt-BR) as the fourth language, app and server | both |
 
 ### Checkpoint 15 ✅ — The shop you are in (garner-app `1b9c254`, garner-mobile `3f60d7a`)
 
@@ -357,7 +358,7 @@ form.
 Strong coverage in Austria and Germany, patchier in Argentina (local brands
 often missing): when it has nothing, the form is filled by hand as today.
 
-### Checkpoint 16 — Backend: `GET /v1/product-lookup/{code}`
+### Checkpoint 16 ✅ — Backend: `GET /v1/product-lookup/{code}` (garner-app `69697d7`)
 
 - **Our catalog first.** A code we know answers `{ match: 'CATALOG',
   productId, name }`, so the app opens the existing product instead of
@@ -391,7 +392,7 @@ often missing): when it has nothing, the form is filled by hand as today.
   cache hit, `photoFromLookup` uses the cached image and ignores any link
   sent).
 
-### Checkpoint 17 — App: scan to add
+### Checkpoint 17 ✅ — App: scan to add
 
 - **Scan button in the form's barcode field.** It opens the scanner in a
   "pick a code" mode that returns the code to the form instead of
@@ -409,9 +410,15 @@ often missing): when it has nothing, the form is filled by hand as today.
   tiles): a small "Open Food Facts" line on the product screen; and an
   "Acerca de / Datos" note in Preferencias with the licences.
 - Offline: no lookup, the form works as today and queues the product.
-- **Tests:** form logic (prefill without overwriting), the pick-a-code
-  scanner mode; the web e2e types a code the stand-in knows and checks the
-  prefill, adds it, and sees the photo with its credit.
+- **Tests:** form logic (prefill without overwriting); the web e2e serves a
+  stand-in Open Food Facts (`e2e/open-food-facts-stub.mjs`, backend started
+  with `OPEN_FOOD_FACTS_URL=http://localhost:3999`), types a known code
+  (catalog match) and a stand-in code through the scan sheet, checks the
+  prefill and adds the product. The photo path is covered by the backend's
+  e2e (the stand-in serves no https images).
+- **Portuguese** (asked for with this checkpoint): every catalog in pt-BR,
+  `AR$ 1.390` / `€ 1,15` / `R$ 19,90`, the server's push and email phrases,
+  category names (CON-059).
 
 ### Risks and decisions
 

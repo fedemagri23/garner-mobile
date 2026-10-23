@@ -1,0 +1,56 @@
+import type { browse as es } from '../es/browse';
+import type { Catalog } from '../types';
+
+export const browse: Catalog<typeof es> = {
+  product: {
+    gone: 'Este produto não está mais no catálogo.',
+    addToList: 'Adicionar à lista',
+    toList: 'À lista',
+    reportPrice: 'Informar preço',
+    watch: 'Me avise se baixar',
+    photoCredit: 'Foto: Open Food Facts',
+    history: {
+      title: 'Últimos 30 dias',
+      empty: 'Ainda não há histórico de preços deste produto.',
+      average: 'média ',
+      stable: 'ficou estável',
+      up: 'subiu {{percent}}%',
+      down: 'caiu {{percent}}%',
+      chart: 'Preço médio por dia: de {{from}} em {{fromDay}} a {{to}} em {{toDay}}; {{movement}}.',
+    },
+    stores: {
+      nearby: 'Perto de você',
+      all: 'Todos os supermercados',
+      cheapestFirst: 'mais barato primeiro',
+      noLocation: 'Sem sua localização não podemos ordenar por distância.',
+      noneNearby: 'Ninguém informou este preço perto de você ainda.',
+      none: 'Ninguém informou este preço ainda.',
+      cheapest: 'o mais barato',
+      closedNow: 'fechado agora',
+      closedNowDot: '· fechado agora',
+      rowLabel: '{{store}}, {{price}}, {{delta}}. {{confidence}}{{distance}}{{closed}}',
+      distanceLabel: ', a {{distance}}',
+      closedLabel: ', fechado agora',
+    },
+  },
+  search: {
+    all: 'Tudo',
+    noResults: 'Não encontramos produtos para “{{search}}”.',
+    emptyCategory: 'Não há produtos nesta categoria.',
+  },
+  scan: {
+    title: 'Escaneie o código',
+    torch: 'Lanterna',
+    notFound: 'Ainda não temos este produto no catálogo.',
+    invalid: 'Esse código não parece um código de barras válido.',
+    code: 'Código {{code}}',
+    again: 'Escanear outro',
+    aim: 'Aponte para o código de barras da embalagem. Buscamos automaticamente.',
+    noCamera: 'Sem câmera, digite o código impresso embaixo das barras.',
+    barcode: 'Código de barras',
+    find: 'Buscar',
+    needCamera: 'Para ler códigos precisamos usar a câmera.',
+    allowCamera: 'Permitir a câmera',
+    openSettings: 'Abrir ajustes',
+  },
+};

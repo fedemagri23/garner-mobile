@@ -17,6 +17,7 @@ const STYLES: Record<
   es: { group: '.', decimal: ',', symbolAfter: false, space: ' ', symbols: { ARS: '$', EUR: '€', USD: 'US$' } },
   en: { group: ',', decimal: '.', symbolAfter: false, space: '', symbols: { ARS: 'AR$', EUR: '€', USD: 'US$' } },
   de: { group: '.', decimal: ',', symbolAfter: true, space: '\u00a0', symbols: { ARS: 'ARS', EUR: '€', USD: 'US$' } },
+  pt: { group: '.', decimal: ',', symbolAfter: false, space: ' ', symbols: { ARS: 'AR$', EUR: '€', USD: 'US$', BRL: 'R$' } },
 };
 
 const KNOWN: Record<string, { alwaysCents: boolean }> = {
@@ -31,7 +32,7 @@ const grouped = (whole: number, mark: string) => String(whole).replace(/\B(?=(\d
 
 /**
  * A price the way a shopper reading this language writes it ("$ 1.390",
- * "€1.15", "1,15 €"). Money arrives in minor units (the backend's client
+ * "€1.15", "1,15 €", "AR$ 1.390"). Money arrives in minor units (the backend's client
  * guide) and is formatted without floating-point arithmetic. A currency not
  * known here shows its ISO code instead of a symbol.
  */

@@ -4,6 +4,7 @@ import { randomUUID } from 'expo-crypto';
 import { ApiError, noContent, unwrap } from '@/api/client';
 import type { components } from '@/api/types';
 import { useOutbox } from '@/features/outbox/outbox-provider';
+import { currentLanguage } from '@/i18n';
 import { useSession } from '@/session/session-provider';
 
 export type Suggestion = components['schemas']['ProductSuggestionResponse'];
@@ -15,6 +16,7 @@ export type AddedProduct = components['schemas']['AddedProductResponse'];
 export type AddedStore = components['schemas']['AddedStoreResponse'];
 export type FlagReason = components['schemas']['FlagRequest']['reason'];
 export type Unit = NewProduct['unit'];
+export type BarcodeLookup = components['schemas']['BarcodeLookupResponse'];
 
 export const UNITS: Unit[] = ['GRAM', 'KILOGRAM', 'MILLILITER', 'LITER', 'UNIT'];
 export const FLAG_REASONS: FlagReason[] = ['DUPLICATE', 'WRONG_INFO', 'NOT_EXIST', 'INAPPROPRIATE'];
@@ -180,6 +182,27 @@ export function useFlag(target: Target, id: string) {
       );
     },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: sayKey(target, id) }),
+  });
+}
+
+/**
+ * What a barcode is, for "Agregar producto": ours already, what Open Food
+ * Facts knows of it, or nothing. Asked once per code and language; a
+ * failure is no suggestion, never an error on the form.
+ */
+export function useProductLookup(code: string, enabled: boolean) {
+  const { api } = useSession();
+  const language = currentLanguage();
+
+  return useQuery({
+    queryKey: ['product-lookup', code, language],
+    enabled,
+    staleTime: 60 * 60_000,
+    retry: false,
+    queryFn: () =>
+      unwrap(
+        api.GET('/v1/product-lookup/{code}', { params: { path: { code }, query: { language } } }),
+      ),
   });
 }
 

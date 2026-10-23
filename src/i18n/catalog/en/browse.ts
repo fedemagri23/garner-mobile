@@ -8,6 +8,7 @@ export const browse: Catalog<typeof es> = {
     toList: 'To list',
     reportPrice: 'Report a price',
     watch: 'Tell me if it drops',
+    photoCredit: 'Photo: Open Food Facts',
     history: {
       title: 'Last 30 days',
       empty: 'There is no price history for this product yet.',

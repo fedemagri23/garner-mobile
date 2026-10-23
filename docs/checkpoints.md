@@ -685,3 +685,43 @@ _Detectado por tu ubicación_ in the same case.
   app).
 - Detection uses the phone's position even when the location chip is on the
   saved place, since it is about where you are standing.
+
+## Checkpoints 16 and 17 — Add a product by scanning it; Portuguese
+
+**What works:** in "Agregar producto" the barcode comes first, with a scan
+button. As soon as there is a code (scanned, typed, or brought from the
+scanner's _Agregarlo al catálogo_):
+
+- a code Garner already has says _Ya está en Garner: …_ with _Ver el
+  producto_;
+- a code Open Food Facts knows fills in name, brand, size, unit and category
+  (all editable; what you already typed is never overwritten) and shows its
+  photo, credited _Foto: Open Food Facts (CC BY-SA)_ — _Quitar la foto_ adds
+  the product without it;
+- an unknown code, or no connection, changes nothing: fill it in by hand.
+
+The product screen credits the photo, and Avisos → Preferencias says where
+product data comes from. The app also speaks **Português** (Brazilian): pick
+it in Idioma; push and email follow.
+
+**Check** (the backend needs internet to reach Open Food Facts)
+
+1. Buscar → search anything missing → _No lo encuentro — agregarlo_ → tap the
+   barcode button and scan a package from home (Austrian and German products
+   are best covered; many Argentine ones are too). The form fills in, with a
+   photo when they have one. _Agregar producto_ → _Ver el producto_: the photo
+   and its credit.
+2. Type `7791234000029` in the barcode field: _Ya está en Garner: Arroz Largo
+   Fino 1kg_.
+3. Type a made-up valid code such as `2000000000008`: nothing is suggested.
+4. Escanear (from Inicio) → a code not in Garner → _Agregarlo al catálogo_: the
+   form opens and fills in by itself.
+5. Avisos → Preferencias → Idioma → _Português_: _Olá, Fede_, prices `€ 0,69` /
+   `AR$ 1.390`, categories _Mercearia, Laticínios, Bebidas_.
+
+**Known limits**
+
+- Open Food Facts data is volunteers': check it before adding; the product
+  stays _Sin verificar_.
+- Set `OPEN_FOOD_FACTS_USER_AGENT` to a contact address before launch (they ask
+  for one); a legal look at the ODbL and photo credits is pending (CON-058).

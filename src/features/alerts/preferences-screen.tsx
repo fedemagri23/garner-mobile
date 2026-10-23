@@ -140,6 +140,12 @@ function Form({ preferences }: { preferences: Preferences }) {
       </Card>
 
       <LanguageCard />
+      <View style={styles.about}>
+        <Text variant="label">{t('shell.about.title')}</Text>
+        <Text variant="caption" tone="muted">
+          {t('shell.about.openFoodFacts')}
+        </Text>
+      </View>
 
       {save.isError ? <Text tone="danger">{errorMessage(save.error)}</Text> : null}
     </View>
@@ -181,6 +187,7 @@ function Option({
 const Card = ({ children }: { children: React.ReactNode }) => <View style={styles.card}>{children}</View>;
 
 const styles = StyleSheet.create({
+  about: { gap: space.xs, paddingHorizontal: space.xs },
   root: { flex: 1, backgroundColor: colors.ground },
   content: { padding: space.xl, gap: space.lg },
   round: {

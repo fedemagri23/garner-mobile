@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,13 +17,17 @@ import { errorMessage } from '@/lib/error-message';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
+import { lookupWorthy, prefillFrom, type Edited } from './prefill';
+import { ScanCodeSheet } from './scan-code-sheet';
 import {
   UNITS,
   useAddProduct,
   useAllCategories,
   useBrands,
+  useProductLookup,
   useSuggestions,
   type AddProductOutcome,
+  type BarcodeLookup,
   type Suggestion,
   type Unit,
 } from './use-community';
@@ -40,6 +45,10 @@ const fold = (text: string) =>
  * "Agregar producto", from a search that found nothing or a barcode the
  * catalog does not know. What is already there comes first ("¿Es alguno de
  * estos?"), so the catalog does not fill with copies.
+ *
+ * Scanning the code is the fast way: a code Garner knows opens that product,
+ * and one Open Food Facts knows fills in name, brand, size, category and a
+ * photo — never over what the shopper already typed.
  */
 export function AddProductScreen() {
   const params = useLocalSearchParams<{ name?: string; barcode?: string }>();
@@ -51,6 +60,31 @@ export function AddProductScreen() {
   const [barcode, setBarcode] = useState(params.barcode ?? '');
   const [touched, setTouched] = useState(false);
   const [outcome, setOutcome] = useState<AddProductOutcome | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [usePhoto, setUsePhoto] = useState(true);
+  // What the shopper typed by hand, which a lookup must not overwrite; and the
+  // code whose answer was already applied, so it is applied once.
+  const edited = useRef<Edited>({});
+  const applied = useRef<string | null>(null);
+  const byHand = <T,>(field: keyof Edited, set: (value: T) => void) => (value: T) => {
+    edited.current[field] = true;
+    set(value);
+  };
+
+  const code = cleanBarcode(barcode);
+  const lookup = useProductLookup(code, lookupWorthy(code));
+  const found = lookup.data?.match === 'OPEN_FOOD_FACTS' ? lookup.data : null;
+
+  useEffect(() => {
+    if (!lookup.data || applied.current === code) return;
+    applied.current = code;
+    const changes = prefillFrom(lookup.data, edited.current);
+    if (changes.name !== undefined) setName(changes.name);
+    if (changes.brandText !== undefined) setBrandText(changes.brandText);
+    if (changes.sizeText !== undefined) setSizeText(changes.sizeText);
+    if (changes.unit !== undefined) setUnit(changes.unit);
+    if (changes.categoryId !== undefined) setCategoryId(changes.categoryId);
+  }, [lookup.data, code]);
 
   const suggestions = useSuggestions(useDebouncedValue(name));
   const brands = useBrands();
@@ -81,7 +115,6 @@ export function AddProductScreen() {
   const submit = () => {
     setTouched(true);
     if (!valid || !categoryId) return;
-    const code = cleanBarcode(barcode);
     add.mutate(
       {
         product: {
@@ -91,6 +124,8 @@ export function AddProductScreen() {
           ...(size !== null ? { packageSize: size } : {}),
           ...(exactBrand ? { brandId: exactBrand.id } : brandText.trim() ? { brandName: brandText.trim() } : {}),
           ...(code ? { barcodes: [code] } : {}),
+          // The server takes the photo from its own lookup of the code, never a link.
+          ...(found?.imageUrl && usePhoto ? { photoFromLookup: true } : {}),
         },
         brandLabel: exactBrand?.name ?? (brandText.trim() || null),
       },
@@ -131,12 +166,49 @@ export function AddProductScreen() {
         <SyncBanner />
         <Text tone="muted">{t('community.addProduct.intro')}</Text>
 
+        <View style={styles.group}>
+          <View style={styles.barcodeRow}>
+            <View style={styles.barcodeField}>
+              <TextField
+                label={t('community.addProduct.barcode')}
+                value={barcode}
+                onChangeText={setBarcode}
+                keyboardType="number-pad"
+              />
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('community.addProduct.scan')}
+              onPress={() => setScanning(true)}
+              style={({ pressed }) => [styles.scan, pressed && styles.pressed]}>
+              <Ionicons name="barcode-outline" size={24} color={colors.onAccent} />
+            </Pressable>
+          </View>
+          <Text variant="caption" tone="muted">
+            {t('community.addProduct.barcodeHint')}
+          </Text>
+          <LookupCard
+            lookup={lookup.data}
+            looking={lookup.isFetching}
+            usePhoto={usePhoto}
+            onTogglePhoto={() => setUsePhoto((on) => !on)}
+          />
+        </View>
+        <ScanCodeSheet
+          visible={scanning}
+          onClose={() => setScanning(false)}
+          onCode={(scanned) => {
+            setBarcode(scanned);
+            setScanning(false);
+          }}
+        />
+
         <TextField
           label={t('community.addProduct.name')}
           placeholder={t('community.addProduct.namePlaceholder')}
           value={name}
-          onChangeText={setName}
-          autoFocus={!params.name}
+          onChangeText={byHand('name', setName)}
+          autoFocus={!params.name && !params.barcode}
           error={show(problems.name)}
         />
 
@@ -163,14 +235,19 @@ export function AddProductScreen() {
             label={t('community.addProduct.brand')}
             placeholder={t('community.addProduct.brandPlaceholder')}
             value={brandText}
-            onChangeText={setBrandText}
+            onChangeText={byHand('brandText', setBrandText)}
             autoCapitalize="words"
             error={show(problems.brand)}
           />
           {brandMatches.length > 0 && !exactBrand ? (
             <View style={styles.wrap}>
               {brandMatches.map((brand) => (
-                <Chip key={brand.id} label={brand.name} selected={false} onPress={() => setBrandText(brand.name)} />
+                <Chip
+                  key={brand.id}
+                  label={brand.name}
+                  selected={false}
+                  onPress={() => byHand('brandText', setBrandText)(brand.name)}
+                />
               ))}
             </View>
           ) : null}
@@ -189,7 +266,7 @@ export function AddProductScreen() {
                 key={category.id}
                 label={categoryName(category)}
                 selected={category.id === categoryId}
-                onPress={() => setCategoryId(category.id)}
+                onPress={() => byHand<string | null>('categoryId', setCategoryId)(category.id)}
               />
             ))}
           </View>
@@ -205,7 +282,7 @@ export function AddProductScreen() {
             label={t('community.addProduct.size')}
             placeholder={t('community.addProduct.sizePlaceholder')}
             value={sizeText}
-            onChangeText={setSizeText}
+            onChangeText={byHand('sizeText', setSizeText)}
             keyboardType="decimal-pad"
             error={show(problems.size)}
           />
@@ -215,22 +292,10 @@ export function AddProductScreen() {
                 key={option}
                 label={t(`community.addProduct.units.${option}`)}
                 selected={option === unit}
-                onPress={() => setUnit(option)}
+                onPress={() => byHand('unit', setUnit)(option)}
               />
             ))}
           </View>
-        </View>
-
-        <View style={styles.group}>
-          <TextField
-            label={t('community.addProduct.barcode')}
-            value={barcode}
-            onChangeText={setBarcode}
-            keyboardType="number-pad"
-          />
-          <Text variant="caption" tone="muted">
-            {t('community.addProduct.barcodeHint')}
-          </Text>
         </View>
 
         {serverError ? (
@@ -242,6 +307,72 @@ export function AddProductScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+/** What the code turned out to be: ours already, found on Open Food Facts, or being looked up. */
+function LookupCard({
+  lookup,
+  looking,
+  usePhoto,
+  onTogglePhoto,
+}: {
+  lookup: BarcodeLookup | undefined;
+  looking: boolean;
+  usePhoto: boolean;
+  onTogglePhoto: () => void;
+}) {
+  if (looking) {
+    return (
+      <Text variant="caption" tone="muted" accessibilityLiveRegion="polite">
+        {t('community.addProduct.lookingUp')}
+      </Text>
+    );
+  }
+  if (lookup?.match === 'CATALOG' && lookup.productId) {
+    const productId = lookup.productId;
+    return (
+      <View style={[styles.lookup, styles.lookupKnown]} accessibilityLiveRegion="polite">
+        <Text variant="bodyStrong">{t('community.addProduct.inCatalog', { name: lookup.name })}</Text>
+        <Button
+          label={t('community.addProduct.open')}
+          variant="secondary"
+          onPress={() => {
+            router.back();
+            router.navigate(`/search/product/${productId}`);
+          }}
+        />
+      </View>
+    );
+  }
+  if (lookup?.match === 'OPEN_FOOD_FACTS') {
+    return (
+      <View style={styles.lookup} accessibilityLiveRegion="polite">
+        <View style={styles.lookupRow}>
+          {lookup.imageUrl && usePhoto ? (
+            <Image source={lookup.imageUrl} style={styles.photo} contentFit="contain" accessibilityIgnoresInvertColors />
+          ) : null}
+          <Text style={styles.lookupText}>{t('community.addProduct.found')}</Text>
+        </View>
+        {lookup.imageUrl ? (
+          <View style={styles.lookupRow}>
+            {usePhoto ? (
+              <Text variant="caption" tone="muted" style={styles.lookupText}>
+                {t('community.addProduct.photoCredit')}
+              </Text>
+            ) : (
+              <View style={styles.lookupText} />
+            )}
+            <Pressable accessibilityRole="button" onPress={onTogglePhoto} style={styles.photoToggle}>
+              <Text variant="label" tone="accent">
+                {usePhoto ? t('community.addProduct.removePhoto') : t('community.addProduct.usePhoto')}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
+      </View>
+    );
+  }
+  return null;
 }
 
 function SuggestionRow({ suggestion, last }: { suggestion: Suggestion; last: boolean }) {
@@ -334,6 +465,27 @@ const styles = StyleSheet.create({
   },
   roundSpacer: { width: MIN_TOUCH },
   group: { gap: space.sm },
+  barcodeRow: { flexDirection: 'row', alignItems: 'flex-end', gap: space.sm },
+  barcodeField: { flex: 1 },
+  scan: {
+    width: 52,
+    height: 52,
+    borderRadius: radii.md,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lookup: {
+    gap: space.sm,
+    padding: space.md,
+    backgroundColor: colors.accentSoft,
+    borderRadius: radii.md,
+  },
+  lookupKnown: { backgroundColor: colors.signalSoft },
+  lookupRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  lookupText: { flex: 1 },
+  photo: { width: 64, height: 64, borderRadius: radii.sm, backgroundColor: colors.surface },
+  photoToggle: { minHeight: MIN_TOUCH, justifyContent: 'center' },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, borderRadius: radii.lg, overflow: 'hidden' },
   suggestion: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56, padding: space.md, paddingHorizontal: space.lg },
