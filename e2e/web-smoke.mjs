@@ -832,25 +832,20 @@ await step('a search with no match offers to add it, and shows what is already t
   await shown('¿Es alguno de estos?');
   await shown('Alfajor Artesanal de Maicena');
 });
-await step('a product is added with a brand that is not listed, and opens marked "Sin verificar"', async () => {
+// A new account may add three products a day: this run adds the scanned one,
+// the offline one and the one from a list, so this form is only checked.
+await step('the form asks for a category, and offers a brand that is not listed', async () => {
   await typeInto('Nombre', NEW_PRODUCT);
   await press('Agregar producto');
   await text('Elegí una opción.');
   await typeInto('Marca', `Doña Prueba ${RUN}`);
   await text(`Usar “Doña Prueba ${RUN}” como marca nueva`);
   await pickCategory('alfajor', 'Alfajores, Snacks y golosinas');
-  await typeInto('Tamaño', '70');
-  await press('g');
-  await press('Agregar producto');
-  await shown('¡Agregado!');
-  await press('Ver el producto');
-  await shown(NEW_PRODUCT);
-  await shown('Sin verificar');
-  await text('Lo agregaste vos.');
+  await shown('Snacks y golosinas › Alfajores');
   await page.screenshot({ path: `${SHOTS}checkpoint-13-product.png` });
+  await press('Cerrar');
 });
 await step('a neighbour\'s product can be confirmed, taken back and reported', async () => {
-  await press('Volver');
   await typeInto('Buscar productos', 'alfajor artesanal');
   await pressContaining('Alfajor Artesanal de Maicena');
   await text('Lo agregó alguien de la comunidad.');
@@ -899,6 +894,7 @@ await step('a scanned code fills the form from Open Food Facts, and adds the pro
   await press('Ver el producto');
   await shown(SCANNED_NAME);
   await shown('Sin verificar');
+  await text('Lo agregaste vos.');
   await press('Volver');
 });
 await step('a shop is added from Informar precio, seen only by its creator until priced', async () => {
@@ -943,7 +939,7 @@ await step('a product added offline waits on the phone and is added on reconnect
 });
 await step('Mis aportes lists what was added, with where each stands', async () => {
   await shown(OFFLINE_PRODUCT);
-  await shown(NEW_PRODUCT);
+  await shown(SCANNED_NAME);
   await text('La ven todos · Sin verificar');
   await shown(`${NEW_CHAIN} Obelisco`);
   await text('Solo vos la ves · faltan 10 productos');
@@ -962,6 +958,8 @@ await step('a product missing from the catalog is created from the list and land
   await press(`Crear “${fromList}” y agregarlo`);
   await shown('Agregar producto');
   await text('Al terminar se agrega a Mi lista.');
+  await typeInto('Marca', `Doña Prueba ${RUN}`);
+  await text(`Usar “Doña Prueba ${RUN}” como marca nueva`);
   await pickCategory('galletitas', 'Galletitas dulces, Desayuno y merienda');
   await press('Crear y agregar a la lista');
   // Back on the list, with the new product on it.
@@ -982,7 +980,7 @@ await step('what the run added is hidden again by a moderator, so the catalog st
     ...mine.products.map((product) => hide('products', product.id)),
     ...mine.stores.map((store) => hide('stores', store.id)),
   ]);
-  if (answers.length !== 5 || answers.some((answer) => answer.status !== 204)) {
+  if (answers.length !== 4 || answers.some((answer) => answer.status !== 204)) {
     throw new Error(`hid ${answers.map((answer) => answer.status)}`);
   }
 });
