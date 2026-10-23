@@ -433,8 +433,179 @@ often missing): when it has nothing, the form is filled by hand as today.
 - **Barcode prefixes** (779… Argentina, 90–91 Austria) say who registered
   the code, not where the product is sold: not used.
 
+## Roadmap after Phase 9
+
+Decided with the user on 2026-10-23: a full category taxonomy first (it is
+the backbone for browsing, adding products, list order, and importing real
+prices), then what real users need, then real prices, then shipping.
+
+| Phase | Checkpoints | What | Repo |
+| --- | --- | --- | --- |
+| 10 | 18, 19 | Category taxonomy: data, API, labels | backend |
+| 10 | 20, 21 | Categories in the app: browse, pick, list by aisle | mobile |
+| 11 | 22–25 | Ready for real users: password reset, account deletion, profile, terms, moderation page | both |
+| 12 | 26–28 | Real prices: Argentina's public price data, Vienna sources, data quality | backend |
+| 13 | 29–31 | Ship: builds, real-device checks, store listings | mobile |
+| — | — | Backlog, fitted in where it helps | both |
+
+## Phase 10 — Categories for everything
+
+Today the catalog has four categories (Almacén, Lácteos › Leche, Bebidas).
+A real supermarket has twenty departments and around 150 aisles; the full
+list is in [`taxonomy.md`](taxonomy.md). The app must work with that many:
+four chips in a row does not scale to twenty, and a product form cannot
+show 150 chips.
+
+### Checkpoint 18 — Backend: the taxonomy as data
+
+- **One file, versioned in garner-app:** `data/taxonomy.json`. Each category:
+  `slug`, `parent`, names in es/en/de/pt, `icon` (a MaterialCommunityIcons
+  name the app ships with), `position` (aisle order within its parent),
+  `synonyms` per language (search: "gaseosa", "soda", "Limo", "refrigerante"),
+  and `offTags` (the Open Food Facts tags that map to it).
+- **Applied, not seeded:** `pnpm run taxonomy:sync` upserts by slug and is run
+  on every deploy (after migrations) and by the seed. It never deletes a
+  category with products: a retired slug gets `isActive: false` and
+  `replacedBy`, and its products move to the replacement in the same sync.
+  Existing slugs (`almacen`, `lacteos`, `leche`, `bebidas`) keep their
+  meaning.
+- **Schema:** `categories` gains `icon`, `position`, `isActive`,
+  `replacedById`, `synonyms` (JSON per language). Two levels only
+  (department › aisle); a product belongs to an aisle, or to a department
+  when nobody knows the aisle.
+- **API:**
+  - `GET /v1/categories` gains `icon`, `position`, `childCount`, and
+    `?tree=true` returning departments with their aisles nested.
+  - `GET /v1/categories/{id}/summary`: product count (public, active) and
+    how many have a price near a point (for "nothing here yet" states).
+  - Search matches category names and synonyms in the shopper's language:
+    typing "limpieza" offers the department as a filter, not only products
+    with that word.
+- **Open Food Facts mapping** moves from the code table into `offTags`, so
+  scanning maps to an aisle (`en:yogurts` → Yogures), not only a department.
+- **Moderators** can create categories only through the file (reviewed in a
+  pull request), not the API: `POST /v1/categories` is retired (kept as 410
+  with a pointer) so the catalog's shape changes in one place.
+- **Tests:** the file validates (unique slugs, existing parents, all four
+  languages, icons from the shipped set, no cycles, ≤ 2 levels); sync is
+  idempotent; retiring a slug moves its products; search by synonym.
+
+### Checkpoint 19 — Backend: product labels
+
+- Diet and lifestyle **labels**, separate from categories: `gluten-free` (sin
+  TACC), `vegan`, `vegetarian`, `organic`, `lactose-free`, `sugar-free`,
+  `kosher`, `halal`. A product has any number; they come from Open Food
+  Facts (`labels_tags`) when scanned, or the shopper ticks them, and the team
+  can correct them.
+- `GET /v1/products?labels=gluten-free,vegan` filters; `ProductResponse`
+  carries `labels`.
+- Labels a shopper adds count as unverified like the rest of the product
+  (Phase 8 rules).
+
+### Checkpoint 20 — App: browsing by category
+
+- **Buscar with an empty search** shows the departments as a grid of icon
+  tiles (twenty fit in a scroll), instead of the row of chips.
+- **A department** opens its aisles as chips above the products (Lácteos ›
+  Yogures), with a breadcrumb back; the products list filters by the aisle
+  or the whole department.
+- **Typing** still searches products, and a matching category appears as a
+  first row ("Limpieza — ver todo").
+- **Label filters** (sin TACC, vegano, …) as toggle chips under the search.
+- **Product screen** shows its department › aisle, tappable.
+- **Empty aisles** say so and offer "Agregar producto" in that aisle.
+- Names from the category's translations (`categoryName`), icons from the
+  file.
+
+### Checkpoint 21 — App: picking a category, and lists by aisle
+
+- **Agregar producto**: the category field becomes a picker sheet: search
+  box (names and synonyms), departments with icons, then aisles. A lookup
+  prefill selects the aisle; the shopper can change it in two taps.
+- **Lists sorted by aisle** (`sortMode: CATEGORY`, which the backend
+  already has): items grouped under department headings in aisle order, so
+  the list reads in the order of a walk through the shop. A toggle in the
+  list's options; the trip shows the same grouping.
+- **Preferences interests** (already `interests: string[]` of slugs) get a
+  department picker, so Inicio's price drops can favour what the shopper
+  buys.
+- **Tests:** picker search, grouping order, the web e2e browses Bebidas ›
+  Gaseosas, adds a product in an aisle, and sorts a list by aisle.
+
+## Phase 11 — Ready for real users
+
+What no stranger can use Garner without, and what the app stores require.
+
+- **Checkpoint 22 — Password reset.** "¿Olvidaste tu contraseña?" on sign-in;
+  an email with a one-time link (or a 6-digit code for the phone), valid 30
+  minutes, single use, rate limited; all sessions signed out after a reset.
+  Emails in the user's language.
+- **Checkpoint 23 — Account: profile and deletion.** A Cuenta screen: name,
+  email (change with confirmation), password change, language, sign out of
+  every device. **Delete my account** (required by Apple and Google): asks
+  again, then removes personal data (lists, trips, alerts, devices,
+  preferences); shared contributions (prices, products, shops) stay,
+  anonymised, so the catalog does not break. A matching web page for
+  deleting without the app.
+- **Checkpoint 24 — Terms, privacy, licences.** In-app and web pages: terms
+  of use (user content, takedown requests), privacy policy (what is stored,
+  location use, email, push), and credits (Open Food Facts ODbL and CC
+  BY-SA, map data). Accepting terms at sign-up, with the version recorded.
+  A "Report a problem" contact.
+- **Checkpoint 25 — Moderation page.** A small web page for moderators (same
+  API, role-guarded): the review queue with product or shop details, flags
+  and their reasons, verify / hide / restore, and the audit log. Plus merging
+  duplicate products (deferred in CON-054): move barcodes, list items, alerts
+  and prices across the three databases, then retire the duplicate.
+
+## Phase 12 — Real prices
+
+Without them Garner only shows the seed. The backend already has the
+external price sources module (adapters, scheduled imports, product
+matching); it needs real sources.
+
+- **Checkpoint 26 — Argentina's public price data.** Argentina's government
+  publishes supermarket prices by store (the SEPA / "Precios Claros" data).
+  First a feasibility check: is it still published, its format and
+  frequency, licence and terms of reuse, coverage (chains, provinces). Then
+  an adapter: stores matched to ours (or created as VERIFIED), products
+  matched by barcode first (the data carries EANs), categories mapped to the
+  taxonomy, prices as EXTERNAL_API observations with their own weight.
+- **Checkpoint 27 — Vienna.** No public dataset is known. Research what is
+  allowed (supermarkets' public online prices and their terms, partnerships,
+  open data); if nothing is, Vienna relies on shoppers, and Open Food Facts
+  fills product details. Decide with the user.
+- **Checkpoint 28 — Data quality.** Outlier checks on imported prices, stale
+  sources flagged, a coverage report per city (products with a price near
+  a point), and the import status on the moderation page.
+
+## Phase 13 — Ship
+
+- **Checkpoint 29 — Development builds.** EAS builds: Android (free) and iOS
+  (needs the Apple Developer account). Verify on real phones what Expo Go
+  and the web cannot: push notifications end to end (MCON-037), the map pin
+  in Agregar tienda, the scan sheet's camera, shop detection walking into a
+  real shop (tune `HERE_KM`).
+- **Checkpoint 30 — Look and feel for the stores.** App icon and splash,
+  store screenshots and descriptions in four languages, dark theme.
+- **Checkpoint 31 — Release.** TestFlight and Play internal testing with a
+  few real shoppers; crash reporting; Maestro end-to-end tests on a device
+  replacing the web walk-through where it cannot see (native tab bar,
+  camera, maps).
+
+## Backlog
+
+Fitted in where they help, not scheduled:
+
+- Product photos taken by shoppers, reviewed (for what Open Food Facts lacks).
+- Adding to lists offline (queue list items like trip changes).
+- Correcting a product's details (shoppers propose, the team or enough
+  confirmations accept).
+- Shop opening hours added by shoppers.
+- Price per unit comparison (per kg / per litre) in search and lists.
+- Sharing a list with someone (household).
+- European Portuguese, more languages.
+
 ## Later
 
-Dark theme, profile and account settings, password reset (needs backend),
-app icon and splash artwork, EAS builds and store submission, end-to-end
-tests with Maestro.
+Superseded by the roadmap above (Phases 10–13 and the backlog).
