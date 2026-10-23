@@ -1296,6 +1296,12 @@ export interface components {
             /** @example Laticínios */
             pt?: string;
         };
+        CategorySynonyms: {
+            es?: string[];
+            en?: string[];
+            de?: string[];
+            pt?: string[];
+        };
         CategoryResponse: {
             /** Format: uuid */
             id: string;
@@ -1303,6 +1309,12 @@ export interface components {
             name: string;
             /** @description The name in English, German and Portuguese, where written */
             translations: components["schemas"]["CategoryTranslations"];
+            /** @description MaterialCommunityIcons name; departments only */
+            icon: string | null;
+            /** @description Aisle order within the parent, or among departments */
+            position: number;
+            /** @description Search words per language */
+            synonyms: components["schemas"]["CategorySynonyms"];
             slug: string;
             /** Format: uuid */
             parentId: string | null;
@@ -2496,6 +2508,7 @@ export type UserPreferencesResponse = components['schemas']['UserPreferencesResp
 export type UpdateUserPreferencesRequest = components['schemas']['UpdateUserPreferencesRequest'];
 export type BrandResponse = components['schemas']['BrandResponse'];
 export type CategoryTranslations = components['schemas']['CategoryTranslations'];
+export type CategorySynonyms = components['schemas']['CategorySynonyms'];
 export type CategoryResponse = components['schemas']['CategoryResponse'];
 export type ProductBarcodeResponse = components['schemas']['ProductBarcodeResponse'];
 export type ProductResponse = components['schemas']['ProductResponse'];

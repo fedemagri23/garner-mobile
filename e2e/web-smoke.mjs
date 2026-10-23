@@ -210,6 +210,13 @@ const typeInto = async (label, value) => {
   await input.type(value);
 };
 
+/** Chooses a product's category in Agregar producto: open the picker, search, tap. */
+const pickCategory = async (search, label) => {
+  await press('Elegí una categoría');
+  await typeInto('Buscar categoría', search);
+  await press(label);
+};
+
 let failed = false;
 const step = async (label, run) => {
   if (failed) return;
@@ -285,7 +292,7 @@ await step('a search with no match says so', async () => {
 });
 await step('a category chip narrows the list, subcategories included', async () => {
   await typeInto('Buscar productos', ' ');
-  await press('Lácteos');
+  await press('Lácteos y huevos');
   await text('1 producto');
   await text('Leche Entera La Serenísima 1L');
   await press('Bebidas');
@@ -831,7 +838,7 @@ await step('a product is added with a brand that is not listed, and opens marked
   await text('Elegí una opción.');
   await typeInto('Marca', `Doña Prueba ${RUN}`);
   await text(`Usar “Doña Prueba ${RUN}” como marca nueva`);
-  await press('Almacén');
+  await pickCategory('alfajor', 'Alfajores, Snacks y golosinas');
   await typeInto('Tamaño', '70');
   await press('g');
   await press('Agregar producto');
@@ -923,7 +930,7 @@ await step('a product added offline waits on the phone and is added on reconnect
   await page.setOfflineMode(true);
   await press('No lo encuentro — agregarlo');
   await shown('Agregar producto');
-  await press('Almacén');
+  await pickCategory('pasta', 'Pastas secas, Almacén');
   await press('Agregar producto');
   await shown('Guardado en el teléfono');
   await press('Listo');
@@ -955,7 +962,7 @@ await step('a product missing from the catalog is created from the list and land
   await press(`Crear “${fromList}” y agregarlo`);
   await shown('Agregar producto');
   await text('Al terminar se agrega a Mi lista.');
-  await press('Almacén');
+  await pickCategory('galletitas', 'Galletitas dulces, Desayuno y merienda');
   await press('Crear y agregar a la lista');
   // Back on the list, with the new product on it.
   await shown('Mi lista');
@@ -1102,7 +1109,7 @@ await step('German: dates, plurals and prices follow', async () => {
 await step('German reaches the server, for push and email, and categories are translated', async () => {
   await serverLocaleBecomes('de');
   await press('Suchen');
-  await shown('Milchprodukte');
+  await shown('Milchprodukte und Eier');
   await shown('Getränke');
   await press('Start');
 });
@@ -1119,7 +1126,7 @@ await step('Português: the app, prices and categories follow, and the server le
   await serverLocaleBecomes('pt');
   await press('Buscar');
   await shown('Mercearia');
-  await shown('Laticínios');
+  await shown('Laticínios e ovos');
   await page.screenshot({ path: `${SHOTS}language-pt-search.png` });
   await press('Início');
 });

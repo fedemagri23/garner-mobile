@@ -751,3 +751,35 @@ checkpoint 17.
 
 - Without a connection the product is saved on the phone but not put on the
   list: add it from the list once it is sent.
+
+## Checkpoint 18 — Every category a supermarket has
+
+**What works:** the catalog knows 20 departments and 121 aisles (the list:
+`implementation-plan/taxonomy.md`; the data: `garner-app/data/taxonomy.json`),
+named in the app's four languages. In _Agregar producto_ the category is a
+picker: type to search (names and everyday words in any language —
+"gaseosa", "Limo", "refresco") or open a department and choose an aisle. A
+scanned product lands in its aisle when Open Food Facts says which. The
+demo products now sit in aisles (Pan Lactal in _Panadería › Pan lactal_).
+
+After pulling, apply the categories once (the seed also does it):
+
+```bash
+cd ~/Desktop/personal/garner/garner-app
+pnpm run prisma:migrate:deploy
+pnpm run taxonomy:sync
+```
+
+**Check**
+
+1. Buscar: the chips list the twenty departments; _Lácteos y huevos_ shows the
+   milk.
+2. Agregar producto → _Elegí una categoría_: departments with icons; open
+   _Bebidas_ → its aisles and _Todo Bebidas_. Type `limo` (or `gaseosa`):
+   _Gaseosas, Bebidas_.
+3. Switch to English/German/Portuguese: the picker and the chips follow.
+
+**Known limits**
+
+- Browsing by department with a grid of icons, and lists sorted by aisle,
+  are checkpoints 20 and 21; search does not yet match category names.

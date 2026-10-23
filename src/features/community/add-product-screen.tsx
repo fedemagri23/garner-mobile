@@ -13,11 +13,11 @@ import { TextField } from '@/components/text-field';
 import { useAddToList, useList } from '@/features/lists/use-lists';
 import { SyncBanner } from '@/features/outbox/sync-banner';
 import { t } from '@/i18n';
-import { categoryName } from '@/lib/category-name';
 import { errorMessage } from '@/lib/error-message';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
+import { CategoryField } from './category-picker';
 import { lookupWorthy, prefillFrom, type Edited } from './prefill';
 import { ScanCodeSheet } from './scan-code-sheet';
 import {
@@ -119,10 +119,6 @@ export function AddProductScreen() {
     return (brands.data ?? []).filter((brand) => fold(brand.name).includes(typed)).slice(0, 6);
   }, [brands.data, brandText]);
   const exactBrand = (brands.data ?? []).find((brand) => fold(brand.name) === fold(brandText));
-  const sortedCategories = useMemo(
-    () => [...(categories.data ?? [])].sort((a, b) => Number(a.parentId !== null) - Number(b.parentId !== null)),
-    [categories.data],
-  );
 
   const size = parseSize(sizeText);
   const problems = {
@@ -296,24 +292,12 @@ export function AddProductScreen() {
           ) : null}
         </View>
 
-        <View style={styles.group}>
-          <Text variant="label">{t('community.addProduct.category')}</Text>
-          <View style={styles.wrap} accessibilityRole="radiogroup">
-            {sortedCategories.map((category) => (
-              <Chip
-                key={category.id}
-                label={categoryName(category)}
-                selected={category.id === categoryId}
-                onPress={() => byHand<string | null>('categoryId', setCategoryId)(category.id)}
-              />
-            ))}
-          </View>
-          {show(problems.category) ? (
-            <Text variant="caption" tone="danger">
-              {problems.category}
-            </Text>
-          ) : null}
-        </View>
+        <CategoryField
+          categories={categories.data ?? []}
+          value={categoryId}
+          onChange={byHand<string | null>('categoryId', setCategoryId)}
+          error={show(problems.category)}
+        />
 
         <View style={styles.group}>
           <TextField

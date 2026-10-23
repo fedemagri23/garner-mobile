@@ -288,3 +288,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** The list's _Agregar producto_ search offers _Crear “…” y agregarlo_ when nothing matches, and _¿No es ninguno? Crear “…”_ under the matches. It opens `/add-product?name=…&listId=…`; in that mode a created product (`added`), a tapped suggestion, or a code already in Garner is added to the list with `useAddToList` and the form closes. A product queued offline is not added (list items are online-only); the done screen says to add it from the list once sent.
 - **Why:** While writing a list, a missing product should cost one detour, not a trip through Buscar and back.
 - **Revisit when:** Lists are edited offline (then queue the list item after the product).
+
+### MCON-048 — The category picker, built for a hundred aisles
+- **Phase:** 10 (checkpoint 18) · **Area:** community, catalog · **Status:** accepted
+- **What:** With the taxonomy (CON-060) the catalog has 141 categories, so _Agregar producto_ replaces its chips with `CategoryField`: the chosen "department › aisle" with its department's icon, opening a sheet with a search box (`searchCategories`: the name in the app's language, the Spanish name and every language's search words, accent- and case-blind, aisles first) and departments that expand to their aisles plus "Todo …". Icons come from the taxonomy; a name the app does not ship falls back to `shape-outline`. Buscar's chip row now holds the twenty departments, scrolling; the icon grid is checkpoint 20.
+- **Why:** A form cannot show 141 chips, and a shopper thinks "gaseosa" before they think "Bebidas › Gaseosas".
+- **Revisit when:** Checkpoint 20 brings the department grid to Buscar.
