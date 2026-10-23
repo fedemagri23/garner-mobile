@@ -323,6 +323,109 @@ private shops (6 and 9 of 10). Checkpoint steps in `docs/checkpoints.md`.
   before real users, not before the MVP.
 - Legal: user-uploaded photos and names need terms and a takedown path.
 
+## Phase 9 — Shopping and adding, faster
+
+Asked for by the user after trying phases 7 and 8: fewer taps for the two
+things done in a shop — starting a trip, and adding a product the catalog
+lacks.
+
+| Checkpoint | What | Repo |
+| --- | --- | --- |
+| 15 ✅ | Compra detects the shop from the phone's position; a single-store trip expects that store's prices | both |
+| 16 | Barcode lookup: our catalog first, then Open Food Facts, through the backend | backend |
+| 17 | Add product by scanning: scan button in the form, fields and photo prefilled from the lookup | mobile |
+
+### Checkpoint 15 ✅ — The shop you are in (garner-app `1b9c254`, garner-mobile `3f60d7a`)
+
+Compra's "¿Dónde comprás?" card lists shops within 2 km of the phone's own
+position and preselects the nearest within 300 m ("Estás en …"); _Cambiar_
+picks another, _Sin súper fijo_ or back to automatic. Starting sends
+`storeId` when the shop prices in the list's currency, and the backend
+expects that store's current prices on every line (CON-057, MCON-044).
+
+### Why a barcode lookup
+
+Scanning an unknown code already opens "Agregar producto" with the code
+filled in, but the shopper still types name, brand and size. An open
+product database answers most codes with those details: scanning then
+becomes "¿Es este? Alfajor Havanna Chocolate 50 g" → check → _Agregar_.
+The product is still the shopper's: COMMUNITY, _Sin verificar_, under the
+same duplicate checks and daily limits (Phase 8). The lookup only fills the
+form.
+
+**Source: Open Food Facts** (world.openfoodfacts.org), free and open.
+Strong coverage in Austria and Germany, patchier in Argentina (local brands
+often missing): when it has nothing, the form is filled by hand as today.
+
+### Checkpoint 16 — Backend: `GET /v1/product-lookup/{code}`
+
+- **Our catalog first.** A code we know answers `{ match: 'CATALOG',
+  productId, name }`, so the app opens the existing product instead of
+  offering to add it again.
+- **Then Open Food Facts**, server to server, never from the phone:
+  `GET /api/v2/product/{code}?fields=product_name,product_name_es,
+  product_name_en,product_name_de,brands,quantity,categories_tags,
+  image_front_url,image_front_small_url`, with the identifying
+  `User-Agent: Garner/<version> (<contact>)` they require, a 3 s timeout and
+  their read rate limit respected. Answers `{ match: 'OPEN_FOOD_FACTS',
+  name, brandName, packageSize, unit, categoryId | null, imageUrl,
+  attribution }`, or `{ match: 'NONE' }`.
+- **Turning their data into ours** (pure functions, unit-tested): the name
+  in the shopper's language when there is one; the first brand; `quantity`
+  ("500 g", "1,5 l", "6 x 330 ml") into size and unit, or nothing when it
+  cannot be read; their category tags (`en:dairies`, `en:beverages`, …)
+  into our categories by a small mapping table, else no category (the
+  shopper picks).
+- **Cache** in Redis: found answers a week, "not found" a day, so a code
+  scanned by many shoppers costs one request; failures (timeout, 5xx) are
+  not cached and answer `NONE`, never an error the form must handle.
+- **Photos without trusting links.** Phase 8 ignores image links from
+  shoppers. Adding a product may now say `photoFromLookup: true`; the
+  server takes the image URL from *its own* cached lookup of that barcode,
+  never from the request. The product keeps `imageSource:
+  'OPEN_FOOD_FACTS'` so the app can credit it.
+- **Config:** `OPEN_FOOD_FACTS_URL` (overridable, so tests and the web e2e
+  use a local stand-in), `OPEN_FOOD_FACTS_USER_AGENT`.
+- **Tests:** unit (quantity parsing, category mapping, name choice), e2e
+  against a stand-in server (catalog match, found, not found, timeout,
+  cache hit, `photoFromLookup` uses the cached image and ignores any link
+  sent).
+
+### Checkpoint 17 — App: scan to add
+
+- **Scan button in the form's barcode field.** It opens the scanner in a
+  "pick a code" mode that returns the code to the form instead of
+  searching the catalog. Typing a code still works (web, damaged labels).
+- **Lookup as soon as there is a valid code** (scanned, typed, or brought
+  from the scanner's "Agregarlo al catálogo"):
+  - in our catalog → "Ya está en Garner: …" with _Ver el producto_;
+  - found in Open Food Facts → "Lo encontramos en Open Food Facts": name,
+    brand, size, unit and category filled in (all editable), the photo
+    shown with "Foto: Open Food Facts (CC BY-SA)";
+  - not found, or no connection → nothing changes; the shopper types.
+- **What the shopper typed wins**: a lookup arriving late never overwrites
+  a field already edited.
+- **Credit** wherever an Open Food Facts photo shows (product screen,
+  tiles): a small "Open Food Facts" line on the product screen; and an
+  "Acerca de / Datos" note in Preferencias with the licences.
+- Offline: no lookup, the form works as today and queues the product.
+- **Tests:** form logic (prefill without overwriting), the pick-a-code
+  scanner mode; the web e2e types a code the stand-in knows and checks the
+  prefill, adds it, and sees the photo with its credit.
+
+### Risks and decisions
+
+- **Licences.** The database is under the ODbL (attribution; share-alike
+  applies to the database, so we copy only what a shopper confirms, one
+  product at a time, never bulk), photos under CC BY-SA (credit each).
+  Needs a line in the terms, and a legal look before launch.
+- **Data quality.** Entries are volunteers'; that is why the lookup only
+  suggests and the product stays _Sin verificar_.
+- **Dependence on an outside service.** Down or slow means `NONE`: adding
+  by hand always works.
+- **Barcode prefixes** (779… Argentina, 90–91 Austria) say who registered
+  the code, not where the product is sold: not used.
+
 ## Later
 
 Dark theme, profile and account settings, password reset (needs backend),
