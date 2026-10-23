@@ -3,7 +3,7 @@
 The categories Garner ships with: what a supermarket sells, in two levels
 (department → aisle). Names here are Spanish (the original) with English in
 brackets; German and Portuguese are written when the taxonomy file is built.
-Each category also gets an icon, a position (aisle order), search synonyms
+Each category also gets a position (aisle order), search synonyms
 and the Open Food Facts tags that map to it (Phase 10).
 
 Slugs already in use keep their meaning: `almacen`, `lacteos`, `leche`,

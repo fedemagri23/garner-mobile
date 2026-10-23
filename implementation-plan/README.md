@@ -459,8 +459,7 @@ show 150 chips.
 ### Checkpoint 18 — Backend: the taxonomy as data
 
 - **One file, versioned in garner-app:** `data/taxonomy.json`. Each category:
-  `slug`, `parent`, names in es/en/de/pt, `icon` (a MaterialCommunityIcons
-  name the app ships with), `position` (aisle order within its parent),
+  `slug`, `parent`, names in es/en/de/pt, `position` (aisle order within its parent),
   `synonyms` per language (search: "gaseosa", "soda", "Limo", "refrigerante"),
   and `offTags` (the Open Food Facts tags that map to it).
 - **Applied, not seeded:** `pnpm run taxonomy:sync` upserts by slug and is run
@@ -469,12 +468,12 @@ show 150 chips.
   `replacedBy`, and its products move to the replacement in the same sync.
   Existing slugs (`almacen`, `lacteos`, `leche`, `bebidas`) keep their
   meaning.
-- **Schema:** `categories` gains `icon`, `position`, `isActive`,
+- **Schema:** `categories` gains `position`, `isActive`,
   `replacedById`, `synonyms` (JSON per language). Two levels only
   (department › aisle); a product belongs to an aisle, or to a department
   when nobody knows the aisle.
 - **API:**
-  - `GET /v1/categories` gains `icon`, `position`, `childCount`, and
+  - `GET /v1/categories` gains `position`, `synonyms`, and
     `?tree=true` returning departments with their aisles nested.
   - `GET /v1/categories/{id}/summary`: product count (public, active) and
     how many have a price near a point (for "nothing here yet" states).
@@ -487,7 +486,7 @@ show 150 chips.
   pull request), not the API: `POST /v1/categories` is retired (kept as 410
   with a pointer) so the catalog's shape changes in one place.
 - **Tests:** the file validates (unique slugs, existing parents, all four
-  languages, icons from the shipped set, no cycles, ≤ 2 levels); sync is
+  languages, no cycles, ≤ 2 levels); sync is
   idempotent; retiring a slug moves its products; search by synonym.
 
 ### Checkpoint 19 — Backend: product labels
@@ -504,8 +503,8 @@ show 150 chips.
 
 ### Checkpoint 20 — App: browsing by category
 
-- **Buscar with an empty search** shows the departments as a grid of icon
-  tiles (twenty fit in a scroll), instead of the row of chips.
+- **Buscar with an empty search** shows the departments as a list of names
+  (twenty fit in a scroll), instead of the row of chips.
 - **A department** opens its aisles as chips above the products (Lácteos ›
   Yogures), with a breadcrumb back; the products list filters by the aisle
   or the whole department.
@@ -514,13 +513,13 @@ show 150 chips.
 - **Label filters** (sin TACC, vegano, …) as toggle chips under the search.
 - **Product screen** shows its department › aisle, tappable.
 - **Empty aisles** say so and offer "Agregar producto" in that aisle.
-- Names from the category's translations (`categoryName`), icons from the
-  file.
+- Names from the category's translations (`categoryName`). No icons
+  (decided with the user): categories are shown by name.
 
 ### Checkpoint 21 — App: picking a category, and lists by aisle
 
 - **Agregar producto**: the category field becomes a picker sheet: search
-  box (names and synonyms), departments with icons, then aisles. A lookup
+  box (names and synonyms), departments by name, then aisles. A lookup
   prefill selects the aisle; the shopper can change it in two taps.
 - **Lists sorted by aisle** (`sortMode: CATEGORY`, which the backend
   already has): items grouped under department headings in aisle order, so

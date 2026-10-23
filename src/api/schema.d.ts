@@ -1309,8 +1309,6 @@ export interface components {
             name: string;
             /** @description The name in English, German and Portuguese, where written */
             translations: components["schemas"]["CategoryTranslations"];
-            /** @description MaterialCommunityIcons name; departments only */
-            icon: string | null;
             /** @description Aisle order within the parent, or among departments */
             position: number;
             /** @description Search words per language */

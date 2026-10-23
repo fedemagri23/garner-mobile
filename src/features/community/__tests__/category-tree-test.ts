@@ -8,7 +8,6 @@ const category = (id: string, name: string, parentId: string | null, position: n
   slug: id,
   parentId,
   position,
-  icon: parentId ? null : 'cheese',
   translations: {},
   synonyms: {},
   ...extra,

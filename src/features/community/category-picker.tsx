@@ -12,17 +12,11 @@ import { categoryPath, departmentsOf, searchCategories, type Category } from './
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
-/** A department's icon from the taxonomy; one the app does not ship falls back to a plain shape. */
-export function categoryIcon(category: Category | undefined): IconName {
-  const name = category?.icon;
-  return name && name in MaterialCommunityIcons.glyphMap ? (name as IconName) : 'shape-outline';
-}
-
 /**
  * The category of a product: shows the one chosen ("Lácteos y huevos ›
  * Yogures") and opens a sheet to choose — by typing (names and search words
  * in every language) or by department, then aisle. Built for the full
- * taxonomy: twenty departments, over a hundred aisles.
+ * taxonomy: twenty departments, over a hundred aisles. Names only, no icons.
  */
 export function CategoryField({
   categories,
@@ -37,7 +31,6 @@ export function CategoryField({
 }) {
   const [open, setOpen] = useState(false);
   const chosen = categories.find((category) => category.id === value);
-  const department = chosen && (chosen.parentId ? categories.find((c) => c.id === chosen.parentId) : chosen);
   const label = chosen ? categoryPath(chosen, categories) : t('community.addProduct.categoryChoose');
 
   return (
@@ -48,7 +41,6 @@ export function CategoryField({
         accessibilityLabel={chosen ? t('community.addProduct.categoryLabel', { name: label }) : label}
         onPress={() => setOpen(true)}
         style={({ pressed }) => [styles.box, error ? styles.boxError : null, pressed && styles.pressed]}>
-        <MaterialCommunityIcons name={categoryIcon(department)} size={22} color={chosen ? colors.accent : colors.muted} />
         <Text style={styles.boxText} tone={chosen ? 'ink' : 'muted'} numberOfLines={2}>
           {label}
         </Text>
@@ -114,7 +106,6 @@ function PickerBody({
               return (
                 <Row
                   key={category.id}
-                  icon={categoryIcon(parent ?? category)}
                   label={categoryName(category)}
                   note={parent ? categoryName(parent) : undefined}
                   selected={category.id === value}
@@ -129,7 +120,6 @@ function PickerBody({
             return (
               <View key={category.id}>
                 <Row
-                  icon={categoryIcon(category)}
                   label={categoryName(category)}
                   selected={category.id === value}
                   trailing={aisles.length > 0 ? (open ? 'chevron-down' : 'chevron-right') : undefined}
@@ -163,7 +153,6 @@ function PickerBody({
 }
 
 function Row({
-  icon,
   label,
   note,
   selected,
@@ -171,7 +160,6 @@ function Row({
   expanded,
   onPress,
 }: {
-  icon?: IconName;
   label: string;
   note?: string;
   selected: boolean;
@@ -186,7 +174,6 @@ function Row({
       accessibilityState={{ selected, expanded }}
       onPress={onPress}
       style={({ pressed }) => [styles.row, selected && styles.rowSelected, pressed && styles.pressed]}>
-      {icon ? <MaterialCommunityIcons name={icon} size={22} color={colors.inkSoft} /> : null}
       <View style={styles.rowText}>
         <Text style={styles.rowLabel}>{label}</Text>
         {note ? (

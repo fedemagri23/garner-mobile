@@ -294,3 +294,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** With the taxonomy (CON-060) the catalog has 141 categories, so _Agregar producto_ replaces its chips with `CategoryField`: the chosen "department › aisle" with its department's icon, opening a sheet with a search box (`searchCategories`: the name in the app's language, the Spanish name and every language's search words, accent- and case-blind, aisles first) and departments that expand to their aisles plus "Todo …". Icons come from the taxonomy; a name the app does not ship falls back to `shape-outline`. Buscar's chip row now holds the twenty departments, scrolling; the icon grid is checkpoint 20.
 - **Why:** A form cannot show 141 chips, and a shopper thinks "gaseosa" before they think "Bebidas › Gaseosas".
 - **Revisit when:** Checkpoint 20 brings the department grid to Buscar.
+
+### MCON-049 — No category icons
+- **Phase:** 10 · **Area:** catalog · **Status:** accepted
+- **What:** The category picker shows names only (the backend dropped icons, CON-061); Buscar's departments will be a list of names in checkpoint 20. Amends MCON-048.
+- **Why:** Decided by the user.
+- **Revisit when:** The user asks for icons.

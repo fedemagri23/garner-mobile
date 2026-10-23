@@ -774,12 +774,12 @@ pnpm run taxonomy:sync
 
 1. Buscar: the chips list the twenty departments; _Lácteos y huevos_ shows the
    milk.
-2. Agregar producto → _Elegí una categoría_: departments with icons; open
+2. Agregar producto → _Elegí una categoría_: departments by name; open
    _Bebidas_ → its aisles and _Todo Bebidas_. Type `limo` (or `gaseosa`):
    _Gaseosas, Bebidas_.
 3. Switch to English/German/Portuguese: the picker and the chips follow.
 
 **Known limits**
 
-- Browsing by department with a grid of icons, and lists sorted by aisle,
+- Browsing by department in Buscar, and lists sorted by aisle,
   are checkpoints 20 and 21; search does not yet match category names.
