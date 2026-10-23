@@ -947,6 +947,23 @@ await step('Mis aportes lists what was added, with where each stands', async () 
   await press('Cerrar');
   await press('Volver');
 });
+await step('a product missing from the catalog is created from the list and lands on it', async () => {
+  const fromList = `Bizcochos de Grasa ${RUN}`;
+  await press('Listas');
+  await pressContaining('Mi lista');
+  await typeInto('Agregar producto', fromList);
+  await press(`Crear “${fromList}” y agregarlo`);
+  await shown('Agregar producto');
+  await text('Al terminar se agrega a Mi lista.');
+  await press('Almacén');
+  await press('Crear y agregar a la lista');
+  // Back on the list, with the new product on it.
+  await shown('Mi lista');
+  await shown(fromList);
+  await page.screenshot({ path: `${SHOTS}list-create-product.png` });
+  await press('Volver');
+  await press('Inicio');
+});
 await step('what the run added is hidden again by a moderator, so the catalog stays as seeded', async () => {
   const mine = await (
     await fetch(`${API_URL}/v1/community/mine`, { headers: { authorization: `Bearer ${await apiToken(NEW_ACCOUNT)}` } })
@@ -958,7 +975,7 @@ await step('what the run added is hidden again by a moderator, so the catalog st
     ...mine.products.map((product) => hide('products', product.id)),
     ...mine.stores.map((store) => hide('stores', store.id)),
   ]);
-  if (answers.length !== 4 || answers.some((answer) => answer.status !== 204)) {
+  if (answers.length !== 5 || answers.some((answer) => answer.status !== 204)) {
     throw new Error(`hid ${answers.map((answer) => answer.status)}`);
   }
 });

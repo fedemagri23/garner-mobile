@@ -282,3 +282,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** `pt` (Brazilian Portuguese) joins the app's languages: every catalog, money as `AR$ 1.390`, `€ 1,15`, `R$ 19,90`, dates "21 de set", categories from the server's `pt` translations, and the server writes push and email in it (CON-059). The catalog parity test covers it.
 - **Why:** Asked for by the user.
 - **Revisit when:** European Portuguese is wanted.
+
+### MCON-047 — Creating a product from a list puts it on the list
+- **Phase:** 9 (asked by the user) · **Area:** lists, community · **Status:** accepted
+- **What:** The list's _Agregar producto_ search offers _Crear “…” y agregarlo_ when nothing matches, and _¿No es ninguno? Crear “…”_ under the matches. It opens `/add-product?name=…&listId=…`; in that mode a created product (`added`), a tapped suggestion, or a code already in Garner is added to the list with `useAddToList` and the form closes. A product queued offline is not added (list items are online-only); the done screen says to add it from the list once sent.
+- **Why:** While writing a list, a missing product should cost one detour, not a trip through Buscar and back.
+- **Revisit when:** Lists are edited offline (then queue the list item after the product).

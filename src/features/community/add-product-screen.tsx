@@ -10,6 +10,7 @@ import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
 import { Text } from '@/components/text';
 import { TextField } from '@/components/text-field';
+import { useAddToList, useList } from '@/features/lists/use-lists';
 import { SyncBanner } from '@/features/outbox/sync-banner';
 import { t } from '@/i18n';
 import { categoryName } from '@/lib/category-name';
@@ -49,9 +50,12 @@ const fold = (text: string) =>
  * Scanning the code is the fast way: a code Garner knows opens that product,
  * and one Open Food Facts knows fills in name, brand, size, category and a
  * photo — never over what the shopper already typed.
+ *
+ * Opened from a list (`listId`), whatever is picked or created goes onto that
+ * list and the form closes: back to the list in one step.
  */
 export function AddProductScreen() {
-  const params = useLocalSearchParams<{ name?: string; barcode?: string }>();
+  const params = useLocalSearchParams<{ name?: string; barcode?: string; listId?: string }>();
   const [name, setName] = useState(params.name ?? '');
   const [brandText, setBrandText] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -90,6 +94,24 @@ export function AddProductScreen() {
   const brands = useBrands();
   const categories = useAllCategories();
   const add = useAddProduct();
+  const list = useList(params.listId ?? '', !!params.listId);
+  const addToList = useAddToList();
+  const [listError, setListError] = useState<string | null>(null);
+
+  /** Puts a product on the list this form was opened from, and closes. False if it could not. */
+  const putOnList = async (productId: string): Promise<boolean> => {
+    if (!list.data) return false;
+    setListError(null);
+    try {
+      await addToList.mutateAsync({ list: list.data, productId });
+      router.back();
+      return true;
+    } catch (error) {
+      setListError(errorMessage(error, { 422: t('lists.detail.full') }));
+      return false;
+    }
+  };
+  const forList = params.listId ? putOnList : undefined;
 
   const brandMatches = useMemo(() => {
     const typed = fold(brandText);
@@ -129,12 +151,21 @@ export function AddProductScreen() {
         },
         brandLabel: exactBrand?.name ?? (brandText.trim() || null),
       },
-      { onSuccess: setOutcome },
+      {
+        onSuccess: (result) => {
+          // From a list: straight onto it and back. Queued offline, the list has to wait.
+          if (result.kind === 'added' && forList) {
+            void forList(result.id).then((done) => done || setOutcome(result));
+          } else {
+            setOutcome(result);
+          }
+        },
+      },
     );
   };
 
   if (outcome) {
-    return <Added outcome={outcome} />;
+    return <Added outcome={outcome} listName={list.data?.name ?? null} />;
   }
 
   const serverError = add.error
@@ -165,6 +196,11 @@ export function AddProductScreen() {
         </View>
         <SyncBanner />
         <Text tone="muted">{t('community.addProduct.intro')}</Text>
+        {list.data ? (
+          <Text variant="label" tone="accent">
+            {t('community.addProduct.forList', { list: list.data.name })}
+          </Text>
+        ) : null}
 
         <View style={styles.group}>
           <View style={styles.barcodeRow}>
@@ -192,6 +228,7 @@ export function AddProductScreen() {
             looking={lookup.isFetching}
             usePhoto={usePhoto}
             onTogglePhoto={() => setUsePhoto((on) => !on)}
+            onPickForList={forList}
           />
         </View>
         <ScanCodeSheet
@@ -224,6 +261,7 @@ export function AddProductScreen() {
                   key={suggestion.id}
                   suggestion={suggestion}
                   last={index === suggestions.data.length - 1}
+                  onPickForList={forList}
                 />
               ))}
             </View>
@@ -303,7 +341,16 @@ export function AddProductScreen() {
             {serverError}
           </Text>
         ) : null}
-        <Button label={t('community.addProduct.submit')} loading={add.isPending} onPress={submit} />
+        {listError ? (
+          <Text tone="danger" accessibilityLiveRegion="polite">
+            {listError}
+          </Text>
+        ) : null}
+        <Button
+          label={forList ? t('community.addProduct.submitToList') : t('community.addProduct.submit')}
+          loading={add.isPending || addToList.isPending}
+          onPress={submit}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -315,11 +362,13 @@ function LookupCard({
   looking,
   usePhoto,
   onTogglePhoto,
+  onPickForList,
 }: {
   lookup: BarcodeLookup | undefined;
   looking: boolean;
   usePhoto: boolean;
   onTogglePhoto: () => void;
+  onPickForList?: (productId: string) => Promise<boolean>;
 }) {
   if (looking) {
     return (
@@ -333,14 +382,18 @@ function LookupCard({
     return (
       <View style={[styles.lookup, styles.lookupKnown]} accessibilityLiveRegion="polite">
         <Text variant="bodyStrong">{t('community.addProduct.inCatalog', { name: lookup.name })}</Text>
-        <Button
-          label={t('community.addProduct.open')}
-          variant="secondary"
-          onPress={() => {
-            router.back();
-            router.navigate(`/search/product/${productId}`);
-          }}
-        />
+        {onPickForList ? (
+          <Button label={t('community.addProduct.addThisToList')} onPress={() => void onPickForList(productId)} />
+        ) : (
+          <Button
+            label={t('community.addProduct.open')}
+            variant="secondary"
+            onPress={() => {
+              router.back();
+              router.navigate(`/search/product/${productId}`);
+            }}
+          />
+        )}
       </View>
     );
   }
@@ -375,7 +428,16 @@ function LookupCard({
   return null;
 }
 
-function SuggestionRow({ suggestion, last }: { suggestion: Suggestion; last: boolean }) {
+function SuggestionRow({
+  suggestion,
+  last,
+  onPickForList,
+}: {
+  suggestion: Suggestion;
+  last: boolean;
+  /** From a list: picking it puts it there instead of opening it. */
+  onPickForList?: (productId: string) => Promise<boolean>;
+}) {
   const meta = [
     suggestion.brandName,
     suggestion.packageSize !== null ? `${suggestion.packageSize} ${t(`community.addProduct.units.${suggestion.unit as Unit}`)}` : null,
@@ -386,8 +448,16 @@ function SuggestionRow({ suggestion, last }: { suggestion: Suggestion; last: boo
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t('community.addProduct.suggestionLabel', { name: [suggestion.name, meta].filter(Boolean).join(', ') })}
+      accessibilityLabel={
+        onPickForList
+          ? t('lists.detail.addNamed', { name: suggestion.name })
+          : t('community.addProduct.suggestionLabel', { name: [suggestion.name, meta].filter(Boolean).join(', ') })
+      }
       onPress={() => {
+        if (onPickForList) {
+          void onPickForList(suggestion.id);
+          return;
+        }
         router.back();
         router.navigate(`/search/product/${suggestion.id}`);
       }}
@@ -400,13 +470,17 @@ function SuggestionRow({ suggestion, last }: { suggestion: Suggestion; last: boo
           </Text>
         ) : null}
       </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+      <Ionicons
+        name={onPickForList ? 'add-circle-outline' : 'chevron-forward'}
+        size={onPickForList ? 22 : 18}
+        color={onPickForList ? colors.accent : colors.muted}
+      />
     </Pressable>
   );
 }
 
 /** After adding: in the catalog already, or waiting on the phone for a connection. */
-function Added({ outcome }: { outcome: AddProductOutcome }) {
+function Added({ outcome, listName }: { outcome: AddProductOutcome; listName: string | null }) {
   const added = outcome.kind === 'added';
 
   return (
@@ -426,6 +500,11 @@ function Added({ outcome }: { outcome: AddProductOutcome }) {
         <Text tone="muted" style={styles.centerText}>
           {added ? t('community.addProduct.addedNote') : t('community.addProduct.queuedNote')}
         </Text>
+        {!added && listName ? (
+          <Text tone="muted" style={styles.centerText}>
+            {t('community.addProduct.queuedList', { list: listName })}
+          </Text>
+        ) : null}
         {added ? (
           <>
             <Button

@@ -22,6 +22,8 @@ export const lists: Catalog<typeof es> = {
     added: 'Added: {{name}}.',
     nowHas: 'Now there are {{quantity}} of {{name}}.',
     notFound: 'We found no “{{search}}” in the catalogue.',
+    createNew: 'Create “{{name}}” and add it',
+    noneOfThese: 'None of these? Create “{{name}}”',
     full: 'The list is full.',
     remove: 'Remove {{name}}',
     oneLess: 'One less {{name}}',

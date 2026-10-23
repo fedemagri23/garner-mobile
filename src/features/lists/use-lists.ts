@@ -37,11 +37,12 @@ export function useLists() {
 }
 
 /** One list with its items and totals. */
-export function useList(id: string) {
+export function useList(id: string, enabled = true) {
   const { api } = useSession();
 
   return useQuery({
     queryKey: listKey(id),
+    enabled,
     queryFn: () => unwrap(api.GET('/v1/shopping-lists/{id}', { params: { path: { id } } })),
   });
 }

@@ -185,6 +185,23 @@ function AddProduct({ list }: { list: ListDetail }) {
           {t('lists.detail.notFound', { search })}
         </Text>
       ) : null}
+      {query.trim() && search && !results.isFetching && results.data ? (
+        // Not in the catalog, or not the right one: make it here and it lands on this list.
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            router.push({ pathname: '/add-product', params: { name: query.trim(), listId: list.id } });
+            setQuery('');
+          }}
+          style={({ pressed }) => [styles.create, pressed && styles.pressed]}>
+          <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
+          <Text variant="label" tone="accent" style={styles.createText}>
+            {matches.length > 0
+              ? t('lists.detail.noneOfThese', { name: query.trim() })
+              : t('lists.detail.createNew', { name: query.trim() })}
+          </Text>
+        </Pressable>
+      ) : null}
       {added ? (
         <Text variant="caption" tone="accent" accessibilityLiveRegion="polite">
           {added}
@@ -282,6 +299,8 @@ function Totals({ list }: { list: ListDetail }) {
 }
 
 const styles = StyleSheet.create({
+  create: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: MIN_TOUCH },
+  createText: { flex: 1 },
   root: { flex: 1, backgroundColor: colors.ground },
   content: { padding: space.xl },
   header: { gap: space.lg, paddingBottom: space.lg },

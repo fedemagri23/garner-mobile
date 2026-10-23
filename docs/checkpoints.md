@@ -725,3 +725,29 @@ it in Idioma; push and email follow.
   stays _Sin verificar_.
 - Set `OPEN_FOOD_FACTS_USER_AGENT` to a contact address before launch (they ask
   for one); a legal look at the ODbL and photo credits is pending (CON-058).
+
+## Create a product from a list
+
+**What works:** in a list, typing in _Agregar producto_ a product the catalog
+does not have shows _Crear “…” y agregarlo_ (and, when there are matches but
+none is right, _¿No es ninguno? Crear “…”_). It opens _Agregar producto_ with
+the name filled in and _Al terminar se agrega a …_; _Crear y agregar a la
+lista_ creates it, puts it on the list and goes straight back. In that form,
+tapping a suggestion (_¿Es alguno de estos?_) or a code Garner already knows
+(_Agregar este a la lista_) adds that one instead. Scanning works as in
+checkpoint 17.
+
+**Check**
+
+1. Listas → _Compra semanal_ → type `bizcochos de grasa` in _Agregar producto_ →
+   _Crear “bizcochos de grasa” y agregarlo_.
+2. Pick _Almacén_ (scan a code if you have one) → _Crear y agregar a la lista_:
+   you are back on the list with the new product on it.
+3. Again with `alfajor`: _¿No es ninguno? Crear “alfajor”_ → in the form, tap
+   _Alfajor Artesanal de Maicena_ under _¿Es alguno de estos?_: it is added to
+   the list and the form closes.
+
+**Known limits**
+
+- Without a connection the product is saved on the phone but not put on the
+  list: add it from the list once it is sent.

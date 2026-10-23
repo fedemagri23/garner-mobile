@@ -19,6 +19,8 @@ export const lists = {
     added: 'Agregado: {{name}}.',
     nowHas: 'Ahora hay {{quantity}} de {{name}}.',
     notFound: 'No encontramos “{{search}}” en el catálogo.',
+    createNew: 'Crear “{{name}}” y agregarlo',
+    noneOfThese: '¿No es ninguno? Crear “{{name}}”',
     full: 'La lista ya está llena.',
     remove: 'Quitar {{name}}',
     oneLess: 'Uno menos de {{name}}',
