@@ -36,6 +36,7 @@ export const community = {
     categoryAll: 'Todo {{name}}',
     categoryNoMatch: 'No encontramos esa categoría.',
     categoryLabel: 'Categoría: {{name}}. Cambiar',
+    labelsTitle: 'Características',
     size: 'Tamaño',
     sizePlaceholder: 'Ej.: 500',
     units: { GRAM: 'g', KILOGRAM: 'kg', MILLILITER: 'ml', LITER: 'L', UNIT: 'unidades' },

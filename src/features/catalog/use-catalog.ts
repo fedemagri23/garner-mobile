@@ -10,11 +10,17 @@ export type Category = components['schemas']['CategoryResponse'];
 const PAGE_SIZE = 20;
 
 /** Products matching a search and category, a page at a time. */
-export function useProductSearch(search: string, categoryId: string | null) {
+export function useProductSearch(
+  search: string,
+  categoryId: string | null,
+  labels: Product['labels'] = [],
+  enabled = true,
+) {
   const { api } = useSession();
 
   return useInfiniteQuery({
-    queryKey: ['products', { search, categoryId }],
+    queryKey: ['products', { search, categoryId, labels }],
+    enabled,
     initialPageParam: 1,
     queryFn: ({ pageParam }) =>
       unwrap(
@@ -25,6 +31,7 @@ export function useProductSearch(search: string, categoryId: string | null) {
               pageSize: PAGE_SIZE,
               search: search || undefined,
               categoryId: categoryId ?? undefined,
+              labels: labels.length > 0 ? labels : undefined,
             },
           },
         }),
@@ -34,18 +41,6 @@ export function useProductSearch(search: string, categoryId: string | null) {
     // Keep showing the last results while the next search loads, rather than
     // blanking the list on every keystroke.
     placeholderData: keepPreviousData,
-  });
-}
-
-/** Top-level categories, for the chips above the results. */
-export function useTopCategories() {
-  const { api } = useSession();
-
-  return useQuery({
-    queryKey: ['categories'],
-    queryFn: () => unwrap(api.GET('/v1/categories')),
-    select: (categories) => categories.filter((category) => category.parentId === null),
-    staleTime: 10 * 60_000,
   });
 }
 

@@ -39,6 +39,7 @@ export const community: Catalog<typeof es> = {
     categoryAll: 'All of {{name}}',
     categoryNoMatch: 'We found no such category.',
     categoryLabel: 'Category: {{name}}. Change',
+    labelsTitle: 'Features',
     size: 'Size',
     sizePlaceholder: 'E.g. 500',
     units: { GRAM: 'g', KILOGRAM: 'kg', MILLILITER: 'ml', LITER: 'L', UNIT: 'units' },

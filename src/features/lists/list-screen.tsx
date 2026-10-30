@@ -8,19 +8,26 @@ import { Button } from '@/components/button';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { useProductSearch, type Product } from '@/features/catalog/use-catalog';
+import { useAllCategories } from '@/features/community/use-community';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDay, formatPrice, productCount } from '@/lib/format';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
+import { groupByAisle } from './aisle-order';
 import { ListOptionsSheet } from './list-options-sheet';
 import { useAddToList, useList, useSetQuantity, type ListDetail, type ListItem } from './use-lists';
 
 /** One list: what is on it, how many of each, and what it should cost. */
+type Row =
+  | { kind: 'heading'; key: string; title: string }
+  | { kind: 'item'; key: string; item: ListItem; first: boolean; last: boolean };
+
 export function ListScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const list = useList(id);
+  const categories = useAllCategories();
   const [options, setOptions] = useState(false);
 
   if (!list.data) {
@@ -40,21 +47,41 @@ export function ListScreen() {
   }
 
   const data = list.data;
+  // By aisle: the list in the order the shop is walked, under department headings.
+  const rows: Row[] =
+    data.sortMode === 'CATEGORY'
+      ? groupByAisle(data.items, categories.data ?? []).flatMap((group) => [
+          { kind: 'heading' as const, key: `h-${group.key}`, title: group.title ?? t('lists.detail.otherAisles') },
+          ...group.items.map((item, index) => ({
+            kind: 'item' as const,
+            key: item.id,
+            item,
+            first: index === 0,
+            last: index === group.items.length - 1,
+          })),
+        ])
+      : data.items.map((item, index) => ({
+          kind: 'item' as const,
+          key: item.id,
+          item,
+          first: index === 0,
+          last: index === data.items.length - 1,
+        }));
 
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
       <FlatList
-        data={data.items}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => (
-          <ItemRow
-            listId={data.id}
-            currency={data.currency}
-            item={item}
-            first={index === 0}
-            last={index === data.items.length - 1}
-          />
-        )}
+        data={rows}
+        keyExtractor={(row) => row.key}
+        renderItem={({ item: row }) =>
+          row.kind === 'heading' ? (
+            <Text variant="label" tone="muted" style={styles.aisleHeading} accessibilityRole="header">
+              {row.title}
+            </Text>
+          ) : (
+            <ItemRow listId={data.id} currency={data.currency} item={row.item} first={row.first} last={row.last} />
+          )
+        }
         contentContainerStyle={styles.content}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
@@ -299,6 +326,7 @@ function Totals({ list }: { list: ListDetail }) {
 }
 
 const styles = StyleSheet.create({
+  aisleHeading: { paddingTop: space.md, paddingHorizontal: space.xs },
   create: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: MIN_TOUCH },
   createText: { flex: 1 },
   root: { flex: 1, backgroundColor: colors.ground },

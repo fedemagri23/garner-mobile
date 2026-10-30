@@ -21,6 +21,7 @@ import { errorMessage } from '@/lib/error-message';
 import { confidenceLabel, confidenceTone, formatDistance, formatPrice, shortDay } from '@/lib/format';
 import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
+import { LabelTags } from './labels';
 import { useProduct } from './use-catalog';
 
 /** A product: where it is cheapest near the shopper, and how its price moved. */
@@ -107,6 +108,7 @@ export function ProductScreen() {
                   .join(' · ')}
               </Text>
               <OriginBadge origin={product.data.origin} />
+              <LabelTags labels={product.data.labels} />
               {product.data.imageSource === 'OPEN_FOOD_FACTS' ? (
                 <Text variant="caption" tone="muted">
                   {t('browse.product.photoCredit')}

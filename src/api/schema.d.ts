@@ -1339,6 +1339,8 @@ export interface components {
              * @enum {string|null}
              */
             imageSource: "OPEN_FOOD_FACTS" | null;
+            /** @description Gluten-free, vegan, organic… */
+            labels: ("gluten-free" | "vegan" | "vegetarian" | "organic" | "lactose-free" | "sugar-free" | "kosher" | "halal")[];
             isActive: boolean;
             barcodes: components["schemas"]["ProductBarcodeResponse"][];
             /**
@@ -1379,6 +1381,7 @@ export interface components {
             packageSize?: number;
             /** @enum {string} */
             unit: "GRAM" | "KILOGRAM" | "MILLILITER" | "LITER" | "UNIT";
+            labels?: ("gluten-free" | "vegan" | "vegetarian" | "organic" | "lactose-free" | "sugar-free" | "kosher" | "halal")[];
             /** @description Use the photo of the first barcode found by `/v1/product-lookup` (Open Food Facts), credited; the server takes it from its own lookup, never from a link */
             photoFromLookup?: boolean;
             /**
@@ -1400,6 +1403,7 @@ export interface components {
             unit?: "GRAM" | "KILOGRAM" | "MILLILITER" | "LITER" | "UNIT";
             /** Format: uri */
             imageUrl?: string;
+            labels?: ("gluten-free" | "vegan" | "vegetarian" | "organic" | "lactose-free" | "sugar-free" | "kosher" | "halal")[];
             /** @description Retire a product by setting this to false; products are never deleted */
             isActive?: boolean;
         };
@@ -1436,6 +1440,8 @@ export interface components {
              * @description Ours, mapped from their categories
              */
             categoryId: string | null;
+            /** @description Labels Open Food Facts gives it */
+            labels: ("gluten-free" | "vegan" | "vegetarian" | "organic" | "lactose-free" | "sugar-free" | "kosher" | "halal")[];
             /** @description Their front photo (CC BY-SA): credit it */
             imageUrl: string | null;
             /** @description The product’s page there, for the credit */
@@ -1703,6 +1709,11 @@ export interface components {
             id: string;
             name: string;
             brandName: string | null;
+            /**
+             * Format: uuid
+             * @description To group a list by department and aisle
+             */
+            categoryId: string;
             categoryName: string;
             /** @example 1 L */
             packageLabel: string | null;
@@ -2757,6 +2768,8 @@ export interface operations {
                 /** @description Includes subcategories */
                 categoryId?: string;
                 brandId?: string;
+                /** @description Only products with every one of these labels; comma-separated or repeated */
+                labels?: ("gluten-free" | "vegan" | "vegetarian" | "organic" | "lactose-free" | "sugar-free" | "kosher" | "halal")[];
             };
             header?: never;
             path?: never;

@@ -113,6 +113,18 @@ export function useCreateList() {
   });
 }
 
+/** How a list is shown: by hand, or grouped by aisle in the shop's order. */
+export function useSetListSort(id: string) {
+  const { api } = useSession();
+  const refresh = useRefreshLists();
+
+  return useMutation({
+    mutationFn: (sortMode: 'MANUAL' | 'CATEGORY') =>
+      unwrap(api.PATCH('/v1/shopping-lists/{id}', { params: { path: { id } }, body: { sortMode } })),
+    onSettled: () => refresh(id),
+  });
+}
+
 export function useRenameList(id: string) {
   const { api } = useSession();
   const refresh = useRefreshLists();

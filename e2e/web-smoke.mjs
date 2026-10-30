@@ -277,11 +277,12 @@ await step('back returns to Inicio', async () => {
   await press('Volver');
   await text('Bajaron cerca tuyo');
 });
-await step('search finds a product as you type', async () => {
-  const token = await apiToken({ email: 'shopper@garner.test', password: 'correct-horse-battery' });
-  const all = await (await fetch(`${API_URL}/v1/products?pageSize=1`, { headers: { authorization: `Bearer ${token}` } })).json();
+await step('Buscar opens on the departments, and finds a product as you type', async () => {
   await press('Buscar');
-  await text(`${all.meta.totalItems} productos`);
+  await shown('Departamentos');
+  await shown('Lácteos y huevos');
+  await shown('Limpieza');
+  await page.screenshot({ path: `${SHOTS}checkpoint-20-departments.png` });
   await typeInto('Buscar productos', 'arroz');
   await text('1 producto');
   await text('Arroz Largo Fino 1kg');
@@ -290,13 +291,35 @@ await step('a search with no match says so', async () => {
   await typeInto('Buscar productos', 'caviar');
   await text('No encontramos productos para “caviar”.');
 });
-await step('a category chip narrows the list, subcategories included', async () => {
-  await typeInto('Buscar productos', ' ');
+await step('typing a category\'s everyday word offers the whole aisle', async () => {
+  await typeInto('Buscar productos', 'soda');
+  await press('Ver todo en Agua');
+  await text('Agua Mineral 2L');
+  await shown('Volver a Bebidas');
+});
+await step('a department shows its aisles, and its products with its aisles', async () => {
+  await press('Volver a Bebidas');
+  await press('Departamentos');
   await press('Lácteos y huevos');
+  await shown('Todo Lácteos y huevos');
+  await shown('Yogures');
   await text('1 producto');
   await text('Leche Entera La Serenísima 1L');
+  await press('Yogures');
+  await text('No hay productos en esta categoría.');
+  await press('Volver a Lácteos y huevos');
+  await press('Departamentos');
   await press('Bebidas');
   await text('Agua Mineral 2L');
+});
+await step('a label narrows to what carries it', async () => {
+  await press('Departamentos');
+  await press('Sin TACC');
+  await text('1 producto');
+  await text('Arroz Largo Fino 1kg');
+  await press('Sin TACC');
+  await shown('Departamentos');
+  await press('Bebidas');
 });
 await step('a search result opens the product', async () => {
   await pressContaining('Agua Mineral 2L');
@@ -304,7 +327,7 @@ await step('a search result opens the product', async () => {
   await text('el más barato');
   await page.screenshot({ path: `${SHOTS}checkpoint-2-search-product.png` });
   await press('Volver');
-  await press('Todo');
+  await press('Departamentos');
 });
 
 // --- Checkpoint 3: barcodes and "add to list" -----------------------------
@@ -639,6 +662,7 @@ await step('Mis alertas lists what is watched, and one can be paused and resumed
 await step('an alert is made from a product, near the shopper, in their currency', async () => {
   await press('Volver');
   await press('Buscar');
+  await typeInto('Buscar productos', 'leche');
   await pressContaining('Leche Entera La Serenísima 1L');
   await press('Avisame si baja');
   await press('Baja de un precio');
@@ -778,6 +802,7 @@ await step('Mis aportes lists it with where it stands', async () => {
 });
 await step('a price reported offline waits, with its photo, and is sent on reconnecting', async () => {
   await press('Buscar');
+  await typeInto('Buscar productos', 'pan lactal');
   await pressContaining('Pan Lactal 500g');
   await press('Informar precio');
   await shown('¿En qué súper estás?');
@@ -827,7 +852,7 @@ await step('a search with no match offers to add it, and shows what is already t
   await typeInto('Buscar productos', NEW_PRODUCT);
   await text(`No encontramos productos para “${NEW_PRODUCT}”.`);
   await press('No lo encuentro — agregarlo');
-  await shown('Agregar producto');
+  await text('Lo ven todos desde ya');
   await typeInto('Nombre', 'Alfajor');
   await shown('¿Es alguno de estos?');
   await shown('Alfajor Artesanal de Maicena');
@@ -867,7 +892,7 @@ await step('a code Garner knows points at its product instead of adding it again
   await typeInto('Buscar productos', 'alfajor triple');
   await text('No encontramos productos para “alfajor triple”.');
   await press('No lo encuentro — agregarlo');
-  await shown('Agregar producto');
+  await text('Lo ven todos desde ya');
   await typeInto('Código de barras', '7791234000029');
   await shown('Ya está en Garner: Arroz Largo Fino 1kg');
 });
@@ -925,7 +950,7 @@ await step('a product added offline waits on the phone and is added on reconnect
   await text(`No encontramos productos para “${OFFLINE_PRODUCT}”.`);
   await page.setOfflineMode(true);
   await press('No lo encuentro — agregarlo');
-  await shown('Agregar producto');
+  await text('Lo ven todos desde ya');
   await pickCategory('pasta', 'Pastas secas, Almacén');
   await press('Agregar producto');
   await shown('Guardado en el teléfono');
@@ -956,7 +981,7 @@ await step('a product missing from the catalog is created from the list and land
   await pressContaining('Mi lista');
   await typeInto('Agregar producto', fromList);
   await press(`Crear “${fromList}” y agregarlo`);
-  await shown('Agregar producto');
+  await text('Lo ven todos desde ya');
   await text('Al terminar se agrega a Mi lista.');
   await typeInto('Marca', `Doña Prueba ${RUN}`);
   await text(`Usar “Doña Prueba ${RUN}” como marca nueva`);

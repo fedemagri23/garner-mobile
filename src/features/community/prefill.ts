@@ -3,6 +3,7 @@ import { currentLanguage } from '@/i18n';
 
 type Lookup = components['schemas']['BarcodeLookupResponse'];
 type Unit = components['schemas']['CreateProductRequest']['unit'];
+export type Label = components['schemas']['ProductResponse']['labels'][number];
 
 /** The fields of "Agregar producto" a barcode lookup can fill in. */
 export interface PrefillFields {
@@ -11,6 +12,7 @@ export interface PrefillFields {
   sizeText: string;
   unit: Unit;
   categoryId: string | null;
+  labels: Label[];
 }
 
 /** Fields the shopper has changed by hand: a lookup never overwrites those. */
@@ -33,6 +35,7 @@ export function prefillFrom(lookup: Lookup, edited: Edited): Partial<PrefillFiel
   if (lookup.packageSize !== null && !edited.sizeText) changes.sizeText = sizeText(lookup.packageSize);
   if (lookup.unit && !edited.unit) changes.unit = lookup.unit;
   if (lookup.categoryId && !edited.categoryId) changes.categoryId = lookup.categoryId;
+  if (lookup.labels.length > 0 && !edited.labels) changes.labels = lookup.labels;
   return changes;
 }
 

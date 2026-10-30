@@ -441,8 +441,8 @@ prices), then what real users need, then real prices, then shipping.
 
 | Phase | Checkpoints | What | Repo |
 | --- | --- | --- | --- |
-| 10 | 18, 19 | Category taxonomy: data, API, labels | backend |
-| 10 | 20, 21 | Categories in the app: browse, pick, list by aisle | mobile |
+| 10 ✅ | 18, 19 | Category taxonomy: data, API, labels | backend |
+| 10 ✅ | 20, 21 | Categories in the app: browse, pick, list by aisle | mobile |
 | 11 | 22–25 | Ready for real users: password reset, account deletion, profile, terms, moderation page | both |
 | 12 | 26–28 | Real prices: Argentina's public price data, Vienna sources, data quality | backend |
 | 13 | 29–31 | Ship: builds, real-device checks, store listings | mobile |
@@ -456,7 +456,7 @@ list is in [`taxonomy.md`](taxonomy.md). The app must work with that many:
 four chips in a row does not scale to twenty, and a product form cannot
 show 150 chips.
 
-### Checkpoint 18 — Backend: the taxonomy as data
+### Checkpoint 18 ✅ — Backend: the taxonomy as data
 
 - **One file, versioned in garner-app:** `data/taxonomy.json`. Each category:
   `slug`, `parent`, names in es/en/de/pt, `position` (aisle order within its parent),
@@ -489,7 +489,7 @@ show 150 chips.
   languages, no cycles, ≤ 2 levels); sync is
   idempotent; retiring a slug moves its products; search by synonym.
 
-### Checkpoint 19 — Backend: product labels
+### Checkpoint 19 ✅ — Backend: product labels
 
 - Diet and lifestyle **labels**, separate from categories: `gluten-free` (sin
   TACC), `vegan`, `vegetarian`, `organic`, `lactose-free`, `sugar-free`,
@@ -501,7 +501,7 @@ show 150 chips.
 - Labels a shopper adds count as unverified like the rest of the product
   (Phase 8 rules).
 
-### Checkpoint 20 — App: browsing by category
+### Checkpoint 20 ✅ — App: browsing by category
 
 - **Buscar with an empty search** shows the departments as a list of names
   (twenty fit in a scroll), instead of the row of chips.
@@ -516,7 +516,7 @@ show 150 chips.
 - Names from the category's translations (`categoryName`). No icons
   (decided with the user): categories are shown by name.
 
-### Checkpoint 21 — App: picking a category, and lists by aisle
+### Checkpoint 21 ✅ (except interests) — App: picking a category, and lists by aisle
 
 - **Agregar producto**: the category field becomes a picker sheet: search
   box (names and synonyms), departments by name, then aisles. A lookup
@@ -596,6 +596,8 @@ matching); it needs real sources.
 
 Fitted in where they help, not scheduled:
 
+- Choosing interests (departments) in preferences, for Inicio (left from checkpoint 21).
+- A trip ordered by aisle, like its list.
 - Product photos taken by shoppers, reviewed (for what Open Food Facts lacks).
 - Adding to lists offline (queue list items like trip changes).
 - Correcting a product's details (shoppers propose, the team or enough

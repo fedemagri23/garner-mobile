@@ -9,6 +9,7 @@ export const lists = {
     edited: 'editada {{when}}',
   },
   detail: {
+    otherAisles: 'Otros',
     gone: 'Esta lista ya no existe.',
     wherePlan: 'Dónde comprar',
     moreOptions: 'Más opciones',
@@ -34,6 +35,8 @@ export const lists = {
     whereToBuy: '¿Dónde conviene comprar?',
   },
   options: {
+    byAisle: 'Ordenar por pasillo',
+    byHand: 'Orden manual',
     rename: 'Cambiar el nombre',
     duplicate: 'Duplicar la lista',
     delete: 'Eliminar la lista',

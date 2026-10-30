@@ -10,6 +10,7 @@ const found = {
   packageSize: 1.5,
   unit: 'KILOGRAM' as const,
   categoryId: 'cat-1',
+  labels: ['gluten-free' as const],
   imageUrl: 'https://images.test/front.jpg',
   sourceUrl: 'https://world.openfoodfacts.org/product/1',
 };
@@ -24,6 +25,7 @@ describe('prefillFrom', () => {
       sizeText: '1,5',
       unit: 'KILOGRAM',
       categoryId: 'cat-1',
+      labels: ['gluten-free'],
     });
   });
 
@@ -33,14 +35,14 @@ describe('prefillFrom', () => {
   });
 
   it('never overwrites what the shopper typed', () => {
-    expect(prefillFrom(found, { name: true, sizeText: true, categoryId: true })).toEqual({
+    expect(prefillFrom(found, { name: true, sizeText: true, categoryId: true, labels: true })).toEqual({
       brandText: 'Havanna',
       unit: 'KILOGRAM',
     });
   });
 
   it('leaves out what the lookup does not know, and changes nothing for other answers', () => {
-    expect(prefillFrom({ ...found, brandName: null, packageSize: null, unit: null, categoryId: null }, {})).toEqual({
+    expect(prefillFrom({ ...found, brandName: null, packageSize: null, unit: null, categoryId: null, labels: [] }, {})).toEqual({
       name: 'Alfajor de chocolate',
     });
     expect(prefillFrom({ ...found, match: 'CATALOG' }, {})).toEqual({});

@@ -12,6 +12,7 @@ export const lists: Catalog<typeof es> = {
     edited: 'bearbeitet {{when}}',
   },
   detail: {
+    otherAisles: 'Sonstiges',
     gone: 'Diese Liste existiert nicht mehr.',
     wherePlan: 'Wo kaufen',
     moreOptions: 'Weitere Optionen',
@@ -37,6 +38,8 @@ export const lists: Catalog<typeof es> = {
     whereToBuy: 'Wo kaufe ich am besten?',
   },
   options: {
+    byAisle: 'Nach Gang sortieren',
+    byHand: 'Eigene Reihenfolge',
     rename: 'Umbenennen',
     duplicate: 'Liste duplizieren',
     delete: 'Liste löschen',

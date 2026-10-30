@@ -10,7 +10,7 @@ import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { colors, space } from '@/theme/tokens';
 
-import { useDeleteList, useDuplicateList, useRenameList, type ListDetail } from './use-lists';
+import { useDeleteList, useDuplicateList, useRenameList, useSetListSort, type ListDetail } from './use-lists';
 
 type Mode = 'menu' | 'rename' | 'delete';
 
@@ -27,6 +27,8 @@ export function ListOptionsSheet({
   const [mode, setMode] = useState<Mode>('menu');
   const [name, setName] = useState(list.name);
   const rename = useRenameList(list.id);
+  const sort = useSetListSort(list.id);
+  const byAisle = list.sortMode === 'CATEGORY';
   const duplicate = useDuplicateList(list.id);
   const remove = useDeleteList(list.id);
 
@@ -61,6 +63,12 @@ export function ListOptionsSheet({
     <Sheet title={list.name} visible={visible} onClose={close}>
       {mode === 'menu' ? (
         <View style={styles.actions}>
+          <Button
+            label={byAisle ? t('lists.options.byHand') : t('lists.options.byAisle')}
+            variant="secondary"
+            loading={sort.isPending}
+            onPress={() => sort.mutateAsync(byAisle ? 'MANUAL' : 'CATEGORY').then(close, () => undefined)}
+          />
           <Button
             label={t('lists.options.rename')}
             variant="secondary"

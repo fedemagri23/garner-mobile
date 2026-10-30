@@ -11,6 +11,7 @@ import { Chip } from '@/components/chip';
 import { Text } from '@/components/text';
 import { TextField } from '@/components/text-field';
 import { useAddToList, useList } from '@/features/lists/use-lists';
+import { LabelChips, type Label } from '@/features/catalog/labels';
 import { SyncBanner } from '@/features/outbox/sync-banner';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
@@ -59,6 +60,7 @@ export function AddProductScreen() {
   const [name, setName] = useState(params.name ?? '');
   const [brandText, setBrandText] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [labels, setLabels] = useState<Label[]>([]);
   const [sizeText, setSizeText] = useState('');
   const [unit, setUnit] = useState<Unit>('UNIT');
   const [barcode, setBarcode] = useState(params.barcode ?? '');
@@ -88,6 +90,7 @@ export function AddProductScreen() {
     if (changes.sizeText !== undefined) setSizeText(changes.sizeText);
     if (changes.unit !== undefined) setUnit(changes.unit);
     if (changes.categoryId !== undefined) setCategoryId(changes.categoryId);
+    if (changes.labels !== undefined) setLabels(changes.labels);
   }, [lookup.data, code]);
 
   const suggestions = useSuggestions(useDebouncedValue(name));
@@ -140,6 +143,7 @@ export function AddProductScreen() {
           categoryId,
           unit,
           ...(size !== null ? { packageSize: size } : {}),
+          ...(labels.length > 0 ? { labels } : {}),
           ...(exactBrand ? { brandId: exactBrand.id } : brandText.trim() ? { brandName: brandText.trim() } : {}),
           ...(code ? { barcodes: [code] } : {}),
           // The server takes the photo from its own lookup of the code, never a link.
@@ -298,6 +302,11 @@ export function AddProductScreen() {
           onChange={byHand<string | null>('categoryId', setCategoryId)}
           error={show(problems.category)}
         />
+
+        <View style={styles.group}>
+          <Text variant="label">{t('community.addProduct.labelsTitle')}</Text>
+          <LabelChips value={labels} onChange={byHand('labels', setLabels)} />
+        </View>
 
         <View style={styles.group}>
           <TextField

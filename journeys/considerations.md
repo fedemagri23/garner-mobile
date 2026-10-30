@@ -300,3 +300,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** The category picker shows names only (the backend dropped icons, CON-061); Buscar's departments will be a list of names in checkpoint 20. Amends MCON-048.
 - **Why:** Decided by the user.
 - **Revisit when:** The user asks for icons.
+
+### MCON-050 — Buscar browses departments; labels filter; lists group by aisle
+- **Phase:** 10 (checkpoints 19–21) · **Area:** catalog, lists · **Status:** accepted
+- **What:** Buscar with nothing typed, chosen or filtered lists the departments (no product query runs); a department shows its aisles as chips with "Todo …" and a back crumb; typing also offers up to three categories whose names or everyday words match ("Ver todo en …", `searchCategories`). Label chips (`LabelChips`) filter search with `labels=` (every one must match) and appear on product rows and the product screen (`LabelTags`); the add form ticks them, prefilled from a scan unless already touched. A list sorted by aisle (`sortMode: CATEGORY`) is grouped client-side by `groupByAisle` using the taxonomy's positions and each item's new `categoryId`. Not done: trips keep the list's own order, and the interests picker for preferences moved to the backlog. The web e2e's "Agregar producto" checks moved off that phrase, which the taller form now shows twice (title and button) and which made the visibility helper scroll back and forth.
+- **Why:** With 141 categories, browsing has to start from departments; diet is a filter people use every day.
+- **Revisit when:** Trips should follow the aisle order too.

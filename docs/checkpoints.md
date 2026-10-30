@@ -783,3 +783,39 @@ pnpm run taxonomy:sync
 
 - Browsing by department in Buscar, and lists sorted by aisle,
   are checkpoints 20 and 21; search does not yet match category names.
+
+## Checkpoints 19–21 — Diet labels, browsing departments, lists by aisle
+
+**What works**
+
+- **Labels:** products can be _Sin TACC, Vegano, Vegetariano, Orgánico, Sin
+  lactosa, Sin azúcar, Kosher, Halal_. Tick them when adding a product (a
+  scanned one comes with Open Food Facts' labels ticked); they show on the
+  product and in search results; the chips under Buscar's search box filter
+  by them (all ticked labels must match).
+- **Buscar** opens on the list of departments. A department shows its aisles
+  as chips (_Todo Lácteos y huevos, Leche, Yogures…_) above its products,
+  with _Departamentos_ / _Volver a …_ to go back up. Typing an everyday word
+  for a category offers _Ver todo en …_ (try `soda` → Agua, `limo` →
+  Gaseosas).
+- **Lists by aisle:** a list's _Más opciones_ → _Ordenar por pasillo_ groups
+  its products under department headings in the order a shop is laid out;
+  _Orden manual_ goes back.
+
+**Check**
+
+1. Buscar: _Departamentos_ with Almacén, Lácteos y huevos, Limpieza… Tap
+   _Lácteos y huevos_ → the milk; _Yogures_ → empty; _Volver a Lácteos y
+   huevos_ → _Departamentos_.
+2. Type `soda` → _Ver todo en Agua_ → the water, under _Volver a Bebidas_.
+3. Tap _Sin TACC_ under the search box: only the rice (seeded gluten-free and
+   vegan); tap it again to clear.
+4. Agregar producto: tick _Vegano_; after adding, the product shows it.
+5. Listas → _Compra semanal_ → _Más opciones_ → _Ordenar por pasillo_: the
+   products under _Almacén_, _Lácteos y huevos_, _Bebidas_…
+
+**Known limits**
+
+- A trip keeps the list's own order, not the aisle grouping.
+- Choosing interests (departments you buy) in preferences is not built yet.
+- Only the team can correct labels on products others added.
