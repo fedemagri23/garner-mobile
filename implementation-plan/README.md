@@ -539,7 +539,7 @@ What no stranger can use Garner without, and what the app stores require.
   an email with a one-time link (or a 6-digit code for the phone), valid 30
   minutes, single use, rate limited; all sessions signed out after a reset.
   Emails in the user's language.
-- **Checkpoint 23 — Account: profile and deletion.** A Cuenta screen: name,
+- **Checkpoint 23 ✅ — Account: profile and deletion** (garner-app `6ef0297`; email change moved to the backlog). A Cuenta screen: name,
   email (change with confirmation), password change, language, sign out of
   every device. **Delete my account** (required by Apple and Google): asks
   again, then removes personal data (lists, trips, alerts, devices,
@@ -605,6 +605,7 @@ Fitted in where they help, not scheduled:
 - Shop opening hours added by shoppers.
 - Price per unit comparison (per kg / per litre) in search and lists.
 - Sharing a list with someone (household).
+- Changing the account's email, with a code to the new address (left from checkpoint 23).
 - European Portuguese, more languages.
 
 ## Later

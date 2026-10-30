@@ -844,3 +844,31 @@ SMTP_URL=smtp://127.0.0.1:1025 pnpm run start:dev
 2. Open Mailpit, copy the code; enter it and a new password (10+ characters)
    → _Listo_ → sign in with it.
 3. Run `pnpm run seed` afterwards to put the demo password back.
+
+## Checkpoint 23 — Your account
+
+**What works:** Inicio → _Cuenta_: change the name others see; the email
+(read only for now); the language; change the password (the current one is
+asked; other phones are signed out, this one stays signed in); _Cerrar sesión
+en todos los dispositivos_; and _Eliminar mi cuenta_: it asks for the password,
+then erases your lists, trips, alerts, messages and preferences and signs you
+out. Prices, products and shops you added stay for everyone, without your
+name. Without the app, the same is at
+`http://<server>:3000/v1/account-deletion` (email and password).
+
+**Check**
+
+1. Inicio → _Cuenta_ → change the name → _Guardar_ → Inicio greets you by it.
+2. Change the password with a wrong current one: _La contraseña actual no es
+   correcta._; with the right one: _Listo_, still signed in.
+3. Create a throwaway account, then _Eliminar mi cuenta_ → wrong password
+   refused; right one → back on sign-in, and that email can no longer sign in
+   (it can sign up again).
+4. Open `http://localhost:3000/v1/account-deletion` in a browser: the web form.
+5. `pnpm run seed` afterwards puts the demo accounts back as they were.
+
+**Known limits**
+
+- Changing the email is not offered yet.
+- A deleted account's already-issued access token works for up to 15 minutes
+  (refreshing fails at once).

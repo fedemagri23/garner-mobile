@@ -51,6 +51,7 @@ export default function HomeScreen() {
 
       <ContributionsLink />
 
+      <Button label={t('shell.account.title')} variant="secondary" onPress={() => router.push('/account')} />
       <Button label={t('shell.home.signOut')} variant="secondary" onPress={signOut} />
     </Screen>
   );

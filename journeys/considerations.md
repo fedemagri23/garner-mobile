@@ -312,3 +312,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** `/forgot-password` (signed out) asks for the email, then the code and a new password, through the session's `publicApi` (no token). The message after sending never confirms the account exists. A wrong or expired code reads "El código no es correcto o ya venció"; a too-short password points at the 10-character rule. The web e2e resets the throwaway account's password with the code read from Mailpit, so its backend now runs with `SMTP_URL=smtp://127.0.0.1:1025`.
 - **Why:** CON-063 on the app side.
 - **Revisit when:** Deep links (a link in the email that opens the app) are wanted.
+
+### MCON-052 — The account screen
+- **Phase:** 11 (checkpoint 23) · **Area:** account · **Status:** accepted
+- **What:** Inicio → _Cuenta_ (`(home)/account`): name (PATCH), email shown, `LanguageCard`, password change (`POST /v1/auth/password`; the session adopts the returned pair through `adoptSession`, so this phone stays signed in), sign out everywhere (`POST /v1/auth/logout-all`, then the usual sign-out), and account deletion behind a second step with the password (`DELETE /v1/users/me`, then sign-out). The web e2e renames the throwaway account and deletes it at the end of the walk-through, so runs no longer leave accounts behind.
+- **Why:** CON-064 and the store requirement for in-app deletion.
+- **Revisit when:** Email change is built.

@@ -66,7 +66,11 @@ export interface paths {
         get: operations["usersMe"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete the account
+         * @description Asks for the password again. Erases lists, trips, alerts, messages, phones and preferences; prices, products and shops given stay, anonymised. Cannot be undone.
+         */
+        delete: operations["usersDeleteMe"];
         options?: never;
         head?: never;
         /** Update the authenticated user profile */
@@ -482,6 +486,43 @@ export interface paths {
          * @description The code works once, for 30 minutes, and dies after five wrong tries. Signs the account out everywhere.
          */
         post: operations["authConfirmPasswordReset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change the password, given the current one
+         * @description Signs out every other device; answers a fresh pair for this one.
+         */
+        post: operations["authChangePassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/logout-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign out of every device, this one included */
+        post: operations["authLogoutEverywhere"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1296,6 +1337,10 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        DeleteAccountRequest: {
+            /** @description The password again, to be sure */
+            password: string;
+        };
         UpdateUserProfileRequest: {
             displayName?: string;
             /**
@@ -1591,6 +1636,10 @@ export interface components {
              * @example 042137
              */
             code: string;
+            newPassword: string;
+        };
+        ChangePasswordRequest: {
+            currentPassword: string;
             newPassword: string;
         };
         SupermarketResponse: {
@@ -2566,6 +2615,7 @@ export interface components {
     pathItems: never;
 }
 export type UserResponse = components['schemas']['UserResponse'];
+export type DeleteAccountRequest = components['schemas']['DeleteAccountRequest'];
 export type UpdateUserProfileRequest = components['schemas']['UpdateUserProfileRequest'];
 export type UserPreferencesResponse = components['schemas']['UserPreferencesResponse'];
 export type UpdateUserPreferencesRequest = components['schemas']['UpdateUserPreferencesRequest'];
@@ -2597,6 +2647,7 @@ export type LoginRequest = components['schemas']['LoginRequest'];
 export type RefreshRequest = components['schemas']['RefreshRequest'];
 export type PasswordResetRequest = components['schemas']['PasswordResetRequest'];
 export type PasswordResetConfirmRequest = components['schemas']['PasswordResetConfirmRequest'];
+export type ChangePasswordRequest = components['schemas']['ChangePasswordRequest'];
 export type SupermarketResponse = components['schemas']['SupermarketResponse'];
 export type CreateSupermarketRequest = components['schemas']['CreateSupermarketRequest'];
 export type OpeningHoursResponse = components['schemas']['OpeningHoursResponse'];
@@ -2739,6 +2790,34 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["UserResponse"];
                 };
+            };
+        };
+    };
+    usersDeleteMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccountRequest"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Wrong password */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -3556,6 +3635,53 @@ export interface operations {
             };
             /** @description The code is wrong or has expired, or the password is too short */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    authChangePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokenPairResponse"];
+                };
+            };
+            /** @description The current password is wrong */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    authLogoutEverywhere: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };

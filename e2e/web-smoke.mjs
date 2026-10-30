@@ -1193,6 +1193,27 @@ await step('a forgotten password is reset with the emailed code', async () => {
   await press('Ingresar');
   await text('Hola, Prueba Web');
 });
+await step('the account screen renames, and deletes the account after the password', async () => {
+  await press('Cuenta');
+  await shown('Cuenta');
+  await typeInto('Nombre', 'Prueba Renombrada');
+  await press('Guardar');
+  await text('Guardado.');
+  await press('Eliminar mi cuenta');
+  await text('No se puede deshacer.');
+  await typeInto('Tu contraseña, para confirmar', 'contraseña-equivocada');
+  await press('Eliminar definitivamente');
+  await text('La contraseña no es correcta.');
+  await typeInto('Tu contraseña, para confirmar', 'otra-contrasena-larga');
+  await press('Eliminar definitivamente');
+  await text('Pagá menos por la misma compra.');
+  const login = await fetch(`${API_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: NEW_ACCOUNT.email, password: 'otra-contrasena-larga' }),
+  });
+  if (login.status !== 401) throw new Error(`the deleted account still signs in (${login.status})`);
+});
 
 await browser.close();
 offStub.close();

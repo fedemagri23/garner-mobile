@@ -27,6 +27,8 @@ interface SessionValue {
   /** For the few calls made before signing in (password reset): never attaches a token. */
   publicApi: Api;
   signIn(email: string, password: string): Promise<void>;
+  /** Keeps this device signed in with a pair the server just issued (after a password change). */
+  adoptSession(pair: { accessToken: string; refreshToken: string }): Promise<void>;
   signUp(input: { email: string; password: string; displayName: string }): Promise<void>;
   signOut(): Promise<void>;
 }
@@ -88,6 +90,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [publicApi, tokens],
   );
 
+  const adoptSession = useCallback(
+    async (pair: { accessToken: string; refreshToken: string }) => {
+      await tokens.signedIn(pair as Parameters<typeof tokens.signedIn>[0]);
+    },
+    [tokens],
+  );
+
   const signUp = useCallback(
     async (input: { email: string; password: string; displayName: string }) => {
       const pair = await unwrap(publicApi.POST('/v1/auth/register', { body: input }));
@@ -112,8 +121,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [api, publicApi, tokens, queryClient]);
 
   const value = useMemo(
-    () => ({ status, api, publicApi, signIn, signUp, signOut }),
-    [status, api, publicApi, signIn, signUp, signOut],
+    () => ({ status, api, publicApi, signIn, adoptSession, signUp, signOut }),
+    [status, api, publicApi, signIn, adoptSession, signUp, signOut],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
