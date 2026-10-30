@@ -67,7 +67,7 @@ export function ContributionsScreen() {
             <StateMessage loading />
           ) : mine.isError ? (
             <StateMessage tone="danger" message={errorMessage(mine.error)} />
-          ) : waiting.length > 0 ? null : (
+          ) : waiting.length > 0 ? undefined : (
             <StateMessage message={t('contributions.list.empty')} />
           )
         }

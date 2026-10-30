@@ -46,7 +46,9 @@ export function ScanCodeSheet({
       visible={visible}
       animationType="slide"
       presentationStyle="fullScreen"
-      onShow={() => (taken.current = false)}
+      onShow={() => {
+        taken.current = false;
+      }}
       onRequestClose={onClose}>
       <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
         <View style={styles.viewfinder}>

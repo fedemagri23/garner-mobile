@@ -151,7 +151,7 @@ export default function SearchScreen() {
               <StateMessage loading />
             ) : categories.isError ? (
               <StateMessage tone="danger" message={errorMessage(categories.error)} />
-            ) : null
+            ) : undefined
           }
           contentInsetAdjustmentBehavior="automatic"
           keyboardShouldPersistTaps="handled"

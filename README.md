@@ -1,7 +1,7 @@
 # Garner — Mobile
 
 The Garner app: compare grocery prices near you, plan where to buy your list,
-and record what you paid while you shop. Expo (SDK 57), Expo Router,
+and record what you paid while you shop. Expo (SDK 58), Expo Router,
 TypeScript, React Query.
 
 The backend is [`garner-app`](https://github.com/fedemagri23/garner-app); its

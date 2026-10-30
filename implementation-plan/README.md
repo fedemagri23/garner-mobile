@@ -13,8 +13,9 @@ offline retries).
 
 ## Phase 1 — Foundation ✅ (checkpoint 1)
 
-Expo SDK 57 + Expo Router + TypeScript, in Spanish (es-AR). (Built on SDK 58,
-moved back to 57 until Expo Go for 58 reaches the App Store: MCON-015.)
+Expo SDK 58 + Expo Router + TypeScript, in Spanish (es-AR), English, German
+and Portuguese. (On SDK 57 from 2026-10-20 to 2026-10-30 while Expo Go for 58
+was not in the App Store: MCON-015, MCON-055.)
 
 - Generated, typed API client (`npm run api:generate`), checked against the
   backend's master in CI.

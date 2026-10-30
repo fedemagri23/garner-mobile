@@ -91,7 +91,7 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **Revisit when:** Shopping mode (phase 4) scans during a trip — there the product belongs on the trip, not in Buscar.
 
 ### MCON-015 — Back on Expo SDK 57 until Expo Go 58 is in the stores
-- **Phase:** 2 · **Area:** tooling · **Status:** deferred
+- **Phase:** 2 · **Area:** tooling · **Status:** resolved (MCON-055)
 - **What:** The app was started on SDK 58 and moved back to SDK 57 (React Native 0.86, React 19.2, expo-router 57, jest 29). The only code change was the native tabs import, `expo-router/unstable-native-tabs` on 57.
 - **Why:** SDK 58 shipped on 2026-10-15, and Expo said its Expo Go would reach the App Store and Play Store "within a few weeks". The developer's iPhone has Expo Go 57.0.9, which refuses an SDK 58 project, and a development build on iOS needs a paid Apple developer account. Nothing the app uses is new in 58.
 - **Revisit when:** Expo Go for SDK 58 is in the App Store — then upgrade (`npx expo install expo@~58.0.0 --fix`, the import back to `expo-router/native-tabs`, `jest`/`jest-expo` to their 58 versions), run expo-doctor and every check, and mark this resolved. Store Expo Go supports only the latest SDK, so waiting too long breaks Expo Go again.
@@ -330,3 +330,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** The plan said "a small web page"; it is a screen in the app instead (`(home)/moderation`, reached from _Cuenta_ when the role is MODERATOR or ADMIN), which also works in the app's web build. It lists `GET /v1/moderation/queue`, acts with verify / hide / restore, and merges a duplicate product into one picked by search (`POST /v1/moderation/products/{id}/merge`, CON-066). A merged product's screen offers the kept one (`mergedIntoId`). Hidden items leave the queue, so restoring one already hidden happens from the API for now. The web e2e signs in as the seeded moderator, sees the alfajor reported earlier in the walk-through, hides it, and restores it through the API.
 - **Why:** One codebase, one login, already in four languages; the team is small.
 - **Revisit when:** Moderators need to browse hidden items or the audit log in the app.
+
+### MCON-055 — Upgraded to Expo SDK 58
+- **Phase:** post-plan (asked by the user, 2026-10-30) · **Area:** tooling · **Status:** accepted
+- **What:** `expo` 58.0.21 with every Expo module on its SDK 58 version (`npx expo install expo@~58.0.0`, then a clean install, since npm could not move the tree in place), React 19.3, React Native 0.88.1, expo-router 58 (native tabs back to the stable `expo-router/native-tabs` import), `jest-expo` 58 with Jest 30, `eslint-config-expo` 58, `@types/react` 19.3. Code changes: list empty states return `undefined` rather than `null` (React Native 0.88's types), the scan sheet's `onShow` returns nothing, `AndroidImportance` is imported by name (the linter cannot follow `expo-notifications`' re-export), and tests stub the icon sets (jest-expo 58 no longer stubs their font loading). `expo-doctor` passes 20/20; unit tests, the web e2e (85 steps) and the Android export pass. Resolves MCON-015.
+- **Why:** Store Expo Go supports only the latest SDK; staying on 57 would stop the app opening in Expo Go once the store updates.
+- **Revisit when:** SDK 59 ships — upgrade within a few weeks of its Expo Go reaching the stores.

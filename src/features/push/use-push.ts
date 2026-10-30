@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { AndroidImportance } from 'expo-notifications';
 import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
@@ -53,7 +54,7 @@ export function usePush() {
         // Android shows no permission prompt until a channel exists.
         await Notifications.setNotificationChannelAsync('default', {
           name: 'Avisos de precio',
-          importance: Notifications.AndroidImportance.DEFAULT,
+          importance: AndroidImportance.DEFAULT,
         });
       }
       const asked = await Notifications.requestPermissionsAsync();

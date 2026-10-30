@@ -1,4 +1,4 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 import { useUnreadCount } from '@/features/alerts/use-alerts';
 import { useNotificationTaps } from '@/features/push/use-notification-taps';
