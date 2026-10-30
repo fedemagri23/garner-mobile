@@ -44,6 +44,9 @@ export function AccountScreen() {
           <NameCard name={me.data.displayName} email={me.data.email} />
           <LanguageCard />
           <PasswordCard />
+          {me.data.role === 'MODERATOR' || me.data.role === 'ADMIN' ? (
+            <Button label={t('community.moderation.title')} variant="secondary" onPress={() => router.push('/moderation')} />
+          ) : null}
           <SignOutEverywhere />
           <DeleteAccount />
           <View style={styles.card}>

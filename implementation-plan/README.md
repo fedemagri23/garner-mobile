@@ -443,7 +443,7 @@ prices), then what real users need, then real prices, then shipping.
 | --- | --- | --- | --- |
 | 10 ✅ | 18, 19 | Category taxonomy: data, API, labels | backend |
 | 10 ✅ | 20, 21 | Categories in the app: browse, pick, list by aisle | mobile |
-| 11 | 22–25 | Ready for real users: password reset, account deletion, profile, terms, moderation page | both |
+| 11 ✅ | 22–25 | Ready for real users: password reset, account deletion, profile, terms, moderation page | both |
 | 12 | 26–28 | Real prices: Argentina's public price data, Vienna sources, data quality | backend |
 | 13 | 29–31 | Ship: builds, real-device checks, store listings | mobile |
 | — | — | Backlog, fitted in where it helps | both |
@@ -551,7 +551,7 @@ What no stranger can use Garner without, and what the app stores require.
   location use, email, push), and credits (Open Food Facts ODbL and CC
   BY-SA, map data). Accepting terms at sign-up, with the version recorded.
   A "Report a problem" contact.
-- **Checkpoint 25 — Moderation page.** A small web page for moderators (same
+- **Checkpoint 25 ✅ — Moderation page** (garner-app `c155268`; a screen in the app for moderators instead of a separate web page). A small web page for moderators (same
   API, role-guarded): the review queue with product or shop details, flags
   and their reasons, verify / hide / restore, and the audit log. Plus merging
   duplicate products (deferred in CON-054): move barcodes, list items, alerts

@@ -893,3 +893,25 @@ environment; unset, they say it will be published before launch.
 2. Sign up: _Crear cuenta_ stays disabled until the box is ticked.
 3. _Cuenta_ → _Legal_: the three pages open in the browser, in the app's
    language.
+
+## Checkpoint 25 — Moderation, and merging duplicates
+
+**What works:** for moderator and admin accounts, _Cuenta_ shows
+**Moderación**: the queue of products and shops the community reported or
+that reports pulled from search, most reported first, each with its status,
+reports and confirmations. _Verificar_ (it becomes the team's), _Ocultar_,
+_Restaurar_; and for a product, **Unir con otro producto**: search the one
+that stays, confirm, and the duplicate's lists, barcodes, alerts,
+confirmations and prices move to it (a list holding both keeps one line with
+both quantities). Opening a merged product offers _Ver el producto que quedó_.
+
+**Check** (moderator: `moderator@garner.test` / `correct-horse-battery`)
+
+1. As the shopper, open _Alfajor Artesanal de Maicena_ → _Reportar_ → a
+   reason → _Enviar reporte_.
+2. Sign out, sign in as the moderator → _Acepto_ (terms) → _Cuenta_ →
+   _Moderación_: the alfajor, _1 reporte_.
+3. _Unir con otro producto_ → search `galletitas` → pick one → _Unir con …_
+   (try it on test products: it cannot be undone). Or _Ocultar_ → it leaves
+   the queue and search.
+4. `pnpm run seed` afterwards puts the demo back.

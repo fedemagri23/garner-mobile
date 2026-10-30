@@ -324,3 +324,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** Sign-up requires ticking _Acepto los términos…_ and sends `acceptTerms: true`; `TermsCard` on Inicio asks any account whose `termsAccepted` is false (older accounts, or after `TERMS_VERSION` changes) and records it with `POST /v1/users/me/terms`; _Cuenta_ links the three pages. Pages open in the browser (`expo-web-browser`), from the backend, in the app's language. The seed resets the demo accounts' acceptance, so the card shows after each reseed and the web e2e accepts it.
 - **Why:** CON-065 on the app side.
 - **Revisit when:** The texts are final.
+
+### MCON-054 — Moderation lives in the app, for moderator accounts
+- **Phase:** 11 (checkpoint 25) · **Area:** community · **Status:** accepted
+- **What:** The plan said "a small web page"; it is a screen in the app instead (`(home)/moderation`, reached from _Cuenta_ when the role is MODERATOR or ADMIN), which also works in the app's web build. It lists `GET /v1/moderation/queue`, acts with verify / hide / restore, and merges a duplicate product into one picked by search (`POST /v1/moderation/products/{id}/merge`, CON-066). A merged product's screen offers the kept one (`mergedIntoId`). Hidden items leave the queue, so restoring one already hidden happens from the API for now. The web e2e signs in as the seeded moderator, sees the alfajor reported earlier in the walk-through, hides it, and restores it through the API.
+- **Why:** One codebase, one login, already in four languages; the team is small.
+- **Revisit when:** Moderators need to browse hidden items or the audit log in the app.

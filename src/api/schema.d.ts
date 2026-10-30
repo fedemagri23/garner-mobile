@@ -364,6 +364,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/moderation/products/{id}/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fold a duplicate product into the one that stays
+         * @description Moves its barcodes, list lines, trips, alerts, confirmations, reports and prices to the kept product; the duplicate is left MERGED. Cannot be undone.
+         */
+        post: operations["moderationMerge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/moderation/{target}/{id}/{action}": {
         parameters: {
             query?: never;
@@ -1456,6 +1476,11 @@ export interface components {
             origin: "VERIFIED" | "COMMUNITY";
             /** @description People other than its creator who confirmed it */
             confirmationCount: number;
+            /**
+             * Format: uuid
+             * @description Set when this was a duplicate: the product to show instead
+             */
+            mergedIntoId: string | null;
             /** Format: date-time */
             createdAt: string;
         };
@@ -1591,6 +1616,13 @@ export interface components {
             confirmationCount: number;
             /** Format: date-time */
             createdAt: string;
+        };
+        MergeProductRequest: {
+            /**
+             * Format: uuid
+             * @description The product that stays
+             */
+            intoId: string;
         };
         AddedProductResponse: {
             /** Format: uuid */
@@ -2661,6 +2693,7 @@ export type ViewerSayResponse = components['schemas']['ViewerSayResponse'];
 export type ConfirmationsResponse = components['schemas']['ConfirmationsResponse'];
 export type FlagRequest = components['schemas']['FlagRequest'];
 export type ReviewItemResponse = components['schemas']['ReviewItemResponse'];
+export type MergeProductRequest = components['schemas']['MergeProductRequest'];
 export type AddedProductResponse = components['schemas']['AddedProductResponse'];
 export type AddedStoreResponse = components['schemas']['AddedStoreResponse'];
 export type MyAdditionsResponse = components['schemas']['MyAdditionsResponse'];
@@ -3474,6 +3507,36 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ReviewItemResponse"][];
                 };
+            };
+        };
+    };
+    moderationMerge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MergeProductRequest"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No such product */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

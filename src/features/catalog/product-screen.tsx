@@ -116,6 +116,16 @@ export function ProductScreen() {
               ) : null}
             </View>
           </View>
+          {product.data.mergedIntoId ? (
+            <View style={styles.card}>
+              <Text>{t('community.moderation.mergedNote')}</Text>
+              <Button
+                label={t('community.moderation.openKept')}
+                variant="secondary"
+                onPress={() => router.replace(`/search/product/${product.data.mergedIntoId}`)}
+              />
+            </View>
+          ) : null}
           {product.data.origin === 'COMMUNITY' ? (
             <StandingCard
               productId={id}

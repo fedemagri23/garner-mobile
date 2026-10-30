@@ -1222,6 +1222,34 @@ await step('the account screen renames, and deletes the account after the passwo
   if (login.status !== 401) throw new Error(`the deleted account still signs in (${login.status})`);
 });
 
+await step('the team sees what was reported, and hides it', async () => {
+  const moderator = await apiToken({ email: 'moderator@garner.test', password: 'correct-horse-battery' });
+  const search = await (
+    await fetch(`${API_URL}/v1/products?search=alfajor%20artesanal`, { headers: { authorization: `Bearer ${moderator}` } })
+  ).json();
+  const alfajor = search.data[0]?.id;
+  page = await openPage(OBELISCO);
+  await page.goto(BASE_URL, { waitUntil: 'networkidle0' });
+  await typeInto('Email', 'moderator@garner.test');
+  await typeInto('Contraseña', 'correct-horse-battery');
+  await press('Ingresar');
+  await press('Acepto');
+  await press('Cuenta');
+  await press('Moderación');
+  await text('lo más reportado primero');
+  await shown('Alfajor Artesanal de Maicena');
+  await text('1 reporte');
+  await page.screenshot({ path: `${SHOTS}checkpoint-25-moderation.png` });
+  await press('Ocultar');
+  await gone('Alfajor Artesanal de Maicena');
+  // Put the neighbour's product back for the demo.
+  const restored = await fetch(`${API_URL}/v1/moderation/products/${alfajor}/restore`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${moderator}` },
+  });
+  if (restored.status !== 204) throw new Error(`restore answered ${restored.status}`);
+});
+
 await browser.close();
 offStub.close();
 
