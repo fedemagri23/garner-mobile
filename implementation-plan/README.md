@@ -535,7 +535,7 @@ show 150 chips.
 
 What no stranger can use Garner without, and what the app stores require.
 
-- **Checkpoint 22 — Password reset.** "¿Olvidaste tu contraseña?" on sign-in;
+- **Checkpoint 22 ✅ — Password reset** (garner-app `0da4913`). "¿Olvidaste tu contraseña?" on sign-in;
   an email with a one-time link (or a 6-digit code for the phone), valid 30
   minutes, single use, rate limited; all sessions signed out after a reset.
   Emails in the user's language.

@@ -306,3 +306,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** Buscar with nothing typed, chosen or filtered lists the departments (no product query runs); a department shows its aisles as chips with "Todo …" and a back crumb; typing also offers up to three categories whose names or everyday words match ("Ver todo en …", `searchCategories`). Label chips (`LabelChips`) filter search with `labels=` (every one must match) and appear on product rows and the product screen (`LabelTags`); the add form ticks them, prefilled from a scan unless already touched. A list sorted by aisle (`sortMode: CATEGORY`) is grouped client-side by `groupByAisle` using the taxonomy's positions and each item's new `categoryId`. Not done: trips keep the list's own order, and the interests picker for preferences moved to the backlog. The web e2e's "Agregar producto" checks moved off that phrase, which the taller form now shows twice (title and button) and which made the visibility helper scroll back and forth.
 - **Why:** With 141 categories, browsing has to start from departments; diet is a filter people use every day.
 - **Revisit when:** Trips should follow the aisle order too.
+
+### MCON-051 — Password reset screen
+- **Phase:** 11 (checkpoint 22) · **Area:** auth · **Status:** accepted
+- **What:** `/forgot-password` (signed out) asks for the email, then the code and a new password, through the session's `publicApi` (no token). The message after sending never confirms the account exists. A wrong or expired code reads "El código no es correcto o ya venció"; a too-short password points at the 10-character rule. The web e2e resets the throwaway account's password with the code read from Mailpit, so its backend now runs with `SMTP_URL=smtp://127.0.0.1:1025`.
+- **Why:** CON-063 on the app side.
+- **Revisit when:** Deep links (a link in the email that opens the app) are wanted.

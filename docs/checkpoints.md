@@ -819,3 +819,28 @@ pnpm run taxonomy:sync
 - A trip keeps the list's own order, not the aisle grouping.
 - Choosing interests (departments you buy) in preferences is not built yet.
 - Only the team can correct labels on products others added.
+
+## Checkpoint 22 — Forgot your password
+
+**What works:** _¿Olvidaste tu contraseña?_ on sign-in. Enter your email →
+_Enviar código_: a 6-digit code arrives by email (in your language). Enter it
+with a new password → _Cambiar contraseña_ → sign in with the new one. The
+code works once, for 30 minutes, and dies after five wrong tries; at most
+three codes an hour. Resetting signs the account out on every phone. The
+screen never says whether an email has an account.
+
+**Check** — to receive the email locally, start the backend with Mailpit as
+its mail server and read it at http://localhost:8025:
+
+```bash
+cd ~/Desktop/personal/garner/garner-app
+SMTP_URL=smtp://127.0.0.1:1025 pnpm run start:dev
+```
+
+(Without `SMTP_URL` the code is printed in the backend's terminal instead.)
+
+1. Sign out → _¿Olvidaste tu contraseña?_ → `shopper@garner.test` → _Enviar
+   código_.
+2. Open Mailpit, copy the code; enter it and a new password (10+ characters)
+   → _Listo_ → sign in with it.
+3. Run `pnpm run seed` afterwards to put the demo password back.

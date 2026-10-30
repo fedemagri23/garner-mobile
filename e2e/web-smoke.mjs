@@ -6,7 +6,9 @@
  *   - the backend on :3000, freshly seeded (`pnpm run seed`), with
  *     CORS_ORIGINS=http://localhost:8081 and
  *     OPEN_FOOD_FACTS_URL=http://localhost:3999 (this script serves a
- *     stand-in for Open Food Facts there, e2e/open-food-facts-stub.mjs)
+ *     stand-in for Open Food Facts there, e2e/open-food-facts-stub.mjs) and
+ *     SMTP_URL=smtp://127.0.0.1:1025 (the compose stack's Mailpit, where the
+ *     password reset step reads its code)
  *   - the app's web build on :8081 (`npm run web`)
  *   - Google Chrome (CHROME_PATH to override /usr/bin/google-chrome)
  *
@@ -1167,6 +1169,29 @@ await step('Español comes back, and a signed-out phone can pick a language too'
   await text('Pay less for the same shop.');
   await press('Español');
   await text('Pagá menos por la misma compra.');
+});
+
+await step('a forgotten password is reset with the emailed code', async () => {
+  // Signed out, on sign-in, in Spanish: the throwaway account forgets its password.
+  await press('¿Olvidaste tu contraseña?');
+  await text('Te mandamos un código de 6 números a tu email.');
+  await typeInto('Email', NEW_ACCOUNT.email);
+  await press('Enviar código');
+  await text('le llegó un código');
+  const { messages } = await (await fetch('http://127.0.0.1:8025/api/v1/messages?limit=50')).json();
+  const mail = messages.find((m) => m.To.some((to) => to.Address === NEW_ACCOUNT.email));
+  if (!mail) throw new Error('no reset email reached Mailpit');
+  const { Text } = await (await fetch(`http://127.0.0.1:8025/api/v1/message/${mail.ID}`)).json();
+  const code = /\b(\d{6})\b/.exec(Text)?.[1];
+  await typeInto('Código', code);
+  await typeInto('Contraseña nueva', 'otra-contrasena-larga');
+  await press('Cambiar contraseña');
+  await text('Listo: tu contraseña cambió.');
+  await press('Ir a ingresar');
+  await typeInto('Email', NEW_ACCOUNT.email);
+  await typeInto('Contraseña', 'otra-contrasena-larga');
+  await press('Ingresar');
+  await text('Hola, Prueba Web');
 });
 
 await browser.close();

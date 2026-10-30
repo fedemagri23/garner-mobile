@@ -448,6 +448,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/password-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Email a six-digit code to reset a forgotten password
+         * @description Always 202, whether or not the email has an account. At most three codes an hour per account.
+         */
+        post: operations["authRequestPasswordReset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/password-reset/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set a new password with the emailed code
+         * @description The code works once, for 30 minutes, and dies after five wrong tries. Signs the account out everywhere.
+         */
+        post: operations["authConfirmPasswordReset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/supermarkets": {
         parameters: {
             query?: never;
@@ -1539,6 +1579,20 @@ export interface components {
         RefreshRequest: {
             refreshToken: string;
         };
+        PasswordResetRequest: {
+            /** Format: email */
+            email: string;
+        };
+        PasswordResetConfirmRequest: {
+            /** Format: email */
+            email: string;
+            /**
+             * @description The six digits from the email
+             * @example 042137
+             */
+            code: string;
+            newPassword: string;
+        };
         SupermarketResponse: {
             /** Format: uuid */
             id: string;
@@ -2541,6 +2595,8 @@ export type RegisterRequest = components['schemas']['RegisterRequest'];
 export type TokenPairResponse = components['schemas']['TokenPairResponse'];
 export type LoginRequest = components['schemas']['LoginRequest'];
 export type RefreshRequest = components['schemas']['RefreshRequest'];
+export type PasswordResetRequest = components['schemas']['PasswordResetRequest'];
+export type PasswordResetConfirmRequest = components['schemas']['PasswordResetConfirmRequest'];
 export type SupermarketResponse = components['schemas']['SupermarketResponse'];
 export type CreateSupermarketRequest = components['schemas']['CreateSupermarketRequest'];
 export type OpeningHoursResponse = components['schemas']['OpeningHoursResponse'];
@@ -3451,6 +3507,55 @@ export interface operations {
         };
         responses: {
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    authRequestPasswordReset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetRequest"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    authConfirmPasswordReset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetConfirmRequest"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The code is wrong or has expired, or the password is too short */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

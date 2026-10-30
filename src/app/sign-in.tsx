@@ -77,6 +77,13 @@ export default function SignInScreen() {
             loading={submitting}
             disabled={!email || !password}
           />
+          <Link
+            href={{ pathname: '/forgot-password', params: email.trim() ? { email: email.trim() } : {} }}
+            style={styles.forgot}>
+            <Text variant="label" tone="accent">
+              {t('shell.auth.reset.forgot')}
+            </Text>
+          </Link>
         </View>
 
         <View style={styles.footer}>
@@ -108,4 +115,5 @@ const styles = StyleSheet.create({
   form: { gap: space.lg },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: space.sm },
   link: { paddingVertical: space.md },
+  forgot: { alignSelf: 'center', paddingVertical: space.md },
 });

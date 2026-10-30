@@ -24,6 +24,8 @@ interface SessionValue {
   status: SessionStatus;
   /** Authenticated client: signs requests and refreshes as needed. */
   api: Api;
+  /** For the few calls made before signing in (password reset): never attaches a token. */
+  publicApi: Api;
   signIn(email: string, password: string): Promise<void>;
   signUp(input: { email: string; password: string; displayName: string }): Promise<void>;
   signOut(): Promise<void>;
@@ -110,8 +112,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [api, publicApi, tokens, queryClient]);
 
   const value = useMemo(
-    () => ({ status, api, signIn, signUp, signOut }),
-    [status, api, signIn, signUp, signOut],
+    () => ({ status, api, publicApi, signIn, signUp, signOut }),
+    [status, api, publicApi, signIn, signUp, signOut],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
