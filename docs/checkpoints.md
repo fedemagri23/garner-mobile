@@ -872,3 +872,24 @@ name. Without the app, the same is at
 - Changing the email is not offered yet.
 - A deleted account's already-issued access token works for up to 15 minutes
   (refreshing fails at once).
+
+## Checkpoint 24 — Terms, privacy and credits
+
+**What works:** the terms of use, privacy policy and credits/licences are web
+pages served by the backend in the four languages
+(`http://<server>:3000/v1/legal/terms?lang=es`, `privacy`, `credits`), marked
+as **drafts pending legal review**. Signing up asks to tick _Acepto los
+términos…_ (with links). An account that has not accepted the current terms —
+like the seeded ones, after each `pnpm run seed` — sees a card on Inicio with
+the links and _Acepto_. _Cuenta_ links to all three pages.
+
+The contact address on the pages comes from `CONTACT_EMAIL` in the backend's
+environment; unset, they say it will be published before launch.
+
+**Check**
+
+1. Sign in as the shopper: Inicio shows the terms card; tap _Privacidad_ (opens
+   the page), then _Acepto_: the card goes and does not come back.
+2. Sign up: _Crear cuenta_ stays disabled until the box is ticked.
+3. _Cuenta_ → _Legal_: the three pages open in the browser, in the app's
+   language.

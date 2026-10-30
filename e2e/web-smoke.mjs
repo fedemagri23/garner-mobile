@@ -250,6 +250,12 @@ await step('the right password signs in and greets the shopper by name', async (
   await text('Hola, Fede');
   await page.screenshot({ path: `${SHOTS}checkpoint-1-home.png` });
 });
+await step('an account that has not accepted the terms is asked to, once', async () => {
+  await text('Para seguir usando Garner, leé y aceptá los términos de uso y la política de privacidad.');
+  await shown('Privacidad');
+  await press('Acepto');
+  await gone('Para seguir usando Garner');
+});
 
 // --- Checkpoint 2: price drops, search, a product's prices ----------------
 
@@ -738,6 +744,7 @@ await step('signing up with a taken email says so, in Spanish', async () => {
   await typeInto('Nombre', 'Prueba Web');
   await typeInto('Email', 'shopper@garner.test');
   await typeInto('Contraseña', 'correct-horse-battery');
+  await press('Acepto los términos de uso y la política de privacidad');
   await press('Crear cuenta');
   await text('Ya existe una cuenta con ese email.');
 });

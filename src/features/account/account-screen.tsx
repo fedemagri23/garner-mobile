@@ -16,6 +16,7 @@ import { errorMessage } from '@/lib/error-message';
 import { useSession } from '@/session/session-provider';
 import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
 
+import { LegalLinks } from './legal';
 import { meQueryKey, useMe } from './use-me';
 
 /**
@@ -45,6 +46,10 @@ export function AccountScreen() {
           <PasswordCard />
           <SignOutEverywhere />
           <DeleteAccount />
+          <View style={styles.card}>
+            <Text variant="heading">{t('shell.legal.title')}</Text>
+            <LegalLinks />
+          </View>
         </>
       ) : me.isError ? (
         <StateMessage tone="danger" message={errorMessage(me.error)} />

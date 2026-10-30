@@ -37,6 +37,15 @@ export const shell: Catalog<typeof es> = {
       invalid: 'Check your details: a valid email and a password of at least 10 characters.',
     },
   },
+  legal: {
+    title: 'Legal',
+    terms: 'Terms of use',
+    privacy: 'Privacy',
+    credits: 'Credits and licences',
+    accept: 'I accept the terms of use and the privacy policy',
+    updatedBody: 'To keep using Garner, read and accept the terms of use and the privacy policy.',
+    acceptButton: 'I accept',
+  },
   account: {
     title: 'Account',
     name: 'Name',

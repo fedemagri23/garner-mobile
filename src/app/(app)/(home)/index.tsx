@@ -7,6 +7,7 @@ import { Screen } from '@/components/screen';
 import { SearchBox } from '@/components/search-box';
 import { Text } from '@/components/text';
 import { useMe } from '@/features/account/use-me';
+import { TermsCard } from '@/features/account/legal';
 import { ContributionsLink } from '@/features/contributions/contributions-link';
 import { LocationChip } from '@/features/location/location-chip';
 import { SavingsCard } from '@/features/plan/savings-card';
@@ -47,6 +48,7 @@ export default function HomeScreen() {
 
       <SavingsCard />
 
+      <TermsCard />
       <PriceDropList />
 
       <ContributionsLink />

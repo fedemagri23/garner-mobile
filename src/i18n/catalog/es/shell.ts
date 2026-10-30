@@ -34,6 +34,15 @@ export const shell = {
       invalid: 'Revisá los datos: un email válido y una contraseña de al menos 10 caracteres.',
     },
   },
+  legal: {
+    title: 'Legal',
+    terms: 'Términos de uso',
+    privacy: 'Privacidad',
+    credits: 'Créditos y licencias',
+    accept: 'Acepto los términos de uso y la política de privacidad',
+    updatedBody: 'Para seguir usando Garner, leé y aceptá los términos de uso y la política de privacidad.',
+    acceptButton: 'Acepto',
+  },
   account: {
     title: 'Cuenta',
     name: 'Nombre',

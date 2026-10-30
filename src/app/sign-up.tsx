@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { Button } from '@/components/button';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
+import { AcceptTerms } from '@/features/account/legal';
 import { TextField } from '@/components/text-field';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
@@ -14,6 +15,7 @@ import { colors, space } from '@/theme/tokens';
 export default function SignUpScreen() {
   const { signUp } = useSession();
   const [displayName, setDisplayName] = useState('');
+  const [accepted, setAccepted] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +25,7 @@ export default function SignUpScreen() {
     setError(null);
     setSubmitting(true);
     try {
-      await signUp({ displayName: displayName.trim(), email: email.trim(), password });
+      await signUp({ displayName: displayName.trim(), email: email.trim(), password, acceptTerms: true });
     } catch (failure) {
       setError(
         errorMessage(failure, {
@@ -70,6 +72,7 @@ export default function SignUpScreen() {
           <Text variant="caption" tone="muted">
             {t('shell.auth.signUp.minLength')}
           </Text>
+          <AcceptTerms value={accepted} onChange={setAccepted} />
           {error ? (
             <Text tone="danger" accessibilityLiveRegion="polite" accessibilityRole="alert">
               {error}
@@ -79,7 +82,7 @@ export default function SignUpScreen() {
             label={t('shell.auth.signUp.submit')}
             onPress={submit}
             loading={submitting}
-            disabled={!displayName || !email || !password}
+            disabled={!displayName || !email || !password || !accepted}
           />
         </View>
         <View style={styles.footer}>

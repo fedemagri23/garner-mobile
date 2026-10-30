@@ -37,6 +37,15 @@ export const shell: Catalog<typeof es> = {
       invalid: 'Confira seus dados: um e-mail válido e uma senha de pelo menos 10 caracteres.',
     },
   },
+  legal: {
+    title: 'Legal',
+    terms: 'Termos de uso',
+    privacy: 'Privacidade',
+    credits: 'Créditos e licenças',
+    accept: 'Aceito os termos de uso e a política de privacidade',
+    updatedBody: 'Para continuar usando o Garner, leia e aceite os termos de uso e a política de privacidade.',
+    acceptButton: 'Aceito',
+  },
   account: {
     title: 'Conta',
     name: 'Nome',

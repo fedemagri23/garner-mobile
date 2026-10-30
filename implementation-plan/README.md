@@ -546,7 +546,7 @@ What no stranger can use Garner without, and what the app stores require.
   preferences); shared contributions (prices, products, shops) stay,
   anonymised, so the catalog does not break. A matching web page for
   deleting without the app.
-- **Checkpoint 24 — Terms, privacy, licences.** In-app and web pages: terms
+- **Checkpoint 24 ✅ — Terms, privacy, licences** (garner-app `74b7a0f`; drafts pending legal review, contact address pending). In-app and web pages: terms
   of use (user content, takedown requests), privacy policy (what is stored,
   location use, email, push), and credits (Open Food Facts ODbL and CC
   BY-SA, map data). Accepting terms at sign-up, with the version recorded.

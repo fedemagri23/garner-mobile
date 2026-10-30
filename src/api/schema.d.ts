@@ -77,6 +77,23 @@ export interface paths {
         patch: operations["usersUpdateMe"];
         trace?: never;
     };
+    "/v1/users/me/terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept the current terms of use and privacy policy */
+        post: operations["usersAcceptTerms"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/users/me/preferences": {
         parameters: {
             query?: never;
@@ -1334,6 +1351,10 @@ export interface components {
              * @enum {string}
              */
             locale: "es" | "en" | "de" | "pt";
+            /** @description Whether the account accepted the current terms (else the app asks) */
+            termsAccepted: boolean;
+            /** @description The current terms version */
+            currentTermsVersion: string;
             /** Format: date-time */
             createdAt: string;
         };
@@ -1606,6 +1627,8 @@ export interface components {
             email: string;
             password: string;
             displayName: string;
+            /** @description The person accepted the current terms and privacy policy */
+            acceptTerms?: boolean;
         };
         TokenPairResponse: {
             accessToken: string;
@@ -2833,6 +2856,25 @@ export interface operations {
                 "application/json": components["schemas"]["UpdateUserProfileRequest"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserResponse"];
+                };
+            };
+        };
+    };
+    usersAcceptTerms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

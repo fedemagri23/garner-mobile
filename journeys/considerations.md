@@ -318,3 +318,9 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** Inicio → _Cuenta_ (`(home)/account`): name (PATCH), email shown, `LanguageCard`, password change (`POST /v1/auth/password`; the session adopts the returned pair through `adoptSession`, so this phone stays signed in), sign out everywhere (`POST /v1/auth/logout-all`, then the usual sign-out), and account deletion behind a second step with the password (`DELETE /v1/users/me`, then sign-out). The web e2e renames the throwaway account and deletes it at the end of the walk-through, so runs no longer leave accounts behind.
 - **Why:** CON-064 and the store requirement for in-app deletion.
 - **Revisit when:** Email change is built.
+
+### MCON-053 — Terms in the app: accepted at sign-up, asked on Inicio, linked from Cuenta
+- **Phase:** 11 (checkpoint 24) · **Area:** account, legal · **Status:** accepted
+- **What:** Sign-up requires ticking _Acepto los términos…_ and sends `acceptTerms: true`; `TermsCard` on Inicio asks any account whose `termsAccepted` is false (older accounts, or after `TERMS_VERSION` changes) and records it with `POST /v1/users/me/terms`; _Cuenta_ links the three pages. Pages open in the browser (`expo-web-browser`), from the backend, in the app's language. The seed resets the demo accounts' acceptance, so the card shows after each reseed and the web e2e accepts it.
+- **Why:** CON-065 on the app side.
+- **Revisit when:** The texts are final.

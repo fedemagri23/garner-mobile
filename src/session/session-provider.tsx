@@ -29,7 +29,7 @@ interface SessionValue {
   signIn(email: string, password: string): Promise<void>;
   /** Keeps this device signed in with a pair the server just issued (after a password change). */
   adoptSession(pair: { accessToken: string; refreshToken: string }): Promise<void>;
-  signUp(input: { email: string; password: string; displayName: string }): Promise<void>;
+  signUp(input: { email: string; password: string; displayName: string; acceptTerms?: boolean }): Promise<void>;
   signOut(): Promise<void>;
 }
 
@@ -98,7 +98,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   const signUp = useCallback(
-    async (input: { email: string; password: string; displayName: string }) => {
+    async (input: { email: string; password: string; displayName: string; acceptTerms?: boolean }) => {
       const pair = await unwrap(publicApi.POST('/v1/auth/register', { body: input }));
       await tokens.signedIn(pair);
       setStatus('signedIn');
