@@ -137,3 +137,21 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Symptom:** At 360 wide and under, the scanner's "Buscar" stuck out of the window and the page scrolled sideways. On the web the category search was 27 high instead of 48, and switches had a 20 px target.
 - **Cause:** A text input keeps its intrinsic width unless told `minWidth: 0` (the other scanner copy had it); web inputs shrink in a column; the web's switch is 40×20.
 - **Fix:** `minWidth: 0` and `flexShrink: 0`, and on the web the switch's invisible control reaches 44 high.
+
+### MBUG-023 — On Android the keyboard covered the fields of every form
+- **Phase:** 14 (checkpoint 33) · **Area:** keyboard · **Scope:** production code · **Found by:** reading Expo's keyboard guide
+- **Symptom:** Sign-in, sign-up, password reset and sheets set no keyboard behaviour on Android, and the long forms had no handling on either platform. Not yet seen on a device: found by reading, and the fix still needs one.
+- **Cause:** Expo apps on Android are edge to edge, so the window no longer resizes for the keyboard: "A view without a `behavior` stays under the keyboard."
+- **Fix:** `behavior="padding"` on both platforms for those screens; `FormScroll` for add product, add shop and report price (the scroll view's insets on iOS, padding on Android). `react-native-keyboard-controller` would do this better but is not in Expo Go.
+
+### MBUG-024 — Words split across lines on the narrowest phones
+- **Phase:** 14 (checkpoint 33) · **Area:** layout · **Scope:** production code · **Found by:** a new rule in the size sweep
+- **Symptom:** At 280–320 wide (foldable cover screens): "heut / e?" on Inicio, product names one word per line in a list, shop names and "Recorrido" split in the plan and in Compra.
+- **Cause:** Rows gave their text only what fixed neighbours left over.
+- **Fix:** Neighbours drop to the next line where the text would not fit, a list row stacks under 340, and the sweep now fails on a split word.
+
+### MBUG-025 — "sin precio" in a list row was not translated
+- **Phase:** 14 (checkpoint 33) · **Area:** i18n · **Scope:** production code · **Found by:** reading the row while changing it
+- **Symptom:** The words stayed Spanish in every language.
+- **Cause:** A literal in the component, which the catalog parity test cannot see.
+- **Fix:** `lists.detail.noPrice` in all four catalogs.

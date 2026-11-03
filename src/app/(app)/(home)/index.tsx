@@ -62,12 +62,14 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     gap: space.md,
     paddingTop: space.xl,
   },
-  greeting: { flex: 1, gap: space.xs },
+  // Where the title would break mid-word, the location chip drops below it.
+  greeting: { flexGrow: 1, flexShrink: 1, flexBasis: 150, gap: space.xs },
   searchRow: { flexDirection: 'row', gap: space.sm + 2 },
   search: { flex: 1 },
   spinner: { alignSelf: 'flex-start' },

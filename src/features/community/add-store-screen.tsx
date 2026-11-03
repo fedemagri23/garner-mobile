@@ -6,6 +6,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
+import { FormScroll } from '@/components/form-scroll';
 import { Chip } from '@/components/chip';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
@@ -116,7 +117,7 @@ export function AddStoreScreen() {
 
   return (
     <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.root}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <FormScroll contentContainerStyle={styles.content}>
         <View style={styles.topBar}>
           <Pressable
             accessibilityRole="button"
@@ -228,7 +229,7 @@ export function AddStoreScreen() {
           </Text>
         ) : null}
         <Button label={t('community.addStore.submit')} loading={add.isPending} disabled={!pin} onPress={submit} />
-      </ScrollView>
+      </FormScroll>
     </SafeAreaView>
   );
 }

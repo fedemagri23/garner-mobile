@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/button';
+import { FormScroll } from '@/components/form-scroll';
 import { Chip } from '@/components/chip';
 import { Text } from '@/components/text';
 import { TextField } from '@/components/text-field';
@@ -180,7 +181,7 @@ export function AddProductScreen() {
 
   return (
     <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.root}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <FormScroll contentContainerStyle={styles.content}>
         <View style={styles.topBar}>
           <Pressable
             accessibilityRole="button"
@@ -344,7 +345,7 @@ export function AddProductScreen() {
           loading={add.isPending || addToList.isPending}
           onPress={submit}
         />
-      </ScrollView>
+      </FormScroll>
     </SafeAreaView>
   );
 }

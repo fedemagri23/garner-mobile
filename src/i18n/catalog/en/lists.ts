@@ -12,6 +12,7 @@ export const lists: Catalog<typeof es> = {
     edited: 'edited {{when}}',
   },
   detail: {
+    noPrice: 'no price',
     otherAisles: 'Other',
     gone: 'This list no longer exists.',
     wherePlan: 'Where to buy',

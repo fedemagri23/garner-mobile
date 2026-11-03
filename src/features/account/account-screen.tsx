@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, StyleSheet, View } from 'react-native';
 
 import { ApiError, noContent, unwrap } from '@/api/client';
 import { Button } from '@/components/button';
@@ -28,38 +28,40 @@ export function AccountScreen() {
   const me = useMe();
 
   return (
-    <Screen>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('common.back')}
-        onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
-        style={styles.round}>
-        <Ionicons name="chevron-back" size={20} color={colors.ink} />
-      </Pressable>
-      <Text variant="title" accessibilityRole="header">
-        {t('shell.account.title')}
-      </Text>
-      {me.data ? (
-        <>
-          <NameCard name={me.data.displayName} email={me.data.email} />
-          <LanguageCard />
-          <PasswordCard />
-          {me.data.role === 'MODERATOR' || me.data.role === 'ADMIN' ? (
-            <Button label={t('community.moderation.title')} variant="secondary" onPress={() => router.push('/moderation')} />
-          ) : null}
-          <SignOutEverywhere />
-          <DeleteAccount />
-          <View style={styles.card}>
-            <Text variant="heading">{t('shell.legal.title')}</Text>
-            <LegalLinks />
-          </View>
-        </>
-      ) : me.isError ? (
-        <StateMessage tone="danger" message={errorMessage(me.error)} />
-      ) : (
-        <StateMessage loading />
-      )}
-    </Screen>
+    <KeyboardAvoidingView style={styles.fill} behavior="padding">
+      <Screen>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+          style={styles.round}>
+          <Ionicons name="chevron-back" size={20} color={colors.ink} />
+        </Pressable>
+        <Text variant="title" accessibilityRole="header">
+          {t('shell.account.title')}
+        </Text>
+        {me.data ? (
+          <>
+            <NameCard name={me.data.displayName} email={me.data.email} />
+            <LanguageCard />
+            <PasswordCard />
+            {me.data.role === 'MODERATOR' || me.data.role === 'ADMIN' ? (
+              <Button label={t('community.moderation.title')} variant="secondary" onPress={() => router.push('/moderation')} />
+            ) : null}
+            <SignOutEverywhere />
+            <DeleteAccount />
+            <View style={styles.card}>
+              <Text variant="heading">{t('shell.legal.title')}</Text>
+              <LegalLinks />
+            </View>
+          </>
+        ) : me.isError ? (
+          <StateMessage tone="danger" message={errorMessage(me.error)} />
+        ) : (
+          <StateMessage loading />
+        )}
+      </Screen>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -226,6 +228,7 @@ function DeleteAccount() {
 }
 
 const styles = StyleSheet.create({
+  fill: { flex: 1 },
   round: {
     width: MIN_TOUCH,
     height: MIN_TOUCH,

@@ -12,6 +12,7 @@ import { useAllCategories } from '@/features/community/use-community';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDay, formatPrice, productCount } from '@/lib/format';
+import { useLayout } from '@/lib/use-layout';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { colors, fonts, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
@@ -257,12 +258,14 @@ function ItemRow({
   last: boolean;
 }) {
   const setQuantity = useSetQuantity(listId);
+  // Under this the stepper leaves the name too narrow to read: it goes below.
+  const stacked = useLayout().width < 340;
   const name = item.product.name;
   const change = (quantity: number) =>
     setQuantity.mutate({ itemId: item.id, quantity });
 
-  return (
-    <View style={[styles.item, first && styles.itemFirst, last ? styles.itemLast : styles.divider]}>
+  const stepper = (
+    <>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={item.quantity === 1 ? t('lists.detail.remove', { name }) : t('lists.detail.oneLess', { name })}
@@ -282,6 +285,9 @@ function ItemRow({
         style={styles.step}>
         <Ionicons name="add" size={18} color={colors.ink} />
       </Pressable>
+    </>
+  );
+  const label = (
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('lists.detail.view', { name })}
@@ -291,11 +297,32 @@ function ItemRow({
           {name}
         </Text>
       </Pressable>
+  );
+  const total = (
       <Text style={styles.line} tone={item.expectedLineTotalCents === null ? 'muted' : 'ink'}>
         {item.expectedLineTotalCents === null
-          ? 'sin precio'
+          ? t('lists.detail.noPrice')
           : formatPrice(item.expectedLineTotalCents, currency)}
       </Text>
+  );
+
+  return (
+    <View style={[styles.item, first && styles.itemFirst, last ? styles.itemLast : styles.divider, stacked && styles.itemStacked]}>
+      {stacked ? (
+        <>
+          <View style={styles.itemLine}>
+            {label}
+            {total}
+          </View>
+          <View style={styles.itemLine}>{stepper}</View>
+        </>
+      ) : (
+        <>
+          {stepper}
+          {label}
+          {total}
+        </>
+      )}
     </View>
   );
 }
@@ -386,6 +413,8 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
   },
   // The rows together read as one card.
+  itemStacked: { flexDirection: 'column', alignItems: 'stretch', paddingVertical: space.xs },
+  itemLine: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   itemFirst: { borderTopWidth: 1, borderTopLeftRadius: radii.lg, borderTopRightRadius: radii.lg },
   itemLast: { borderBottomWidth: 1, borderBottomLeftRadius: radii.lg, borderBottomRightRadius: radii.lg },
   step: { width: MIN_TOUCH, height: MIN_TOUCH, alignItems: 'center', justifyContent: 'center' },

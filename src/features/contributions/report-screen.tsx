@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
+import { FormScroll } from '@/components/form-scroll';
 import { ProductTile } from '@/components/product-tile';
 import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
@@ -116,7 +117,7 @@ export function ReportScreen() {
 
   return (
     <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.root}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <FormScroll contentContainerStyle={styles.content}>
         <View style={styles.topBar}>
           <Pressable
             accessibilityRole="button"
@@ -230,7 +231,7 @@ export function ReportScreen() {
             {t('contributions.report.summary', { price: formatPrice(cents, currency), store: chosen.name })}
           </Text>
         ) : null}
-      </ScrollView>
+      </FormScroll>
     </SafeAreaView>
   );
 }

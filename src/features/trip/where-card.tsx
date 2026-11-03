@@ -205,8 +205,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
   },
   cardFound: { borderColor: colors.accent, backgroundColor: colors.accentSoft },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  text: { flex: 1, gap: 2 },
+  row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.md },
+  // Where a shop's name would break mid-word, the button drops below it.
+  text: { flexGrow: 1, flexShrink: 1, flexBasis: 170, gap: 2 },
   change: {
     minHeight: MIN_TOUCH,
     justifyContent: 'center',

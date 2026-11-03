@@ -1,8 +1,8 @@
 /**
  * Walks every screen at every window width and fails on what breaks a layout:
- * sideways scrolling, something that sticks out of the window, or a target too
- * small to tap. Screenshots of each screen at each width go to
- * e2e/screenshots/sizes/ (git-ignored), to look at.
+ * sideways scrolling, something that sticks out of the window, a target too
+ * small to tap, or a word split across lines. Screenshots of each screen at
+ * each width go to e2e/screenshots/sizes/ (git-ignored), to look at.
  *
  * Needs what the web walk-through needs: the backend on :3000, freshly seeded,
  * with CORS_ORIGINS=http://localhost:8081 and RATE_LIMIT_MAX=1000, and the web
@@ -163,6 +163,24 @@ const problems = () =>
         found.push(`too small to tap: "${describe(n)}" (${Math.round(box.width)}×${Math.round(box.height)})`);
       }
     }
+    // A word split across two lines ("heut / e?"): the text's box is too narrow.
+    // At a hyphen is where words may break.
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (['STYLE', 'SCRIPT'].includes(node.parentElement?.tagName)) continue;
+      for (const match of node.textContent.matchAll(/[^\s-]{2,}/g)) {
+        range.setStart(node, match.index);
+        range.setEnd(node, match.index + match[0].length);
+        const lines = new Set([...range.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top)));
+        if (lines.size < 2) continue;
+        const [first] = range.getClientRects();
+        const hit = document.elementFromPoint(first.x + first.width / 2, first.y + first.height / 2);
+        if (first.top >= 0 && first.bottom <= window.innerHeight && hit && node.parentElement.contains(hit)) {
+          found.push(`splits a word: "${match[0].slice(0, 30)}"`);
+        }
+      }
+    }
     return [...new Set(found)];
   }, MIN_TARGET);
 
@@ -251,7 +269,8 @@ const sweep = async (language, widths) => {
     } catch (error) {
       crashed = true;
       failures.push(`${language} ${width}: the walk stopped: ${error.message.split('\n')[0]}`);
-      await page.screenshot({ path: `${SHOTS}failure-${language}-${width}.png` });
+      // The browser itself may be what died: still report what was found.
+      await page.screenshot({ path: `${SHOTS}failure-${language}-${width}.png` }).catch(() => undefined);
       console.log(`FAIL  ${language} ${width}`);
       break;
     }
@@ -302,7 +321,7 @@ if (!crashed && GERMAN_WIDTHS.length > 0) {
   await sweep('de', GERMAN_WIDTHS);
 }
 
-await browser.close();
+await browser.close().catch(() => undefined);
 
 const unique = [...new Set(failures)];
 if (errors.length > 0) console.log(`\nErrors in the page:\n${[...new Set(errors)].join('\n')}`);

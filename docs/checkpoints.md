@@ -930,3 +930,20 @@ every screen is checked automatically at 10 widths.
 3. On the iPhone and iPad (portrait): nothing should look different from before.
 4. Automated (backend on :3000 and web on :8081, freshly seeded):
    `npm run e2e:sizes`.
+
+## Checkpoint 33 — Every phone
+
+Narrow screens read well, maps leave room on short phones, and the keyboard no
+longer covers what you type.
+
+**Check** (on your iPhone, with Expo Go)
+
+1. _Agregar producto_: tap each field down to the last. The one you type in stays
+   above the keyboard, and you can scroll to the button.
+2. The same in _Agregar tienda_, _Informar precio_ and _Cuenta_ → change password.
+3. iPhone Settings → Display & Brightness → Text Size to the maximum, then go
+   through Inicio, a list, the plan and Compra. Nothing cut off without a way to
+   reach it; tell me what looks wrong. Put it back afterwards.
+4. In a computer browser, drag the window down to about 280 wide, or run
+   `npm run e2e:sizes`: titles and names keep their words whole, and a list row
+   puts its quantity under the name.

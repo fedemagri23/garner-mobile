@@ -3,12 +3,15 @@ import MapView, { Marker } from 'react-native-maps';
 
 import { t } from '@/i18n';
 import type { MapPoint } from '@/features/plan/map-types';
+import { mapHeightFor, useLayout } from '@/lib/use-layout';
 import { radii } from '@/theme/tokens';
 
 /** Where a new shop is: a pin that moves to wherever the map is tapped or dragged. */
 export function PinMap({ point, onChange }: { point: MapPoint; onChange: (point: MapPoint) => void }) {
+  const { height } = useLayout();
+
   return (
-    <View style={styles.frame}>
+    <View style={[styles.frame, { height: mapHeightFor(height) }]}>
       <MapView
         style={StyleSheet.absoluteFill}
         initialRegion={{ ...point, latitudeDelta: 0.004, longitudeDelta: 0.004 }}
@@ -28,5 +31,5 @@ export function PinMap({ point, onChange }: { point: MapPoint; onChange: (point:
 }
 
 const styles = StyleSheet.create({
-  frame: { height: 220, borderRadius: radii.lg, overflow: 'hidden' },
+  frame: { borderRadius: radii.lg, overflow: 'hidden' },
 });

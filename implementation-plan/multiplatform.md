@@ -101,7 +101,7 @@ Done when: the sweep passes locally (like the web walk-through, it needs the
 whole backend, which CI does not start; CI checks that the web pages build and
 carry the app), and existing phone screens look unchanged at 390. ✅
 
-### Checkpoint 33 — Every phone, portrait (size: M)
+### Checkpoint 33 — Every phone, portrait (size: M) ✅
 
 - Go through all screens with the sweep and fix what it finds, narrowest first:
   rows that wrap badly, buttons side by side that no longer fit, long German
@@ -114,8 +114,11 @@ carry the app), and existing phone screens look unchanged at 390. ✅
   reachable, on iOS and Android, with three-button navigation and gestures.
 - Android back button and gesture: closes sheets and modal screens first.
 
-Done when: every screen passes at 280–430 in four languages, and at large text
-on the phones available.
+Done when: every screen passes at 280–430, in Spanish and German (the longest of
+the four; a separate run for the other two adds nothing the parity test and German
+do not catch), and at large text on the phones available. The large-text and
+keyboard checks need a real phone: they are in `docs/checkpoints.md` for the user's
+iPhone, and Android stays unchecked until there is a device or emulator.
 
 ### Checkpoint 34 — Camera, photos and maps on real hardware (size: M)
 

@@ -12,6 +12,7 @@ import { useStartTrip } from '@/features/trip/use-trip';
 import { useShopperLocation } from '@/features/location/location-provider';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
+import { mapHeightFor, useLayout } from '@/lib/use-layout';
 import { formatPrice, productCount } from '@/lib/format';
 import { colors, fonts, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
@@ -21,7 +22,6 @@ import { StopsMap } from './stops-map';
 import { MODES, modeLabel, planFor, useOptimization, useRequestPlan, type Mode, type Plan, type PlanStop } from './use-plan';
 import { extraKm, extraMinutes, joinNames, violationText } from './wording';
 
-const MAP_HEIGHT = 260;
 
 /**
  * "¿Dónde conviene comprar?": the three ways to buy a list — one store, the
@@ -34,6 +34,7 @@ export function PlanScreen() {
   const { location } = useShopperLocation();
   const request = useRequestPlan(id);
   const optimization = useOptimization(request.data?.id);
+  const { height: windowHeight } = useLayout();
   const [mode, setMode] = useState<Mode | null>(null);
   const [editing, setEditing] = useState(false);
   const start = useStartTrip();
@@ -120,7 +121,7 @@ export function PlanScreen() {
 
   return (
     <View style={styles.root}>
-      <View style={styles.map}>
+      <View style={[styles.map, { height: mapHeightFor(windowHeight) }]}>
         {optimization.data ? <StopsMap origin={optimization.data.origin} stops={stops} /> : null}
         <TopBar title={list.data?.name} />
       </View>
@@ -239,7 +240,9 @@ function Stop({ stop, currency, last }: { stop: PlanStop; currency: string; last
           </Text>
         </View>
         <View style={styles.stopText}>
-          <Text variant="bodyStrong">{stop.storeName}</Text>
+          <Text variant="bodyStrong" numberOfLines={open ? undefined : 1}>
+            {stop.storeName}
+          </Text>
           <Text variant="caption" tone="muted" numberOfLines={open ? undefined : 1}>
             {open && stop.addressLine ? stop.addressLine : t('plan.screen.stopMeta', { count: productCount(stop.items.length), preview })}
           </Text>
@@ -303,7 +306,7 @@ function Notes({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-  map: { height: MAP_HEIGHT, backgroundColor: '#E4E9E1' },
+  map: { backgroundColor: '#E4E9E1' },
   topBar: { position: 'absolute', left: space.xl, right: space.xl, flexDirection: 'row', alignItems: 'center', gap: space.sm },
   round: {
     width: MIN_TOUCH,
@@ -328,9 +331,10 @@ const styles = StyleSheet.create({
   tabSelected: { backgroundColor: colors.surface },
   tabText: { fontFamily: fonts.bodySemi, fontSize: 14, color: colors.inkSoft },
   tabTextSelected: { fontFamily: fonts.bodyBold, color: colors.ink },
-  stats: { flexDirection: 'row', gap: space.sm },
+  stats: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   stat: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 100,
     padding: space.md,
     gap: 2,
     backgroundColor: colors.surface,
@@ -345,7 +349,7 @@ const styles = StyleSheet.create({
   hairline: { height: 1, backgroundColor: colors.surfaceMuted },
   order: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   orderText: { fontFamily: fonts.bodyBold, fontSize: 14 },
-  stopText: { flex: 1, gap: 2 },
+  stopText: { flex: 1, minWidth: 0, gap: 2 },
   subtotal: { fontFamily: fonts.bodyBold, fontSize: 16, fontVariant: ['tabular-nums'] },
   items: { paddingLeft: 58, paddingRight: space.lg, paddingBottom: space.md, gap: 4 },
   item: { flexDirection: 'row', justifyContent: 'space-between', gap: space.md },

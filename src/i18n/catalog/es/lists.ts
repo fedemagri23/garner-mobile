@@ -9,6 +9,7 @@ export const lists = {
     edited: 'editada {{when}}',
   },
   detail: {
+    noPrice: 'sin precio',
     otherAisles: 'Otros',
     gone: 'Esta lista ya no existe.',
     wherePlan: 'Dónde comprar',
