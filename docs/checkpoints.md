@@ -915,3 +915,18 @@ both quantities). Opening a merged product offers _Ver el producto que quedó_.
    (try it on test products: it cannot be undone). Or _Ocultar_ → it leaves
    the queue and search.
 4. `pnpm run seed` afterwards puts the demo back.
+
+## Checkpoint 32 — Every screen: the foundation
+
+Pages keep a readable width on large screens, sheets become dialogs there, and
+every screen is checked automatically at 10 widths.
+
+**Check**
+
+1. In a computer browser at `http://localhost:8081`, sign in and make the window
+   wide. Inicio, Buscar and Listas sit in a centred column, not edge to edge.
+2. In a list, tap _Más opciones_: a centred dialog. Make the window phone-narrow
+   and open it again: a panel from the bottom.
+3. On the iPhone and iPad (portrait): nothing should look different from before.
+4. Automated (backend on :3000 and web on :8081, freshly seeded):
+   `npm run e2e:sizes`.

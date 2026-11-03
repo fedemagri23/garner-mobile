@@ -10,7 +10,7 @@ import { Text } from '@/components/text';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDay } from '@/lib/format';
-import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, fonts, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 import { describeAlert, type Alert } from './messages';
 import { useAlerts, useDeleteAlert, useToggleAlert } from './use-alerts';
@@ -20,7 +20,7 @@ export default function AlertsScreen() {
   const alerts = useAlerts();
 
   return (
-    <SafeAreaView edges={['top']} style={styles.root}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.root}>
       <FlatList
         data={alerts.data ?? []}
         keyExtractor={(alert) => alert.id}
@@ -115,7 +115,7 @@ function AlertRow({ alert }: { alert: Alert }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-  content: { padding: space.xl, gap: space.md - 2 },
+  content: { ...pageColumn, padding: space.xl, gap: space.md - 2 },
   header: { gap: space.md, paddingBottom: space.sm },
   round: {
     width: MIN_TOUCH,

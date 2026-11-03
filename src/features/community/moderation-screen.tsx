@@ -16,7 +16,7 @@ import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { useSession } from '@/session/session-provider';
-import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, fonts, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 type ReviewItem = components['schemas']['ReviewItemResponse'];
 type Action = 'verify' | 'hide' | 'restore';
@@ -190,7 +190,7 @@ function MergeSheet({ item, onClose, onMerged }: { item: ReviewItem; onClose: ()
 }
 
 const styles = StyleSheet.create({
-  list: { padding: space.xl, gap: space.md },
+  list: { ...pageColumn, padding: space.xl, gap: space.md },
   header: { gap: space.md, paddingBottom: space.sm },
   round: {
     width: MIN_TOUCH,

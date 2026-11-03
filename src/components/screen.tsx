@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
-import { colors, space } from '@/theme/tokens';
+import { colors, pageColumn, space } from '@/theme/tokens';
 
 interface Props {
   children: ReactNode;
@@ -13,7 +13,7 @@ interface Props {
 }
 
 /** The page ground every screen sits on. */
-export function Screen({ children, scroll = true, edges = ['top'], contentStyle }: Props) {
+export function Screen({ children, scroll = true, edges = ['top', 'left', 'right'], contentStyle }: Props) {
   return (
     <SafeAreaView edges={edges} style={styles.root}>
       {scroll ? (
@@ -34,5 +34,5 @@ export function Screen({ children, scroll = true, edges = ['top'], contentStyle 
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-  content: { padding: space.xl, gap: space.xl },
+  content: { ...pageColumn, padding: space.xl, gap: space.xl },
 });

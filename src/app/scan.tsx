@@ -70,7 +70,7 @@ export default function ScanScreen() {
   const cameraReady = permission?.granted;
 
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['top', 'bottom', 'left', 'right']}>
       <View style={styles.viewfinder}>
         {cameraReady ? (
           <CameraView
@@ -242,6 +242,7 @@ const styles = StyleSheet.create({
   typedRow: { flexDirection: 'row', gap: space.sm },
   input: {
     flex: 1,
+    minWidth: 0,
     height: 54,
     paddingHorizontal: space.lg,
     borderWidth: 1,

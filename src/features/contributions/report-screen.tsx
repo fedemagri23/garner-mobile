@@ -21,7 +21,7 @@ import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDistance, formatPrice } from '@/lib/format';
 import { parsePrice } from '@/lib/parse-price';
-import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, fonts, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 import { canUseCamera, pickPhoto } from './photo';
 import { useReportPrice, useStoresNear, type NearbyStore } from './use-contributions';
@@ -115,7 +115,7 @@ export function ReportScreen() {
   const ready = !!chosen && !!product.data && cents !== null && !!currency;
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.root}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.topBar}>
           <Pressable
@@ -321,7 +321,7 @@ function Thanks({ reportId }: { reportId: string }) {
   const waiting = queue.some((change) => change.id === reportId);
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.root}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.root}>
       <ScrollView contentContainerStyle={[styles.content, styles.thanks]}>
         <SyncBanner />
         <View style={styles.checkmark}>
@@ -353,7 +353,7 @@ function Thanks({ reportId }: { reportId: string }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-  content: { padding: space.xl, gap: space.lg },
+  content: { ...pageColumn, padding: space.xl, gap: space.lg },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   round: {
     width: MIN_TOUCH,

@@ -12,7 +12,7 @@ import { useLists, type ListSummary } from '@/features/lists/use-lists';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDay, formatPrice, productCount } from '@/lib/format';
-import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 export default function ListsScreen() {
   const lists = useLists();
@@ -90,7 +90,7 @@ function ListRow({ list }: { list: ListSummary }) {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: space.xl, gap: space.md - 2 },
+  content: { ...pageColumn, padding: space.xl, gap: space.md - 2 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

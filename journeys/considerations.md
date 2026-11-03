@@ -336,3 +336,15 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** `expo` 58.0.21 with every Expo module on its SDK 58 version (`npx expo install expo@~58.0.0`, then a clean install, since npm could not move the tree in place), React 19.3, React Native 0.88.1, expo-router 58 (native tabs back to the stable `expo-router/native-tabs` import), `jest-expo` 58 with Jest 30, `eslint-config-expo` 58, `@types/react` 19.3. Code changes: list empty states return `undefined` rather than `null` (React Native 0.88's types), the scan sheet's `onShow` returns nothing, `AndroidImportance` is imported by name (the linter cannot follow `expo-notifications`' re-export), and tests stub the icon sets (jest-expo 58 no longer stubs their font loading). `expo-doctor` passes 20/20; unit tests, the web e2e (85 steps) and the Android export pass. Resolves MCON-015.
 - **Why:** Store Expo Go supports only the latest SDK; staying on 57 would stop the app opening in Expo Go once the store updates.
 - **Revisit when:** SDK 59 ships — upgrade within a few weeks of its Expo Go reaching the stores.
+
+### MCON-056 — Layout follows the window's width, in three size classes
+- **Phase:** 14 (checkpoint 32) · **Area:** layout · **Status:** accepted
+- **What:** `useLayout()` gives compact (under 600), medium (600–1023) or expanded (1024 and up) from the window, never the device. Pages share a column limited to 720, and `Sheet` is a centred dialog from medium up. Decided with the user on 2026-11-03: the web is a real product, phones stay in portrait, web maps use MapLibre, testing on the user's own iPhone and iPad.
+- **Why:** A phone-sized browser window and an iPad in Split View need the phone layout, which no device check can tell.
+- **Revisit when:** A screen needs a layout that three classes cannot express.
+
+### MCON-057 — The size sweep runs locally, not in CI
+- **Phase:** 14 (checkpoint 32) · **Area:** testing · **Status:** accepted
+- **What:** `npm run e2e:sizes` walks every screen at 10 widths (280–2560), and the phone widths again in German, failing on sideways scrolling, targets off screen or under 36 px. It needs the backend stack, as `e2e:web` does, so CI only checks that the web build carries the app.
+- **Why:** Starting three databases, Redis and the backend in CI is a larger job than this phase needs. It takes about 8 minutes locally.
+- **Revisit when:** Hosting brings a staging environment to run it against.

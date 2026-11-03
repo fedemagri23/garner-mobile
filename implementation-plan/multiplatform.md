@@ -1,7 +1,6 @@
 # Phase 14 — Every screen: phones, tablets, mobile web, computers
 
-**Status: planned, not started.** Nothing here is implemented until the user
-says so (asked for on 2026-11-03).
+**Status: in progress** (started 2026-11-03).
 
 The goal: Garner works and looks right on different iPhones and Android
 phones, tablets and foldables, phone browsers, and computers of any size, from
@@ -83,7 +82,7 @@ matrix is built.
 Each one leaves the app usable and gets manual steps in `docs/checkpoints.md`,
 like every other checkpoint.
 
-### Checkpoint 32 — Foundation (size: M)
+### Checkpoint 32 — Foundation (size: M) ✅
 
 - `useLayout()`: the size class and width, updating live when the window
   changes or the phone rotates. Breakpoints go in `theme/tokens.ts`.
@@ -98,8 +97,9 @@ like every other checkpoint.
   on sideways scrolling, an element off screen or covered, or a tappable target
   under 44 px. It saves a screenshot per screen and size.
 
-Done when: the sweep runs in CI, and existing phone screens look unchanged at
-390.
+Done when: the sweep passes locally (like the web walk-through, it needs the
+whole backend, which CI does not start; CI checks that the web pages build and
+carry the app), and existing phone screens look unchanged at 390. ✅
 
 ### Checkpoint 33 — Every phone, portrait (size: M)
 
@@ -215,23 +215,14 @@ This machine is Linux, which limits what can be checked without help.
 | Other iPhones, iPads | **iOS Simulator needs a Mac** | See decision 4 |
 | Real camera focus | Real phones only | Emulators cannot test it |
 
-## Decisions needed before starting
+## Decisions (made by the user, 2026-11-03)
 
-1. **Is the web a real product?** Today it is a development tool. Checkpoints 36
-   and 37 only make sense if yes. *Recommended: yes, phones first, computers next.*
-2. **Rotation.** *Recommended:* phones stay in portrait (a shopping app used one
-   handed, and landscape would multiply scanner and map work); tablets, foldables
-   open, and computers rotate and resize freely. Needs `expo-screen-orientation`,
-   which must be confirmed to work in Expo Go.
-3. **Web maps.** *Recommended:* MapLibre with a hosted map provider, because it is
-   open source and needs no Google account. The cost is the provider's free-tier
-   limits and a required credit. Alternative: Google Maps on the web, which needs
-   a billing account.
-4. **Testing iPhones and iPads without a Mac.** Options: friends' phones (free,
-   limited), a paid device cloud such as BrowserStack, or occasional access to a
-   Mac. Real iPad and iPhone builds also need the Apple Developer account
-   (checkpoint 29). *Recommended: friends' phones first, a device cloud for one
-   month for the final round in checkpoint 38.*
+1. **The web is a real product**, phones first, then computers.
+2. **Phones stay in portrait.** Tablets, open foldables and computers rotate and
+   resize freely.
+3. **Web maps use MapLibre.**
+4. **Testing:** the user's own iPhone and iPad. Other Apple models stay unchecked
+   unless someone lends one, and the supported list will say so.
 
 ## Order, and how this fits the roadmap
 

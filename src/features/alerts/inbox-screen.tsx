@@ -9,7 +9,7 @@ import { StateMessage } from '@/components/state-message';
 import { Text } from '@/components/text';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
-import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, fonts, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 import { composeMessage, groupByDay, whenText, type Notification } from './messages';
 import { useAlerts, useMarkRead, useMessages, usePreferences, useSavePreferences } from './use-alerts';
@@ -41,7 +41,7 @@ export default function InboxScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top']} style={styles.root}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.root}>
       <SectionList
         sections={sections}
         keyExtractor={(message) => message.id}
@@ -163,7 +163,7 @@ function Message({ message, onPress }: { message: Notification; onPress: () => v
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-  content: { padding: space.xl, gap: space.sm },
+  content: { ...pageColumn, padding: space.xl, gap: space.sm },
   header: { gap: space.lg, paddingBottom: space.sm, paddingTop: space.sm },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md },
   titleText: { gap: 2, flex: 1 },

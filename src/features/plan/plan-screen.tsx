@@ -13,7 +13,7 @@ import { useShopperLocation } from '@/features/location/location-provider';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatPrice, productCount } from '@/lib/format';
-import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, fonts, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 import type { MapStop } from './map-types';
 import { PreferencesSheet } from './preferences-sheet';
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sheet: { flex: 1, marginTop: -20, borderTopLeftRadius: 22, borderTopRightRadius: 22, backgroundColor: colors.ground },
-  sheetContent: { padding: space.xl, gap: space.lg },
+  sheetContent: { ...pageColumn, padding: space.xl, gap: space.lg },
   tabs: { flexDirection: 'row', gap: 4, padding: 4, backgroundColor: '#E4E9E1', borderRadius: radii.md },
   tab: { flex: 1, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   tabSelected: { backgroundColor: colors.surface },

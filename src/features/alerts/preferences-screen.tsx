@@ -9,7 +9,7 @@ import { Stepper } from '@/components/stepper';
 import { Text } from '@/components/text';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
-import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 import { LanguageCard } from '@/i18n/language-card';
 import { PushCard } from '@/features/push/push-card';
@@ -25,7 +25,7 @@ export default function PreferencesScreen() {
   const preferences = usePreferences();
 
   return (
-    <SafeAreaView edges={['top']} style={styles.root}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} contentInsetAdjustmentBehavior="automatic">
         <Pressable
           accessibilityRole="button"
@@ -189,7 +189,7 @@ const Card = ({ children }: { children: React.ReactNode }) => <View style={style
 const styles = StyleSheet.create({
   about: { gap: space.xs, paddingHorizontal: space.xs },
   root: { flex: 1, backgroundColor: colors.ground },
-  content: { padding: space.xl, gap: space.lg },
+  content: { ...pageColumn, padding: space.xl, gap: space.lg },
   round: {
     width: MIN_TOUCH,
     height: MIN_TOUCH,

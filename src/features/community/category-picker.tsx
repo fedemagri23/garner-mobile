@@ -207,6 +207,7 @@ const styles = StyleSheet.create({
   body: { gap: space.sm, flexShrink: 1 },
   search: {
     height: 48,
+    flexShrink: 0,
     paddingHorizontal: space.lg,
     borderWidth: 1,
     borderColor: colors.lineStrong,

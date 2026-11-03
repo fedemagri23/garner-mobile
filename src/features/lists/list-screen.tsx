@@ -13,7 +13,7 @@ import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { formatDay, formatPrice, productCount } from '@/lib/format';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
-import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, fonts, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 import { groupByAisle } from './aisle-order';
 import { ListOptionsSheet } from './list-options-sheet';
@@ -32,7 +32,7 @@ export function ListScreen() {
 
   if (!list.data) {
     return (
-      <SafeAreaView edges={['top']} style={styles.root}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.root}>
         <BackButton />
         {list.isError ? (
           <StateMessage
@@ -69,7 +69,7 @@ export function ListScreen() {
         }));
 
   return (
-    <SafeAreaView edges={['top']} style={styles.root}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.root}>
       <FlatList
         data={rows}
         keyExtractor={(row) => row.key}
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   create: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: MIN_TOUCH },
   createText: { flex: 1 },
   root: { flex: 1, backgroundColor: colors.ground },
-  content: { padding: space.xl },
+  content: { ...pageColumn, padding: space.xl },
   header: { gap: space.lg, paddingBottom: space.lg },
   topBar: { flexDirection: 'row', justifyContent: 'space-between' },
   round: {

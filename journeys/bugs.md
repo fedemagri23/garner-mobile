@@ -125,3 +125,15 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Symptom:** With the phone offline, "Agregar producto" showed a spinner and never reached "Guardado en el teléfono"; the product was added only when the connection came back, with the shopper never told.
 - **Cause:** React Query pauses mutations while it thinks the device is offline (`networkMode: 'online'`), so the code that puts the product on the outbox never ran.
 - **Fix:** The mutation runs with `networkMode: 'always'`, as the trip's already did: it decides itself whether to send or queue.
+
+### MBUG-021 — A custom web document served a blank page
+- **Phase:** 14 (checkpoint 32) · **Area:** web · **Scope:** production code (caught before release) · **Found by:** the size sweep's first run
+- **Symptom:** With `src/app/+html.tsx` in place the web app showed nothing: no script reached the browser, and lint, types and unit tests all passed.
+- **Cause:** On SDK 58 the page is streamed, and the styles and scripts reach the document through `useServerDocumentContext()`; a document that does not render `headNodes` and `bodyNodes` has none.
+- **Fix:** The document renders them. CI now exports the web build and checks that its page has a script.
+
+### MBUG-022 — Narrow phones and web forms: scanner button off screen, squashed search, tiny switches
+- **Phase:** 14 (checkpoint 32) · **Area:** layout · **Scope:** production code · **Found by:** the size sweep
+- **Symptom:** At 360 wide and under, the scanner's "Buscar" stuck out of the window and the page scrolled sideways. On the web the category search was 27 high instead of 48, and switches had a 20 px target.
+- **Cause:** A text input keeps its intrinsic width unless told `minWidth: 0` (the other scanner copy had it); web inputs shrink in a column; the web's switch is 40×20.
+- **Fix:** `minWidth: 0` and `flexShrink: 0`, and on the web the switch's invisible control reaches 44 high.

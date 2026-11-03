@@ -16,7 +16,7 @@ import type { MapPoint } from '@/features/plan/map-types';
 import { useStoresNear } from '@/features/contributions/use-contributions';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
-import { colors, MIN_TOUCH, space } from '@/theme/tokens';
+import { colors, MIN_TOUCH, pageColumn, space } from '@/theme/tokens';
 
 import { PinMap } from './pin-map';
 import { ProgressCard } from './progress-card';
@@ -115,7 +115,7 @@ export function AddStoreScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.root}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.topBar}>
           <Pressable
@@ -238,7 +238,7 @@ function Added({ store }: { store: Store }) {
   const progress = store.publication;
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.root}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.root}>
       <ScrollView contentContainerStyle={[styles.content, styles.done]}>
         <View style={styles.center}>
           <Ionicons name="checkmark-circle" size={56} color={colors.accent} />
@@ -265,7 +265,7 @@ function Added({ store }: { store: Store }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-  content: { padding: space.xl, gap: space.lg },
+  content: { ...pageColumn, padding: space.xl, gap: space.lg },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   round: {
     width: MIN_TOUCH,

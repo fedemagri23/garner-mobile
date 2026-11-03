@@ -66,7 +66,8 @@
     "test": "jest",
     "api:generate": "node scripts/generate-api.mjs",
     "api:check": "node scripts/generate-api.mjs --check",
-    "e2e:web": "node e2e/web-smoke.mjs"
+    "e2e:web": "node e2e/web-smoke.mjs",
+    "e2e:sizes": "node e2e/size-sweep.mjs"
   },
   "private": true,
   "jest": {

@@ -63,3 +63,24 @@ export const radii = {
 
 /** Never smaller than this for anything tappable. */
 export const MIN_TOUCH = 44;
+
+/**
+ * How wide the window is decides the layout, never the device: a phone-sized
+ * browser window gets the phone layout, an iPad in Split View may too.
+ */
+export const breakpoints = {
+  /** Tablets, unfolded foldables, small windows. */
+  medium: 600,
+  /** Large tablets and computers. */
+  expanded: 1024,
+} as const;
+
+/** The widest a column of reading or a form gets, however large the screen. */
+export const CONTENT_MAX_WIDTH = 720;
+
+/** Spread into a page's content style: fills a phone, centres on anything wider. */
+export const pageColumn = {
+  width: '100%',
+  maxWidth: CONTENT_MAX_WIDTH,
+  alignSelf: 'center',
+} as const;

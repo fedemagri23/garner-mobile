@@ -12,7 +12,7 @@ import { Text } from '@/components/text';
 import { t } from '@/i18n';
 import { formatPrice } from '@/lib/format';
 import { parsePrice, priceInput } from '@/lib/parse-price';
-import { colors, fonts, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, fonts, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 import { firstOpenStop, spentAt, stopsOf, type Stop, type Trip, type TripItem } from './stops';
 import { useTripActions } from './use-trip';
@@ -50,7 +50,7 @@ export function TripView({ trip, onCompleted }: { trip: Trip; onCompleted: (trip
     );
 
   return (
-    <SafeAreaView edges={['top']} style={styles.root}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.root}>
       <ScrollView
         contentContainerStyle={styles.content}
         contentInsetAdjustmentBehavior="automatic"
@@ -412,7 +412,7 @@ function FinishSheet({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-  content: { padding: space.xl, gap: space.lg },
+  content: { ...pageColumn, padding: space.xl, gap: space.lg },
   paused: {
     flexDirection: 'row',
     alignItems: 'center',

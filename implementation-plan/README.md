@@ -447,7 +447,7 @@ prices), then what real users need, then real prices, then shipping.
 | 11 ✅ | 22–25 | Ready for real users: password reset, account deletion, profile, terms, moderation page | both |
 | 12 | 26–28 | Real prices: Argentina's public price data, Vienna sources, data quality | backend |
 | 13 | 29–31 | Ship: builds, real-device checks, store listings | mobile |
-| 14 | 32–38 | Every screen: phones, tablets, mobile web, computers ([`multiplatform.md`](multiplatform.md)); planned, not started | both |
+| 14 | 32–38 | Every screen: phones, tablets, mobile web, computers ([`multiplatform.md`](multiplatform.md)); in progress | both |
 | — | — | Backlog, fitted in where it helps | both |
 
 ## Phase 10 — Categories for everything

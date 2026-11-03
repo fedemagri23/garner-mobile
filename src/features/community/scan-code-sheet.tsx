@@ -50,7 +50,7 @@ export function ScanCodeSheet({
         taken.current = false;
       }}
       onRequestClose={onClose}>
-      <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.root} edges={['top', 'bottom', 'left', 'right']}>
         <View style={styles.viewfinder}>
           {permission?.granted ? (
             <CameraView

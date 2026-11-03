@@ -16,7 +16,7 @@ import { SyncBanner } from '@/features/outbox/sync-banner';
 import { t } from '@/i18n';
 import { errorMessage } from '@/lib/error-message';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
-import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 import { CategoryField } from './category-picker';
 import { lookupWorthy, prefillFrom, type Edited } from './prefill';
@@ -179,7 +179,7 @@ export function AddProductScreen() {
     : null;
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.root}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.topBar}>
           <Pressable
@@ -477,7 +477,7 @@ function Added({ outcome, listName }: { outcome: AddProductOutcome; listName: st
   const added = outcome.kind === 'added';
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.root}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.root}>
       <ScrollView contentContainerStyle={[styles.content, styles.done]}>
         <SyncBanner />
         <View style={styles.center}>
@@ -523,7 +523,7 @@ function Added({ outcome, listName }: { outcome: AddProductOutcome; listName: st
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-  content: { padding: space.xl, gap: space.lg },
+  content: { ...pageColumn, padding: space.xl, gap: space.lg },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   round: {
     width: MIN_TOUCH,

@@ -21,7 +21,7 @@ import { categoryName } from '@/lib/category-name';
 import { errorMessage } from '@/lib/error-message';
 import { productCount } from '@/lib/format';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
-import { colors, MIN_TOUCH, radii, space } from '@/theme/tokens';
+import { colors, MIN_TOUCH, pageColumn, radii, space } from '@/theme/tokens';
 
 /**
  * Buscar: type to find products, or browse the shop's departments and
@@ -262,7 +262,7 @@ function ProductRow({ product }: { product: Product }) {
 }
 
 const styles = StyleSheet.create({
-  list: { padding: space.xl, gap: space.md - 2 },
+  list: { ...pageColumn, padding: space.xl, gap: space.md - 2 },
   header: { gap: space.lg, paddingTop: space.sm, paddingBottom: space.xs },
   chips: { gap: space.sm },
   searchRow: { flexDirection: 'row', gap: space.sm + 2 },
