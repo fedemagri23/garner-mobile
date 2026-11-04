@@ -947,3 +947,20 @@ longer covers what you type.
 4. In a computer browser, drag the window down to about 280 wide, or run
    `npm run e2e:sizes`: titles and names keep their words whole, and a list row
    puts its quantity under the name.
+
+## Checkpoint 34 — The camera on real phones
+
+One scanner everywhere, sized to the screen, and its field stays above the keyboard.
+
+**Check** (on your iPhone, with Expo Go)
+
+1. Inicio → the barcode button. The camera sits below the Dynamic Island or notch,
+   and the frame is centred. Scan a real product at normal distance: it should read
+   on the first or second try. **If it stays blurry up close, tell me which iPhone**:
+   that is what decides whether to add zoom.
+2. Tap the code field: it rises above the keyboard, and the camera gives way.
+3. _Agregar producto_ → _Escanear el código_: the same scanner, and what you already
+   typed in the form is still there when it closes.
+4. Deny the camera in Settings → Expo Go, and open the scanner: it explains, and
+   offers to open Settings. Allow it again afterwards.
+5. _Agregar tienda_: the map leaves room for the fields, and the pin can be moved.

@@ -155,3 +155,9 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Symptom:** The words stayed Spanish in every language.
 - **Cause:** A literal in the component, which the catalog parity test cannot see.
 - **Fix:** `lists.detail.noPrice` in all four catalogs.
+
+### MBUG-026 — The scanner's typed field stayed under the keyboard
+- **Phase:** 14 (checkpoint 34) · **Area:** scanner · **Scope:** production code · **Found by:** reading the scanner while merging its two copies
+- **Symptom:** The field for typing a code sits at the bottom of the screen, with nothing to move it, so the keyboard should cover it on phones. Found by reading; not yet confirmed on a device.
+- **Cause:** Neither copy of the scanner handled the keyboard, and each fix had to be made twice (MBUG-022 was one copy missing what the other had).
+- **Fix:** One `BarcodeScanner`, with `behavior="padding"`. Its frame follows the screen, a computer with no camera says so, and a browser no longer offers a settings page it cannot open.

@@ -122,6 +122,11 @@ iPhone, and Android stays unchecked until there is a device or emulator.
 
 ### Checkpoint 34 — Camera, photos and maps on real hardware (size: M)
 
+**Code done; waiting on real phones.** Built: one scanner, proportional frame,
+keyboard handling, every camera state. Photos already compress and explain the
+limit. Not verified: focus on real lenses (no `zoom` or lens setting added until a
+phone shows it is needed), and dragging the pin on Android inside a scrolling form.
+
 - One scanner component replaces the two copies. The frame is proportional, the
   camera fills the space between the safe areas, and the camera area never sits
   under the island or a cutout's controls.
