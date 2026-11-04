@@ -15,6 +15,7 @@ import { forgetPhone } from '@/features/push/forget-phone';
 import { ApiError, createApi, unwrap, type Api } from '@/api/client';
 import { apiBaseUrl } from '@/config';
 
+import { oneTabAtATime, refreshBody, sessionFetch } from './browser-session';
 import { refreshTokenStorage } from './refresh-token-storage';
 import { createTokenManager, SessionUnavailableError } from './token-manager';
 
@@ -42,18 +43,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const { api, publicApi, tokens } = useMemo(() => {
     const baseUrl = apiBaseUrl();
     // Auth endpoints go through a client that never attaches a token.
-    const publicApi = createApi(baseUrl);
+    const base = sessionFetch();
+    const publicApi = createApi(baseUrl, base);
     const tokens = createTokenManager({
       storage: refreshTokenStorage(),
       refresh: (refreshToken) =>
-        unwrap(publicApi.POST('/v1/auth/refresh', { body: { refreshToken } })),
+        oneTabAtATime(() => unwrap(publicApi.POST('/v1/auth/refresh', { body: refreshBody(refreshToken) }))),
       // Only the server saying no ends the session; no connection, a busy
       // server or a rate limit do not.
       isRefusal: (error) =>
         error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 429,
       onSignedOut: () => setStatus('signedOut'),
     });
-    return { api: createApi(baseUrl, createAuthFetch(tokens)), publicApi, tokens };
+    return { api: createApi(baseUrl, createAuthFetch(tokens, base)), publicApi, tokens };
   }, []);
 
   // A stored refresh token means a session to restore: exchange it now, so
@@ -112,7 +114,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const refreshToken = await tokens.storedRefreshToken();
     // Revoking is best effort: offline, the device still forgets the session.
     if (refreshToken) {
-      await publicApi.POST('/v1/auth/logout', { body: { refreshToken } }).catch(() => undefined);
+      await publicApi.POST('/v1/auth/logout', { body: refreshBody(refreshToken) }).catch(() => undefined);
     }
     await tokens.signOut();
     // The next account must not inherit this one's trip or unsent changes.

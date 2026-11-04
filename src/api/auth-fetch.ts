@@ -11,7 +11,7 @@ const UNAUTHENTICATED = ['/v1/auth/login', '/v1/auth/register', '/v1/auth/refres
  */
 export function createAuthFetch(
   tokens: Pick<TokenManager, 'accessToken' | 'refresh'>,
-  baseFetch: typeof fetch = fetch,
+  baseFetch: (request: Request) => Promise<Response> = (request) => fetch(request),
 ) {
   return async (request: Request): Promise<Response> => {
     const path = new URL(request.url).pathname;

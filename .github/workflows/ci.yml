@@ -32,4 +32,4 @@ jobs:
       # The web pages must carry the app: a document that drops its scripts is
       # served blank (MBUG-021), with nothing else to say so.
       - run: npx expo export --platform web --output-dir /tmp/export-web
-      - run: grep -q '<script' /tmp/export-web/index.html
+      - run: grep -q "<script" /tmp/export-web/index.html

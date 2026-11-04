@@ -163,6 +163,15 @@ the middle of a trip loses nothing.
 
 ### Checkpoint 36 — The web as a real product, on phones (size: L)
 
+**Partly done, ahead of 35 because the user hit it (2026-11-04).** Done: staying
+signed in (the cookie below, verified on Firefox and Chrome), reload and deep links,
+real maps with a draggable pin. The web build is now a single-page app
+(`output: single`): static output cannot serve routes with an id. So **any host must
+rewrite unknown paths to `index.html`** (`e2e/serve-web.mjs` shows it), and the API
+and web must share a site (`app.` and `api.` of one domain), since the cookie is
+`SameSite=Strict`. Still open: address lookup when placing a pin, phone browser
+details, install as an app, HTTPS camera.
+
 - **Staying signed in.** Replace the in-memory token. Recommended: the backend
   sets the refresh token as an `HttpOnly`, `Secure`, `SameSite` cookie for
   browsers, so page scripts cannot read it; apps keep the secure keychain. Needs

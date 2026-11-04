@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="%LANG_ISO_CODE%">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <!-- viewport-fit=cover is what gives a phone browser its safe areas. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- The colours are src/theme/tokens.ts's: ground and accent. -->
+    <meta name="theme-color" content="#F3F5F0" />
+    <title>%WEB_TITLE%</title>
+    <style id="expo-reset">
+      /* React Native Web's reset: the app fills the window and scrolls inside. */
+      html,
+      body {
+        height: 100%;
+        background-color: #f3f5f0;
+      }
+      body {
+        overflow: hidden;
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+
+      /*
+       * Focus: the browser's outline would draw a square inside rounded fields,
+       * so a focused field (or the box around one) takes the accent colour.
+       * Everything else reached by keyboard gets a visible ring.
+       */
+      input:focus,
+      textarea:focus {
+        outline: none;
+      }
+      input:focus-visible,
+      div:has(> input:focus-visible) {
+        border-color: #1e6b45 !important;
+      }
+      [role='button']:focus-visible,
+      [role='tab']:focus-visible,
+      [role='radio']:focus-visible,
+      [role='checkbox']:focus-visible,
+      [role='link']:focus-visible,
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid #1e6b45;
+        outline-offset: 2px;
+      }
+
+      /* The web's switch is 20 px high: the invisible control over it reaches further. */
+      input[role='switch'] {
+        top: -12px !important;
+        bottom: -12px !important;
+        height: auto !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>Garner necesita JavaScript para funcionar.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

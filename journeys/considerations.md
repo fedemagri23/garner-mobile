@@ -348,3 +348,15 @@ renumbered; a superseded entry stays and gains a **Superseded by:** line.
 - **What:** `npm run e2e:sizes` walks every screen at 10 widths (280–2560), and the phone widths again in German, failing on sideways scrolling, targets off screen or under 36 px. It needs the backend stack, as `e2e:web` does, so CI only checks that the web build carries the app.
 - **Why:** Starting three databases, Redis and the backend in CI is a larger job than this phase needs. It takes about 8 minutes locally.
 - **Revisit when:** Hosting brings a staging environment to run it against.
+
+### MCON-058 — Web maps: MapLibre with OpenFreeMap
+- **Phase:** 14 (checkpoint 36) · **Area:** maps · **Status:** accepted
+- **What:** `maplibre-gl` on the web, with OpenFreeMap's Liberty style and no key. Native keeps `react-native-maps`. If the map cannot open (no WebGL, tiles out of reach), the plan falls back to the old drawing and the pin to coordinates. Declared in the privacy page, whose version moved to 2026-11-04, so people accept it again: the browser asks OpenFreeMap for tiles directly, so it sees the IP and the area.
+- **Why:** The user chose MapLibre; OpenFreeMap needs no account or billing. It publishes no limits for ordinary use and offers no guarantee.
+- **Revisit when:** Real traffic, or an outage: the style URL is one constant in `web-map.ts`, so a paid provider is a small change.
+
+### MCON-059 — The walk-through is run against the built site
+- **Phase:** 14 (checkpoint 36) · **Area:** testing · **Status:** accepted
+- **What:** `npx expo export --platform web`, then `node e2e/serve-web.mjs`, then `npm run e2e:web` or `e2e:sizes`.
+- **Why:** The development server hid the 404 on deep routes for the whole project.
+- **Revisit when:** Hosting provides a staging site to run it against.

@@ -964,3 +964,17 @@ One scanner everywhere, sized to the screen, and its field stays above the keybo
 4. Deny the camera in Settings → Expo Go, and open the scanner: it explains, and
    offers to open Settings. Allow it again afterwards.
 5. _Agregar tienda_: the map leaves room for the fields, and the pin can be moved.
+
+## Checkpoint 36, first part — The web stays signed in, with a real map
+
+**Check** (a computer browser, `http://localhost:8081`)
+
+1. Sign in, then press F5: still signed in. F5 twice quickly: the same.
+2. Open a second tab at the same address: signed in there too. Reload both.
+3. Sign out, then F5: the sign-in screen, and it stays there.
+4. A list → _Dónde comprar_: a real map with streets, your position, the numbered
+   shops and the route, with its credit in the corner. F5 there: same screen.
+5. _Agregar tienda_ (from _Informar precio_): drag the pin, or click the map. The
+   address is still typed by hand.
+6. In the browser's developer tools, Application/Storage → Cookies: `garner_refresh`
+   is marked HttpOnly.

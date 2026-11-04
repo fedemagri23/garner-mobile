@@ -103,7 +103,10 @@ const errors = [];
 
 /** A phone-sized tab standing at `position`, with its errors collected. */
 async function openPage(position) {
-  const tab = await browser.newPage();
+  // A browser of its own: the session cookie must not carry over to the next account.
+  const context = await browser.createBrowserContext();
+  await context.overridePermissions(BASE_URL, ['geolocation']);
+  const tab = await context.newPage();
   await tab.setViewport({ width: 390, height: 844 });
   await tab.setGeolocation(position);
   // The phone is set to Spanish (Argentina); the app follows it unless the shopper picks otherwise.
@@ -179,6 +182,16 @@ const tappable = (selector, match, arg) =>
     )
     .then((handle) => handle.asElement());
 
+/** A click on what re-rendered since it was found goes to nothing: find it again. */
+const clickSettled = async (target, again) => {
+  try {
+    await target.click();
+  } catch (error) {
+    if (!/detached/i.test(error.message)) throw error;
+    await again();
+  }
+};
+
 const press = async (label) => {
   const target = await tappable(
     '[role=button],[role=tab],[role=switch],[role=checkbox],[role=radio],a,button',
@@ -188,7 +201,7 @@ const press = async (label) => {
       n.innerText.trim().endsWith(`\n${label}`),
     label,
   );
-  await target.click();
+  await clickSettled(target, () => press(label));
 };
 
 /** Text a person can actually see: in a leaf element that is on top. */
@@ -475,6 +488,11 @@ await step('each alternative shows its stops, and a stop what to buy there', asy
   await text('más de lo que elegiste');
   await press('Más simple');
   await shown('Recorrido');
+});
+await step('the plan is on a real map, with its credit', async () => {
+  await page.waitForSelector('.maplibregl-canvas', { timeout: 15_000 });
+  await page.waitForFunction(() => document.querySelector('.maplibregl-ctrl-attrib')?.textContent.includes('OpenStreetMap'), { timeout: 20_000 });
+  await page.screenshot({ path: `${SHOTS}plan-map.png` });
 });
 await step('preferences change the plan, and are put back', async () => {
   await press('Preferencias');
@@ -898,8 +916,10 @@ await step('a neighbour\'s product can be confirmed, taken back and reported', a
   await press('Volver');
 });
 await step('a code Garner knows points at its product instead of adding it again', async () => {
-  await typeInto('Buscar productos', 'alfajor triple');
-  await text('No encontramos productos para “alfajor triple”.');
+  // Unique: a run that failed may have left its product behind, and the seed keeps those.
+  const nothing = `alfajor triple ${Date.now() % 1_000_000}`;
+  await typeInto('Buscar productos', nothing);
+  await text(`No encontramos productos para “${nothing}”.`);
   await press('No lo encuentro — agregarlo');
   await text('Lo ven todos desde ya');
   await typeInto('Código de barras', '7791234000029');
@@ -936,7 +956,8 @@ await step('a shop is added from Informar precio, seen only by its creator until
   await pressContaining('Pan Lactal 500g');
   await press('Informar precio');
   await press('¿No está tu súper? Agregalo');
-  await shown('Agregar tienda');
+  // Both the title and the button, far apart: shown() would chase between them.
+  await text('Agregar tienda');
   await press('Otra');
   await typeInto('Nombre de la cadena', NEW_CHAIN);
   await typeInto('Nombre de la tienda', `${NEW_CHAIN} Obelisco`);
@@ -1118,13 +1139,23 @@ await step('English: the whole app changes, prices are written the English way, 
   await text('What are we buying today?');
   await text('€0.69');
   await page.screenshot({ path: `${SHOTS}language-en-home.png` });
-  // The web build keeps no session across a reload, so the sign-in screen is
-  // the proof: it is still in English, which was only remembered.
+  // Still signed in, and still in English.
   await page.reload({ waitUntil: 'networkidle0' });
-  await text('Pay less for the same shop.');
-  await typeInto('Email', 'shopper@garner.test');
-  await typeInto('Password', 'correct-horse-battery');
-  await press('Sign in');
+  await text('Hi, Fede');
+  await text('What are we buying today?');
+});
+await step('two quick reloads keep the session, as does a second tab', async () => {
+  // The first reload's answer is lost after the server has rotated the token.
+  page.reload().catch(() => undefined);
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  await page.reload({ waitUntil: 'networkidle0' });
+  await text('Hi, Fede');
+  const second = await page.browserContext().newPage();
+  await second.setViewport({ width: 390, height: 844 });
+  await second.goto(BASE_URL, { waitUntil: 'networkidle0' });
+  await second.waitForFunction(() => document.body.innerText.includes('Hi, Fede'), { timeout: 15_000 });
+  await second.close();
+  await page.reload({ waitUntil: 'networkidle0' });
   await text('Hi, Fede');
 });
 await step('German: dates, plurals and prices follow', async () => {

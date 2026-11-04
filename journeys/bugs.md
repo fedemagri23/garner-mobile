@@ -161,3 +161,15 @@ backend's `journeys/README.md`; ids are sequential and never renumbered.
 - **Symptom:** The field for typing a code sits at the bottom of the screen, with nothing to move it, so the keyboard should cover it on phones. Found by reading; not yet confirmed on a device.
 - **Cause:** Neither copy of the scanner handled the keyboard, and each fix had to be made twice (MBUG-022 was one copy missing what the other had).
 - **Fix:** One `BarcodeScanner`, with `behavior="padding"`. Its frame follows the screen, a computer with no camera says so, and a browser no longer offers a settings page it cannot open.
+
+### MBUG-027 — A reload in a browser signed out, and routes with an id did not exist in the built site
+- **Phase:** 14 (checkpoint 36) · **Area:** web · **Scope:** production code · **Found by:** the user (F5 in Firefox), then running the walk-through against the built site for the first time
+- **Symptom:** F5 went back to sign-in. And in an exported build `/lists/<id>/plan` was a 404, invisible on the development server.
+- **Cause:** The web kept its token in memory, as a development-only target. `output: static` makes a page per route and cannot make one for an id without listing them all.
+- **Fix:** A cookie session (garner-app CON-067). `output: single`, with its document in `public/index.html`, which also ended the development server's "Requiring unknown module" on reload, which came from rendering pages on the server.
+
+### MBUG-028 — MapLibre could not start from a bundle
+- **Phase:** 14 (checkpoint 36) · **Area:** maps · **Scope:** production code (caught before release) · **Found by:** driving real Firefox
+- **Symptom:** The map stayed blank, with a worker refused for its MIME type.
+- **Cause:** MapLibre 6 looks for its worker beside its own file, which does not exist in a bundle.
+- **Fix:** A post-install script copies the worker to `public/`, and `setWorkerUrl` points at it.

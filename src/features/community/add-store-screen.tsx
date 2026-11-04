@@ -179,11 +179,9 @@ export function AddStoreScreen() {
           {pin ? (
             <>
               <PinMap point={pin} onChange={setPoint} />
-              {Platform.OS !== 'web' ? (
-                <Text variant="caption" tone="muted">
-                  {t('community.addStore.whereHint')}
-                </Text>
-              ) : null}
+              <Text variant="caption" tone="muted">
+                {t('community.addStore.whereHint')}
+              </Text>
             </>
           ) : location.status === 'locating' ? (
             <StateMessage loading />

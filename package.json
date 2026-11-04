@@ -32,6 +32,7 @@
     "expo-system-ui": "~58.0.7",
     "expo-web-browser": "~58.0.7",
     "i18next": "^26.5.3",
+    "maplibre-gl": "^6.16.0",
     "openapi-fetch": "^0.17.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -67,7 +68,8 @@
     "api:generate": "node scripts/generate-api.mjs",
     "api:check": "node scripts/generate-api.mjs --check",
     "e2e:web": "node e2e/web-smoke.mjs",
-    "e2e:sizes": "node e2e/size-sweep.mjs"
+    "e2e:sizes": "node e2e/size-sweep.mjs",
+    "postinstall": "node scripts/copy-map-worker.mjs"
   },
   "private": true,
   "jest": {

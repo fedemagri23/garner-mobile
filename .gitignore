@@ -50,3 +50,6 @@ coverage/
 
 # e2e screenshots
 e2e/screenshots/
+
+# Copied from node_modules on install
+public/maplibre-gl-worker.mjs

@@ -159,7 +159,8 @@ const problems = () =>
       if ((box.right > width + 1 || box.left < -1) && !scrollsSideways(n)) {
         found.push(`sticks out of the window: "${describe(n)}" (${Math.round(box.left)}–${Math.round(box.right)})`);
       }
-      if (box.height < minTarget || box.width < minTarget) {
+      // The map's own credits and pin are the library's, and the map itself can be tapped.
+      if ((box.height < minTarget || box.width < minTarget) && !n.closest('.maplibregl-map')) {
         found.push(`too small to tap: "${describe(n)}" (${Math.round(box.width)}×${Math.round(box.height)})`);
       }
     }

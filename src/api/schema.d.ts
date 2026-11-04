@@ -1669,6 +1669,7 @@ export interface components {
              * @example 900
              */
             accessTokenExpiresIn: number;
+            /** @description Empty for a browser sending x-garner-session: cookie, which gets it as a cookie its scripts cannot read */
             refreshToken: string;
         };
         LoginRequest: {
@@ -1677,7 +1678,8 @@ export interface components {
             password: string;
         };
         RefreshRequest: {
-            refreshToken: string;
+            /** @description Required, except from a browser whose token is in the session cookie */
+            refreshToken?: string;
         };
         PasswordResetRequest: {
             /** Format: email */
